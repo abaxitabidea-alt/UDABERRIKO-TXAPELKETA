@@ -5,15 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Udaberriko Txapelketak - Pelotari Atala</title>
   <style>
-    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
-    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
-    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-    nav button { background: none; border: none; color: white; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; border-bottom: 4px solid transparent; }
-    nav button.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
-    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    :root {
+      --primary: #1b4332;
+      --accent: #2d6a4f;
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
+
+    nav {
+      background-color: #143225;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: white;
+      padding: 1rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 4px solid transparent;
+    }
+    nav button.active {
+      border-bottom-color: #52b788;
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1.8rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
     .hidden { display: none !important; }
+
+    /* Selector de Categorías y Niveles */
+    .filter-box {
+      background: #e9ecef;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .filter-group label {
+      font-weight: bold;
+      color: var(--primary);
+    }
+    .filter-group select {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    /* Sub-pestañas Categorías */
+    .cat-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .cat-btn {
+      background: #ffffff;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    .cat-btn.active, .cat-btn:hover {
+      background: var(--accent);
+      color: white;
+    }
+
+    .level-btn-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .level-btn {
+      background: #f1f3f5;
+      border: 1px solid #ced4da;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .level-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
@@ -23,73 +149,123 @@
 <body>
 
   <header>
-    <h1>Udaberriko Txapelketak</h1>
-    <p>Pelotari eta Zaleen Atala / Portal del Pelotari</p>
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-title">
+      <h1>Udaberriko Txapelketak</h1>
+      <p>Pelotari Atala — Antolatzailea: Abaxitabidea</p>
+    </div>
+    <div class="header-spacer"></div>
   </header>
 
   <nav>
     <button id="tab-enfrentamientos" class="active" onclick="switchTab('enfrentamientos')">📅 Partidak / Cartelera</button>
     <button id="tab-resultados" onclick="switchTab('resultados')">🏆 Emaitzak / Resultados</button>
     <button id="tab-clasificacion" onclick="switchTab('clasificacion')">📊 Sailkapena / Clasificación</button>
-    <a href="index.html" style="color:white; text-decoration:none; padding:1rem 1.5rem; font-weight:600;">← Hasiera</a>
+    <a href="index.html" style="color:white; text-decoration:none; padding:1rem 1.2rem; font-weight:600;">← Hasiera</a>
   </nav>
 
   <div class="container">
-    <div id="sec-enfrentamientos" class="card">
-      <h2>📅 Horarios y Cartelera de Partidos</h2>
-      <p>Consulta el día, la hora, el frontón y el orden de juego asignado por los clubes:</p>
-      <table>
-        <thead>
-          <tr>
-            <th>Eguna / Fecha</th>
-            <th>Ordua / Hora</th>
-            <th>Frontoia / Frontón</th>
-            <th>Ordena</th>
-            <th>Topaketa / Encuentro</th>
-            <th>Klub Antolatzailea</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-public-matches"></tbody>
-      </table>
-    </div>
+    <div class="card">
+      
+      <!-- SELECCIÓN DE CATEGORÍA -->
+      <label style="font-weight:bold; display:block; margin-bottom:0.5rem; color:var(--primary);">1. Aukeratu Kategoria / Selecciona Categoría:</label>
+      <div class="cat-btn-group">
+        <button class="cat-btn active" onclick="selectCategory('Benjamín', this)">Benjamín</button>
+        <button class="cat-btn" onclick="selectCategory('Alevín', this)">Alevín</button>
+        <button class="cat-btn" onclick="selectCategory('Infantil', this)">Infantil</button>
+        <button class="cat-btn" onclick="selectCategory('Cadete', this)">Cadete</button>
+        <button class="cat-btn" onclick="selectCategory('Juvenil', this)">Juvenil</button>
+      </div>
 
-    <div id="sec-resultados" class="card hidden">
-      <h2>🏆 Marcadores y Resultados</h2>
-      <p>Tanteos de los partidos finalizados:</p>
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Encuentro</th>
-            <th>Frontoia</th>
-            <th>Tanteoa / Marcador</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-public-results"></tbody>
-      </table>
-    </div>
+      <!-- SELECCIÓN DE NIVEL -->
+      <label style="font-weight:bold; display:block; margin-bottom:0.5rem; color:var(--primary);">2. Aukeratu Maila / Selecciona Nivel:</label>
+      <div class="level-btn-group">
+        <button class="level-btn active" onclick="selectLevel('1. Maila (Primera)', this)">1ª Maila (Primera)</button>
+        <button class="level-btn" onclick="selectLevel('2. Maila (Segunda)', this)">2ª Maila (Segunda)</button>
+        <button class="level-btn" onclick="selectLevel('3. Maila (Tercera)', this)">3ª Maila (Tercera)</button>
+      </div>
 
-    <div id="sec-clasificacion" class="card hidden">
-      <h2>📊 Sailkapenak (Puntuazioa)</h2>
-      <p>Arauak / Reglas: Partida irabazita = <strong>2 puntu</strong> | Partida galduta = <strong>0.1 puntu</strong></p>
-      <table>
-        <thead>
-          <tr>
-            <th>Pos.</th>
-            <th>Kluba / Club</th>
-            <th>Jokatutakoak</th>
-            <th>Irabaziak (2pt)</th>
-            <th>Galduak (0.1pt)</th>
-            <th>Puntuak</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-public-standings"></tbody>
-      </table>
+      <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #eee;">
+
+      <h3 style="color:var(--accent);" id="group-title">Benjamín — 1ª Maila (Primera)</h3>
+
+      <!-- PESTAÑA 1: ENFRENTAMIENTOS DE LA CATEGORÍA/NIVEL -->
+      <div id="sec-enfrentamientos">
+        <h4>📅 Partidak / Cartelera de Partidos</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Eguna / Fecha</th>
+              <th>Ordua / Hora</th>
+              <th>Frontoia / Frontón</th>
+              <th>Ordena</th>
+              <th>Topaketa / Encuentro</th>
+              <th>Kluba</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-public-matches"></tbody>
+        </table>
+      </div>
+
+      <!-- PESTAÑA 2: RESULTADOS DE LA CATEGORÍA/NIVEL -->
+      <div id="sec-resultados" class="hidden">
+        <h4>🏆 Marcadores y Resultados</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Encuentro</th>
+              <th>Frontoia</th>
+              <th>Tanteoa / Marcador</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-public-results"></tbody>
+        </table>
+      </div>
+
+      <!-- PESTAÑA 3: CLASIFICACIÓN DE LA CATEGORÍA/NIVEL -->
+      <div id="sec-clasificacion" class="hidden">
+        <h4>📊 Sailkapena (Puntuazioa)</h4>
+        <p><small>Partida irabazita = <strong>2 pt</strong> | Partida galduta = <strong>0.1 pt</strong></small></p>
+        <table>
+          <thead>
+            <tr>
+              <th>Pos.</th>
+              <th>Kluba / Club</th>
+              <th>Jokatutakoak</th>
+              <th>Irabaziak (2pt)</th>
+              <th>Galduak (0.1pt)</th>
+              <th>Puntuak</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-public-standings"></tbody>
+        </table>
+      </div>
+
     </div>
   </div>
 
   <script>
+    let currentCategory = 'Benjamín';
+    let currentLevel = '1. Maila (Primera)';
+    let currentTab = 'enfrentamientos';
+
+    function selectCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateGroupView();
+    }
+
+    function selectLevel(lvl, btn) {
+      currentLevel = lvl;
+      document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateGroupView();
+    }
+
     function switchTab(tab) {
+      currentTab = tab;
       document.getElementById('sec-enfrentamientos').classList.add('hidden');
       document.getElementById('sec-resultados').classList.add('hidden');
       document.getElementById('sec-clasificacion').classList.add('hidden');
@@ -101,16 +277,21 @@
       if (tab === 'enfrentamientos') {
         document.getElementById('sec-enfrentamientos').classList.remove('hidden');
         document.getElementById('tab-enfrentamientos').classList.add('active');
-        loadPublicMatches();
       } else if (tab === 'resultados') {
         document.getElementById('sec-resultados').classList.remove('hidden');
         document.getElementById('tab-resultados').classList.add('active');
-        loadPublicResults();
       } else if (tab === 'clasificacion') {
         document.getElementById('sec-clasificacion').classList.remove('hidden');
         document.getElementById('tab-clasificacion').classList.add('active');
-        loadPublicStandings();
       }
+      updateGroupView();
+    }
+
+    function updateGroupView() {
+      document.getElementById('group-title').textContent = `${currentCategory} — ${currentLevel}`;
+      if (currentTab === 'enfrentamientos') loadPublicMatches();
+      else if (currentTab === 'resultados') loadPublicResults();
+      else if (currentTab === 'clasificacion') loadPublicStandings();
     }
 
     function getAllData() {
@@ -125,22 +306,25 @@
 
       for (let club in allData) {
         allData[club].forEach(m => {
-          count++;
-          tbody.innerHTML += `
-            <tr>
-              <td>${m.date}</td>
-              <td>${m.time}</td>
-              <td>${m.fronton}</td>
-              <td>${m.order}</td>
-              <td><strong>${m.info || '-'}</strong></td>
-              <td>${club}</td>
-            </tr>
-          `;
+          // Filtrar por categoría y nivel si están indicados en la información del partido
+          if (!m.info || m.info.includes(currentCategory) || m.info.includes(currentLevel)) {
+            count++;
+            tbody.innerHTML += `
+              <tr>
+                <td>${m.date}</td>
+                <td>${m.time}</td>
+                <td>${m.fronton}</td>
+                <td>${m.order}</td>
+                <td><strong>${m.info || '-'}</strong></td>
+                <td>${club}</td>
+              </tr>
+            `;
+          }
         });
       }
 
       if (count === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Ez dago partidarik oraindik.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">Ez dago partidarik talde honetan. / No hay partidos en este grupo.</td></tr>';
       }
     }
 
@@ -167,7 +351,7 @@
       }
 
       if (count === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Ez dago amaitutako partidarik.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#777;">Ez dago emaitzarik talde honetan.</td></tr>';
       }
     }
 
@@ -196,7 +380,6 @@
       }
 
       const sortedClubs = Object.keys(standings).sort((a, b) => standings[b].points - standings[a].points);
-
       const tbody = document.getElementById('tbody-public-standings');
       tbody.innerHTML = '';
 
@@ -215,7 +398,7 @@
       });
     }
 
-    loadPublicMatches();
+    updateGroupView();
   </script>
 </body>
 </html>
