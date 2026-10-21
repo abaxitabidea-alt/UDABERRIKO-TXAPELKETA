@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Udaberriko Txapelketak - Emaitzen Kudeaketa</title>
+  <style>
+    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; }
+    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
+    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    .hidden { display: none !important; }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+    input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
+    th { background-color: #e9ecef; }
+    .score-input { width: 60px !important; text-align: center; display: inline-block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Udaberriko Txapelketak</h1>
+    <p>Emaitzak Sartu / Introducir Resultados (Klubak)</p>
+  </header>
+
+  <nav>
+    <a href="index.html">← Hasiera</a>
+    <a href="club-panel.html">Klub Atala</a>
+    <a href="inscripcion.html">Inscripción</a>
+    <a href="partidos-semanales.html">Asteko Partidak</a>
+    <a href="gestion-resultados.html" class="active">Emaitzak</a>
+  </nav>
+
+  <div class="container">
+    <div id="login-section" class="card">
+      <h2 style="text-align:center;">Acceso para Clubes (Emaitzak)</h2>
+      <div style="max-width: 400px; margin: 0 auto;">
+        <div class="form-group">
+          <label>Usuario (Club):</label>
+          <input type="text" id="username" placeholder="Ej: Txaruta">
+        </div>
+        <div class="form-group">
+          <label>Contraseña:</label>
+          <input type="password" id="password">
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="login()">Entrar al Panel</button>
+        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
+      </div>
+    </div>
+
+    <div id="club-section" class="card hidden">
+      <div class="club-header">
+        <h2>Klubaren Partidak: <span id="club-title" style="color:var(--accent);"></span></h2>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+      </div>
+
+      <p>Introduzca el resultado de los partidos finalizados. Las victorias otorgan <strong>2 puntos</strong> y las derrotas <strong>0.1 puntos</strong>.</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Partida / Enfrentamiento</th>
+            <th>Tanteoa / Resultado</th>
+            <th>Egoera / Estado</th>
+            <th>Gorde / Guardar</th>
+          </tr>
+        </thead>
+        <tbody id="results-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const CLUB_ACCOUNTS = { "Txaruta": "Txaruta", "Erreka": "Erreka", "Oiarpe": "Oiarpe", "Oberena": "Oberena" };
+    let currentClub = null;
+
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      if (CLUB_ACCOUNTS[user] && CLUB_ACCOUNTS[user] === pass) {
+        currentClub = user;
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('club-section').classList.remove('hidden');
+        document.getElementById('club-title').textContent = currentClub;
+        loadClubMatches();
+      } else {
+        document.getElementById('login-error').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      currentClub = null;
+      document.getElementById('club-section').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+    }
+
+    function loadClubMatches() {
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const matches = allMatches[currentClub] || [];
+      const tbody = document.getElementById('results-tbody');
+      tbody.innerHTML = '';
+
+      if (matches.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Ez dago partidarik erregistratuta. / No hay partidos registrados.</td></tr>';
+        return;
+      }
+
+      matches.forEach((m, idx) => {
+        const score1 = m.score1 !== undefined ? m.score1 : '';
+        const score2 = m.score2 !== undefined ? m.score2 : '';
+        const status = (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== '') 
+          ? '<span style="color:green; font-weight:bold;">Jokatuta</span>' 
+          : '<span style="color:orange;">Jokatu gabe</span>';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${m.date} (${m.time})</td>
+            <td><strong>${m.info || 'Partida ' + m.order}</strong><br><small>${m.fronton}</small></td>
+            <td>
+              <input type="number" id="s1-${idx}" class="score-input" value="${score1}" min="0" max="22"> - 
+              <input type="number" id="s2-${idx}" class="score-input" value="${score2}" min="0" max="22">
+            </td>
+            <td>${status}</td>
+            <td><button class="btn-primary" onclick="saveScore(${idx})">Gorde</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function saveScore(idx) {
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const matches = allMatches[currentClub] || [];
+
+      const s1 = parseInt(document.getElementById(`s1-${idx}`).value);
+      const s2 = parseInt(document.getElementById(`s2-${idx}`).value);
+
+      if (isNaN(s1) || isNaN(s2)) {
+        alert("Sartu bi tanteoak mesedez.");
+        return;
+      }
+
+      matches[idx].score1 = s1;
+      matches[idx].score2 = s2;
+      
+      if (s1 > s2) {
+        matches[idx].points1 = 2.0; matches[idx].points2 = 0.1;
+      } else if (s2 > s1) {
+        matches[idx].points1 = 0.1; matches[idx].points2 = 2.0;
+      } else {
+        matches[idx].points1 = 1.0; matches[idx].points2 = 1.0;
+      }
+
+      allMatches[currentClub] = matches;
+      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
+      alert("Emaitza gordeta! / ¡Resultado guardado!");
+      loadClubMatches();
+    }
+  </script>
+</body>
+</html>
