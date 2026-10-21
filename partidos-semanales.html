@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Udaberriko Txapelketak - Asteko Partidak</title>
+  <style>
+    :root {
+      --primary: #1b4332;
+      --accent: #2d6a4f;
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    header h1 { margin: 0 0 0.5rem 0; }
+    header p { margin: 0; opacity: 0.9; }
+
+    nav {
+      background-color: #143225;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      border-bottom: 4px solid transparent;
+      transition: all 0.2s ease;
+    }
+    nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
+    nav a.active {
+      border-bottom-color: #52b788;
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    .hidden { display: none !important; }
+    
+    .login-form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+    input[type="text"], input[type="password"], input[type="time"], select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button.btn-primary {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      width: 100%;
+    }
+    button.btn-primary:hover { background-color: var(--primary); }
+    
+    .club-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .logout-btn {
+      background-color: #d90429;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+    th { background-color: #e9ecef; }
+    .btn-delete {
+      background-color: #e63946;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Udaberriko Txapelketak</h1>
+    <p>Organización de Asteko Partidak</p>
+  </header>
+
+  <nav>
+    <a href="index.html">Hasiera / Inicio</a>
+    <a href="inscripcion.html">Inscripción</a>
+    <a href="partidos-semanales.html" class="active">Asteko Partidak</a>
+  </nav>
+
+  <div class="container">
+    
+    <!-- LOGIN -->
+    <div id="login-section" class="card">
+      <h2 style="text-align:center;">Acceso para Clubes (Asteko Partidak)</h2>
+      <div class="login-form">
+        <div class="form-group">
+          <label for="username">Usuario (Club):</label>
+          <input type="text" id="username" placeholder="Ej: Txaruta">
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña:</label>
+          <input type="password" id="password" placeholder="Misma contraseña">
+        </div>
+        <button class="btn-primary" onclick="login()">Entrar al Panel</button>
+        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
+      </div>
+    </div>
+
+    <!-- PANEL DEL CLUB -->
+    <div id="club-section" class="card hidden">
+      <div class="club-header">
+        <h2>Organizar Partidos: <span id="club-title" style="color:var(--accent);"></span></h2>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+      </div>
+
+      <h3>Registrar Partido Semanal</h3>
+      <form onsubmit="addMatch(event)">
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="match-date">Fecha del Fin de Semana:</label>
+            <select id="match-date" required>
+              <option value="">Selecciona fecha...</option>
+              
+              <!-- Fin de Semana 1 -->
+              <option value="Viernes 14/05/2027">Viernes 14/05/2027</option>
+              <option value="Sábado 15/05/2027">Sábado 15/05/2027</option>
+              <option value="Domingo 16/05/2027">Domingo 16/05/2027</option>
+
+              <!-- Fin de Semana 2 -->
+              <option value="Viernes 21/05/2027">Viernes 21/05/2027</option>
+              <option value="Sábado 22/05/2027">Sábado 22/05/2027</option>
+              <option value="Domingo 23/05/2027">Domingo 23/05/2027</option>
+
+              <!-- Fin de Semana 3 -->
+              <option value="Viernes 28/05/2027">Viernes 28/05/2027</option>
+              <option value="Sábado 29/05/2027">Sábado 29/05/2027</option>
+              <option value="Domingo 30/05/2027">Domingo 30/05/2027</option>
+
+              <!-- Fin de Semana 4 -->
+              <option value="Viernes 04/06/2027">Viernes 04/06/2027</option>
+              <option value="Sábado 05/06/2027">Sábado 05/06/2027</option>
+              <option value="Domingo 06/06/2027">Domingo 06/06/2027</option>
+
+              <!-- Fin de Semana 5 -->
+              <option value="Viernes 11/06/2027">Viernes 11/06/2027</option>
+              <option value="Sábado 12/06/2027">Sábado 12/06/2027</option>
+              <option value="Domingo 13/06/2027">Domingo 13/06/2027</option>
+
+              <!-- Fin de Semana 6 -->
+              <option value="Viernes 18/06/2027">Viernes 18/06/2027</option>
+              <option value="Sábado 19/06/2027">Sábado 19/06/2027</option>
+              <option value="Domingo 20/06/2027">Domingo 20/06/2027</option>
+            </select>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label for="match-fronton">Frontón:</label>
+              <select id="match-fronton" required>
+                <option value="">Selecciona frontón...</option>
+                <option value="Frontón Baztan (Elizondo)">Frontón Baztan (Elizondo)</option>
+                <option value="Frontón Municipal de Doneztebe">Frontón Municipal de Doneztebe</option>
+                <option value="Frontón de Irurita">Frontón de Irurita</option>
+                <option value="Frontón Oberena (Iruña)">Frontón Oberena (Iruña)</option>
+                <option value="Frontón Gaskonia (Oiartzun)">Frontón Gaskonia (Oiartzun)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="match-order">Nº Partido (Orden):</label>
+            <select id="match-order" required>
+              <option value="">Nº...</option>
+              <option value="1º Partido">1º Partido</option>
+              <option value="2º Partido">2º Partido</option>
+              <option value="3º Partido">3º Partido</option>
+              <option value="4º Partido">4º Partido</option>
+              <option value="5º Partido">5º Partido</option>
+              <option value="6º Partido">6º Partido</option>
+              <option value="7º Partido">7º Partido</option>
+              <option value="8º Partido">8º Partido</option>
+              <option value="9º Partido">9º Partido</option>
+              <option value="10º Partido">10º Partido</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="match-time">Hora:</label>
+            <input type="time" id="match-time" required>
+          </div>
+
+          <div class="form-group">
+            <label for="match-info">Observaciones / Encuentro:</label>
+            <input type="text" id="match-info" placeholder="Ej: Cadete Nivel 1 (Txaruta vs Erreka)">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary">+ Registrar Partido</button>
+      </form>
+
+      <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
+
+      <h3>Partidos Programados</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Frontón</th>
+            <th>Orden</th>
+            <th>Hora</th>
+            <th>Info / Categoría</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="matches-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const CLUB_ACCOUNTS = {
+      "Txaruta": "Txaruta",
+      "Erreka": "Erreka",
+      "Oiarpe": "Oiarpe",
+      "Oberena": "Oberena"
+    };
+
+    let currentClub = null;
+
+    function login() {
+      const userVal = document.getElementById('username').value.trim();
+      const passVal = document.getElementById('password').value.trim();
+      const errorMsg = document.getElementById('login-error');
+
+      if (CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal] === passVal) {
+        currentClub = userVal;
+        errorMsg.style.display = 'none';
+        document.getElementById('login-section').classList.add('hidden');
+        document.getElementById('club-section').classList.remove('hidden');
+        document.getElementById('club-title').textContent = currentClub;
+        loadMatches();
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function logout() {
+      currentClub = null;
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('club-section').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+    }
+
+    function getStoredMatches() {
+      const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      return allData[currentClub] || [];
+    }
+
+    function saveMatches(matchesArray) {
+      const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      allData[currentClub] = matchesArray;
+      localStorage.setItem('udaberri_matches', JSON.stringify(allData));
+    }
+
+    function addMatch(e) {
+      e.preventDefault();
+      const matches = getStoredMatches();
+      matches.push({
+        date: document.getElementById('match-date').value,
+        fronton: document.getElementById('match-fronton').value,
+        order: document.getElementById('match-order').value,
+        time: document.getElementById('match-time').value,
+        info: document.getElementById('match-info').value.trim()
+      });
+      saveMatches(matches);
+      document.getElementById('match-info').value = '';
+      loadMatches();
+    }
+
+    function deleteMatch(idx) {
+      const matches = getStoredMatches();
+      matches.splice(idx, 1);
+      saveMatches(matches);
+      loadMatches();
+    }
+
+    function loadMatches() {
+      const tbody = document.getElementById('matches-tbody');
+      tbody.innerHTML = '';
+      const matches = getStoredMatches();
+
+      if (matches.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No hay partidos programados.</td></tr>';
+        return;
+      }
+
+      matches.forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${m.date}</td>
+            <td>${m.fronton}</td>
+            <td>${m.order}</td>
+            <td>${m.time}</td>
+            <td>${m.info || '-'}</td>
+            <td><button class="btn-delete" onclick="deleteMatch(${idx})">Eliminar</button></td>
+          </tr>`;
+      });
+    }
+  </script>
+</body>
+</html>
