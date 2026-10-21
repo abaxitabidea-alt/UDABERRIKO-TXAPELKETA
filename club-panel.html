@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Udaberriko Txapelketak - Kluba</title>
+  <style>
+    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
+    header h1 { margin: 0 0 0.5rem 0; }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; }
+    nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
+    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
+    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+    .option-card { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 1.5rem; text-align: center; text-decoration: none; color: var(--text); transition: transform 0.2s, border-color 0.2s; }
+    .option-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .option-card h3 { color: var(--primary); margin-top: 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Udaberriko Txapelketak</h1>
+    <p>Kluben Eremua / Área de Clubes</p>
+  </header>
+
+  <nav>
+    <a href="index.html">← Hasiera / Inicio</a>
+    <a href="club-panel.html" class="active">Klub Atala</a>
+    <a href="inscripcion.html">Inscripción</a>
+    <a href="partidos-semanales.html">Asteko Partidak</a>
+    <a href="gestion-resultados.html">Emaitzak / Resultados</a>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <h2 style="text-align:center;">Kluben Kudeaketa / Gestión de Clubes</h2>
+      <p style="text-align:center;">Aukeratu egin nahi duzun kudeaketa atala:</p>
+
+      <div class="grid-cards">
+        <a href="inscripcion.html" class="option-card">
+          <h3>📝 Matriculación / Inscripción</h3>
+          <p>Klubeko bikoteak kategoria eta maila ezberdinetan izen-ematea.</p>
+        </a>
+
+        <a href="partidos-semanales.html" class="option-card">
+          <h3>📅 Asteko Partidak</h3>
+          <p>Asteko partiden antolaketa: frontoia, eguna, ordua eta ordena.</p>
+        </a>
+
+        <a href="gestion-resultados.html" class="option-card">
+          <h3>🏆 Emaitzak eta Sailkapena</h3>
+          <p>Jokatutako partiden emaitzak sartu eta sailkapena kudeatu.</p>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
