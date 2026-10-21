@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Udaberriko Txapelketak - Pelotari Atala</title>
+  <style>
+    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav button { background: none; border: none; color: white; padding: 1rem 1.5rem; font-size: 1rem; font-weight: 600; cursor: pointer; border-bottom: 4px solid transparent; }
+    nav button.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
+    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    .hidden { display: none !important; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
+    th { background-color: #e9ecef; }
+    .badge-win { background-color: #28a745; color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Udaberriko Txapelketak</h1>
+    <p>Pelotari eta Zaleen Atala / Portal del Pelotari</p>
+  </header>
+
+  <nav>
+    <button id="tab-enfrentamientos" class="active" onclick="switchTab('enfrentamientos')">📅 Partidak / Cartelera</button>
+    <button id="tab-resultados" onclick="switchTab('resultados')">🏆 Emaitzak / Resultados</button>
+    <button id="tab-clasificacion" onclick="switchTab('clasificacion')">📊 Sailkapena / Clasificación</button>
+    <a href="index.html" style="color:white; text-decoration:none; padding:1rem 1.5rem; font-weight:600;">← Hasiera</a>
+  </nav>
+
+  <div class="container">
+    <div id="sec-enfrentamientos" class="card">
+      <h2>📅 Horarios y Cartelera de Partidos</h2>
+      <p>Consulta el día, la hora, el frontón y el orden de juego asignado por los clubes:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Eguna / Fecha</th>
+            <th>Ordua / Hora</th>
+            <th>Frontoia / Frontón</th>
+            <th>Ordena</th>
+            <th>Topaketa / Encuentro</th>
+            <th>Klub Antolatzailea</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-public-matches"></tbody>
+      </table>
+    </div>
+
+    <div id="sec-resultados" class="card hidden">
+      <h2>🏆 Marcadores y Resultados</h2>
+      <p>Tanteos de los partidos finalizados:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Encuentro</th>
+            <th>Frontoia</th>
+            <th>Tanteoa / Marcador</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-public-results"></tbody>
+      </table>
+    </div>
+
+    <div id="sec-clasificacion" class="card hidden">
+      <h2>📊 Sailkapenak (Puntuazioa)</h2>
+      <p>Arauak / Reglas: Partida irabazita = <strong>2 puntu</strong> | Partida galduta = <strong>0.1 puntu</strong></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Pos.</th>
+            <th>Kluba / Club</th>
+            <th>Jokatutakoak</th>
+            <th>Irabaziak (2pt)</th>
+            <th>Galduak (0.1pt)</th>
+            <th>Puntuak</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-public-standings"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.getElementById('sec-enfrentamientos').classList.add('hidden');
+      document.getElementById('sec-resultados').classList.add('hidden');
+      document.getElementById('sec-clasificacion').classList.add('hidden');
+
+      document.getElementById('tab-enfrentamientos').classList.remove('active');
+      document.getElementById('tab-resultados').classList.remove('active');
+      document.getElementById('tab-clasificacion').classList.remove('active');
+
+      if (tab === 'enfrentamientos') {
+        document.getElementById('sec-enfrentamientos').classList.remove('hidden');
+        document.getElementById('tab-enfrentamientos').classList.add('active');
+        loadPublicMatches();
+      } else if (tab === 'resultados') {
+        document.getElementById('sec-resultados').classList.remove('hidden');
+        document.getElementById('tab-resultados').classList.add('active');
+        loadPublicResults();
+      } else if (tab === 'clasificacion') {
+        document.getElementById('sec-clasificacion').classList.remove('hidden');
+        document.getElementById('tab-clasificacion').classList.add('active');
+        loadPublicStandings();
+      }
+    }
+
+    function getAllData() {
+      return JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+    }
+
+    function loadPublicMatches() {
+      const allData = getAllData();
+      const tbody = document.getElementById('tbody-public-matches');
+      tbody.innerHTML = '';
+      let count = 0;
+
+      for (let club in allData) {
+        allData[club].forEach(m => {
+          count++;
+          tbody.innerHTML += `
+            <tr>
+              <td>${m.date}</td>
+              <td>${m.time}</td>
+              <td>${m.fronton}</td>
+              <td>${m.order}</td>
+              <td><strong>${m.info || '-'}</strong></td>
+              <td>${club}</td>
+            </tr>
+          `;
+        });
+      }
+
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Ez dago partidarik oraindik.</td></tr>';
+      }
+    }
+
+    function loadPublicResults() {
+      const allData = getAllData();
+      const tbody = document.getElementById('tbody-public-results');
+      tbody.innerHTML = '';
+      let count = 0;
+
+      for (let club in allData) {
+        allData[club].forEach(m => {
+          if (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== '') {
+            count++;
+            tbody.innerHTML += `
+              <tr>
+                <td>${m.date}</td>
+                <td><strong>${m.info || 'Partida ' + m.order}</strong> (${club})</td>
+                <td>${m.fronton}</td>
+                <td><span class="badge-win">${m.score1} - ${m.score2}</span></td>
+              </tr>
+            `;
+          }
+        });
+      }
+
+      if (count === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Ez dago amaitutako partidarik.</td></tr>';
+      }
+    }
+
+    function loadPublicStandings() {
+      const allData = getAllData();
+      const standings = {};
+
+      ["Txaruta", "Erreka", "Oiarpe", "Oberena"].forEach(c => {
+        standings[c] = { played: 0, won: 0, lost: 0, points: 0 };
+      });
+
+      for (let club in allData) {
+        if (!standings[club]) standings[club] = { played: 0, won: 0, lost: 0, points: 0 };
+        allData[club].forEach(m => {
+          if (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== '') {
+            standings[club].played++;
+            if (m.score1 > m.score2) {
+              standings[club].won++;
+              standings[club].points += 2.0;
+            } else {
+              standings[club].lost++;
+              standings[club].points += 0.1;
+            }
+          }
+        });
+      }
+
+      const sortedClubs = Object.keys(standings).sort((a, b) => standings[b].points - standings[a].points);
+
+      const tbody = document.getElementById('tbody-public-standings');
+      tbody.innerHTML = '';
+
+      sortedClubs.forEach((club, idx) => {
+        const data = standings[club];
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${idx + 1}º</strong></td>
+            <td><strong>${club}</strong></td>
+            <td>${data.played}</td>
+            <td>${data.won}</td>
+            <td>${data.lost}</td>
+            <td><strong style="color:var(--accent); font-size:1.1rem;">${data.points.toFixed(1)} pts</strong></td>
+          </tr>
+        `;
+      });
+    }
+
+    loadPublicMatches();
+  </script>
+</body>
+</html>
