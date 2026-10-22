@@ -20,7 +20,6 @@
       padding: 0;
     }
     
-    /* Cabecera con logo a la izquierda */
     header {
       background-color: var(--primary);
       color: white;
@@ -29,10 +28,9 @@
       align-items: center;
       justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      position: relative;
     }
     .header-logo {
-      height: 60px; /* Ajusta la altura del logo si es necesario */
+      height: 55px;
       width: auto;
       border-radius: 6px;
     }
@@ -47,11 +45,10 @@
     .header-title p {
       margin: 0;
       opacity: 0.9;
-      font-size: 1rem;
+      font-size: 0.95rem;
     }
-    /* Elemento fantasma para equilibrar el centrado del texto */
     .header-spacer {
-      width: 60px; 
+      width: 55px; 
     }
 
     @media (max-width: 600px) {
@@ -64,7 +61,7 @@
 
     .container {
       max-width: 900px;
-      margin: 3rem auto;
+      margin: 2.5rem auto;
       padding: 0 1rem;
     }
     .card {
@@ -98,10 +95,17 @@
       border-color: var(--accent);
       box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
-    .portal-icon {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
+    
+    /* Estilo y tamaño controlado para las imágenes de los botones */
+    .portal-img {
+      height: 130px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 1.2rem;
     }
+
     .portal-card h2 {
       color: var(--primary);
       margin: 0 0 0.5rem 0;
@@ -117,7 +121,6 @@
 <body>
 
   <header>
-    <!-- Logo de Abaxitabidea arriba a la izquierda -->
     <img src="logo.png" alt="Abaxitabidea Logo" class="header-logo" onerror="this.style.display='none'">
     
     <div class="header-title">
@@ -136,14 +139,14 @@
       <div class="grid-portal">
         <!-- OPCIÓN 1: CLUB -->
         <a href="club-panel.html" class="portal-card">
-          <div class="portal-icon">🏛️</div>
+          <img src="club.jpg" alt="Kluba / Club" class="portal-img" onerror="this.src='https://via.placeholder.com/130?text=KLUBA'">
           <h2>KLUBA / CLUB</h2>
           <p>Kluben eremua: Izena emateak, partidak antolatu eta emaitzak sartu.</p>
         </a>
 
-        <!-- OPCIÓN 2: PELOTARI / AFICIONADO -->
+        <!-- OPCIÓN 2: PELOTARI -->
         <a href="pelotari.html" class="portal-card">
-          <div class="portal-icon">🪓</div>
+          <img src="pelotari.jpg" alt="Pelotari" class="portal-img" onerror="this.src='https://via.placeholder.com/130?text=PELOTARI'">
           <h2>PELOTARI</h2>
           <p>Kontsulta publikoa: Partidak, ordutegiak, frontoiak, emaitzak eta sailkapena.</p>
         </a>
