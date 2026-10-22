@@ -1,9 +1,9 @@
 // CONFIGURACIÓN ÚNICA DE CUENTAS DE CLUBES
 const CLUB_ACCOUNTS = {
-  "Txaruta": "Txaruta",
-  "Erreka": "Erreka",
+  "txaruta": "txaruta",
+  "erreka": "erreka",
   "sanmiguel": "sanmiguel",
-  "Oberena": "Oberena"
+  "oberena": "oberena"
   "abaxitabidea": "abaxitabidea"
   "bortzirial": "bortziriak"
    "zugarralde": "zugarralde"
