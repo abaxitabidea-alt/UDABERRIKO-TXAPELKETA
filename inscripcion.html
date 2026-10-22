@@ -22,12 +22,17 @@
     header {
       background-color: var(--primary);
       color: white;
-      padding: 1.5rem;
-      text-align: center;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    header h1 { margin: 0 0 0.5rem 0; }
-    header p { margin: 0; opacity: 0.9; }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
 
     nav {
       background-color: #143225;
@@ -89,6 +94,10 @@
       width: 100%;
     }
     button.btn-primary:hover { background-color: var(--primary); }
+    button:disabled {
+      background-color: #a0a0a0 !important;
+      cursor: not-allowed !important;
+    }
     
     .club-header {
       display: flex;
@@ -133,19 +142,44 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
+    .deadline-banner {
+      background-color: #ffe0b2;
+      border: 1px solid #ffe0b2;
+      color: #e65100;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
+    .closed-banner {
+      background-color: #ffcdd2;
+      border: 1px solid #ef9a9a;
+      color: #c62828;
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Udaberriko Txapelketak</h1>
-    <p>Matriculación / Inscripción de Parejas</p>
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-title">
+      <h1>Udaberriko Txapelketak</h1>
+      <p>Matriculación / Inscripción de Parejas</p>
+    </div>
+    <div class="header-spacer"></div>
   </header>
 
   <nav>
-    <a href="index.html">Hasiera / Inicio</a>
+    <a href="index.html">← Hasiera / Inicio</a>
+    <a href="club-panel.html">Klub Atala</a>
     <a href="inscripcion.html" class="active">Inscripción</a>
     <a href="partidos-semanales.html">Asteko Partidak</a>
+    <a href="gestion-resultados.html">Emaitzak</a>
   </nav>
 
   <div class="container">
@@ -156,11 +190,11 @@
       <div class="login-form">
         <div class="form-group">
           <label for="username">Usuario (Club):</label>
-          <input type="text" id="username" placeholder="Ej: Txaruta">
+          <input type="text" id="username" placeholder="Ej: txaruta">
         </div>
         <div class="form-group">
           <label for="password">Contraseña:</label>
-          <input type="password" id="password" placeholder="Misma contraseña">
+          <input type="password" id="password">
         </div>
         <button class="btn-primary" onclick="login()">Entrar al Panel</button>
         <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
@@ -170,12 +204,20 @@
     <!-- PANEL DEL CLUB -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <h2>Panel de Inscripción: <span id="club-title" style="color:var(--accent);"></span></h2>
+        <h2>Panel de Inscripción: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
+      <!-- AVISO DE FECHA LÍMITE -->
+      <div id="banner-deadline" class="deadline-banner">
+        ⏳ <strong>Plazo de inscripción:</strong> El último día para inscribir o modificar parejas es el <strong>3 de mayo</strong>.
+      </div>
+      <div id="banner-closed" class="closed-banner hidden">
+        🔒 <strong>Epe-muga amaituta / Plazo cerrado:</strong> El plazo de inscripción finalizó el 3 de mayo. Solo el club organizador (Abaxitabidea) puede realizar modificaciones.
+      </div>
+
       <h3>Inscribir Nueva Pareja</h3>
-      <form onsubmit="addPair(event)">
+      <form id="pair-form" onsubmit="addPair(event)">
         <div class="grid-2">
           <div class="form-group">
             <label for="category">Categoría:</label>
@@ -189,12 +231,12 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="level">Nivel:</label>
+            <label for="level">Nivel / Maila:</label>
             <select id="level" required>
               <option value="">Selecciona nivel...</option>
-              <option value="Nivel 1">Nivel 1</option>
-              <option value="Nivel 2">Nivel 2</option>
-              <option value="Nivel 3">Nivel 3</option>
+              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+              <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
+              <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
             </select>
           </div>
         </div>
@@ -210,7 +252,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-primary">+ Añadir Pareja</button>
+        <button type="submit" id="btn-add-pair" class="btn-primary">+ Añadir Pareja</button>
       </form>
 
       <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
@@ -231,21 +273,36 @@
     </div>
 
   </div>
-<script src="auth.js"></script>
+
+  <script src="auth.js"></script>
   <script>
     let currentClub = null;
 
+    // Configuración de la fecha límite: 3 de Mayo a las 23:59:59 del año del torneo (2027)
+    const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
+
+    function isRegistrationOpen() {
+      // Si el club es el organizador "abaxitabidea", siempre tiene acceso
+      if (currentClub && currentClub.toLowerCase() === "abaxitabidea") {
+        return true;
+      }
+      const now = new Date();
+      return now <= DEADLINE_DATE;
+    }
+
     function login() {
-      const userVal = document.getElementById('username').value.trim();
-      const passVal = document.getElementById('password').value.trim();
+      const userVal = document.getElementById('username').value.trim().toLowerCase();
+      const passVal = document.getElementById('password').value.trim().toLowerCase();
       const errorMsg = document.getElementById('login-error');
 
-      if (CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal] === passVal) {
+      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal] === passVal) {
         currentClub = userVal;
         errorMsg.style.display = 'none';
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('club-section').classList.remove('hidden');
         document.getElementById('club-title').textContent = currentClub;
+        
+        applyRegistrationRestrictions();
         loadPairs();
       } else {
         errorMsg.style.display = 'block';
@@ -258,6 +315,23 @@
       document.getElementById('password').value = '';
       document.getElementById('club-section').classList.add('hidden');
       document.getElementById('login-section').classList.remove('hidden');
+    }
+
+    function applyRegistrationRestrictions() {
+      const open = isRegistrationOpen();
+      const formInputs = document.querySelectorAll('#pair-form input, #pair-form select, #btn-add-pair');
+      const bannerDeadline = document.getElementById('banner-deadline');
+      const bannerClosed = document.getElementById('banner-closed');
+
+      if (!open) {
+        formInputs.forEach(el => el.disabled = true);
+        bannerDeadline.classList.add('hidden');
+        bannerClosed.classList.remove('hidden');
+      } else {
+        formInputs.forEach(el => el.disabled = false);
+        bannerDeadline.classList.remove('hidden');
+        bannerClosed.classList.add('hidden');
+      }
     }
 
     function getStoredPairs() {
@@ -273,6 +347,11 @@
 
     function addPair(e) {
       e.preventDefault();
+      if (!isRegistrationOpen()) {
+        alert("Plazo de inscripción cerrado. No se pueden añadir más parejas.");
+        return;
+      }
+
       const pairs = getStoredPairs();
       pairs.push({
         category: document.getElementById('category').value,
@@ -287,6 +366,11 @@
     }
 
     function deletePair(idx) {
+      if (!isRegistrationOpen()) {
+        alert("Plazo de inscripción cerrado. No se pueden eliminar parejas.");
+        return;
+      }
+
       const pairs = getStoredPairs();
       pairs.splice(idx, 1);
       savePairs(pairs);
@@ -297,6 +381,7 @@
       const tbody = document.getElementById('pairs-tbody');
       tbody.innerHTML = '';
       const pairs = getStoredPairs();
+      const open = isRegistrationOpen();
 
       if (pairs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#777;">No hay parejas inscritas.</td></tr>';
@@ -304,13 +389,17 @@
       }
 
       pairs.forEach((p, idx) => {
+        const deleteBtn = open 
+          ? `<button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>` 
+          : `<button class="btn-delete" disabled title="Plazo cerrado">Bloqueado</button>`;
+
         tbody.innerHTML += `
           <tr>
             <td>${p.category}</td>
             <td>${p.level}</td>
             <td>${p.player1}</td>
             <td>${p.player2}</td>
-            <td><button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button></td>
+            <td>${deleteBtn}</td>
           </tr>`;
       });
     }
