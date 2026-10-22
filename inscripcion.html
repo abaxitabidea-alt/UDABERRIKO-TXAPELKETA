@@ -56,7 +56,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
@@ -98,6 +98,19 @@
       background-color: #a0a0a0 !important;
       cursor: not-allowed !important;
     }
+
+    .btn-admin {
+      background-color: #028090;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.2rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .btn-admin:hover { background-color: #005f73; }
     
     .club-header {
       display: flex;
@@ -141,6 +154,14 @@
       padding: 0.3rem 0.6rem;
       border-radius: 4px;
       cursor: pointer;
+    }
+
+    .admin-box {
+      background-color: #e8f5e9;
+      border: 2px dashed #2e7d32;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .deadline-banner {
@@ -208,6 +229,26 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
+      <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXITABIDEA) -->
+      <div id="organizer-section" class="admin-box hidden">
+        <h3 style="color:#1b4332; margin-top:0;">👑 Panel del Organizador (Abaxitabidea)</h3>
+        <p>Genera los enfrentamientos de forma aleatoria por categorías y niveles, y haz los cambios manuales necesarios:</p>
+        
+        <button class="btn-admin" onclick="generateRandomMatches()">⚙️ Sorteo y Generación Automática de Partidos</button>
+
+        <h4 style="margin-top:1.5rem;">Partidos Generados / Modificación Manual</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Categoría / Nivel</th>
+              <th>Enfrentamiento / Partido</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody id="generated-matches-tbody"></tbody>
+        </table>
+      </div>
+
       <!-- AVISO DE FECHA LÍMITE -->
       <div id="banner-deadline" class="deadline-banner">
         ⏳ <strong>Plazo de inscripción:</strong> El último día para inscribir o modificar parejas es el <strong>3 de mayo</strong>.
@@ -257,7 +298,7 @@
 
       <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
 
-      <h3>Parejas Inscritas</h3>
+      <h3>Parejas Inscritas por este Club</h3>
       <table>
         <thead>
           <tr>
@@ -277,15 +318,10 @@
   <script src="auth.js"></script>
   <script>
     let currentClub = null;
-
-    // Configuración de la fecha límite: 3 de Mayo a las 23:59:59 del año del torneo (2027)
     const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
 
     function isRegistrationOpen() {
-      // Si el club es el organizador "abaxitabidea", siempre tiene acceso
-      if (currentClub && currentClub.toLowerCase() === "abaxitabidea") {
-        return true;
-      }
+      if (currentClub && currentClub.toLowerCase() === "abaxitabidea") return true;
       const now = new Date();
       return now <= DEADLINE_DATE;
     }
@@ -302,6 +338,14 @@
         document.getElementById('club-section').classList.remove('hidden');
         document.getElementById('club-title').textContent = currentClub;
         
+        // Mostrar panel organizador si es abaxitabidea
+        if (currentClub === 'abaxitabidea') {
+          document.getElementById('organizer-section').classList.remove('hidden');
+          loadGeneratedMatches();
+        } else {
+          document.getElementById('organizer-section').classList.add('hidden');
+        }
+
         applyRegistrationRestrictions();
         loadPairs();
       } else {
@@ -348,7 +392,7 @@
     function addPair(e) {
       e.preventDefault();
       if (!isRegistrationOpen()) {
-        alert("Plazo de inscripción cerrado. No se pueden añadir más parejas.");
+        alert("Plazo de inscripción cerrado.");
         return;
       }
 
@@ -367,7 +411,7 @@
 
     function deletePair(idx) {
       if (!isRegistrationOpen()) {
-        alert("Plazo de inscripción cerrado. No se pueden eliminar parejas.");
+        alert("Plazo de inscripción cerrado.");
         return;
       }
 
@@ -384,14 +428,14 @@
       const open = isRegistrationOpen();
 
       if (pairs.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#777;">No hay parejas inscritas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#777;">No hay parejas inscritas por este club.</td></tr>';
         return;
       }
 
       pairs.forEach((p, idx) => {
         const deleteBtn = open 
           ? `<button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>` 
-          : `<button class="btn-delete" disabled title="Plazo cerrado">Bloqueado</button>`;
+          : `<button class="btn-delete" disabled>Bloqueado</button>`;
 
         tbody.innerHTML += `
           <tr>
@@ -402,6 +446,95 @@
             <td>${deleteBtn}</td>
           </tr>`;
       });
+    }
+
+    // --- LÓGICA DEL SORTEO ALEATORIO Y MODIFICACIÓN MANUAL ---
+    function generateRandomMatches() {
+      const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+      const grouped = {};
+
+      // Agrupar parejas de TODOS los clubes por Categoría y Nivel
+      for (let club in allClubPairs) {
+        allClubPairs[club].forEach(p => {
+          const key = `${p.category} — ${p.level}`;
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push({ club: club, p1: p.player1, p2: p.player2 });
+        });
+      }
+
+      const generatedMatches = [];
+
+      // Para cada grupo, hacer sorteo aleatorio de cruces
+      for (let groupKey in grouped) {
+        let pairs = grouped[groupKey];
+        // Mezlcar aleatoriamente el array (Suffle)
+        pairs = pairs.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < pairs.length; i++) {
+          for (let j = i + 1; j < pairs.length; j++) {
+            generatedMatches.push({
+              group: groupKey,
+              info: `${groupKey}: ${pairs[i].club.toUpperCase()} (${pairs[i].p1}/${pairs[i].p2}) vs ${pairs[j].club.toUpperCase()} (${pairs[j].p1}/${pairs[j].p2})`,
+              date: "Por determinar",
+              fronton: "Por determinar",
+              order: "1º Partido",
+              time: "00:00"
+            });
+          }
+        }
+      }
+
+      if (generatedMatches.length === 0) {
+        alert("No hay parejas suficiente inscritas para generar el sorteo.");
+        return;
+      }
+
+      // Guardar en partidos generales de abaxitabidea
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      allMatches["abaxitabidea"] = generatedMatches;
+      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
+
+      alert(`¡Sorteo realizado con éxito! Se han generado ${generatedMatches.length} partidos.`);
+      loadGeneratedMatches();
+    }
+
+    function loadGeneratedMatches() {
+      const tbody = document.getElementById('generated-matches-tbody');
+      tbody.innerHTML = '';
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const matches = allMatches["abaxitabidea"] || [];
+
+      if (matches.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#777;">Aún no se ha realizado ningún sorteo automático.</td></tr>';
+        return;
+      }
+
+      matches.forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${m.group || 'General'}</strong></td>
+            <td><input type="text" style="width:100%;" value="${m.info}" onchange="updateMatchText(${idx}, this.value)"></td>
+            <td><button class="btn-delete" onclick="deleteGeneratedMatch(${idx})">Eliminar</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function updateMatchText(idx, newText) {
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      if (allMatches["abaxitabidea"] && allMatches["abaxitabidea"][idx]) {
+        allMatches["abaxitabidea"][idx].info = newText;
+        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
+      }
+    }
+
+    function deleteGeneratedMatch(idx) {
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      if (allMatches["abaxitabidea"]) {
+        allMatches["abaxitabidea"].splice(idx, 1);
+        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
+        loadGeneratedMatches();
+      }
     }
   </script>
 </body>
