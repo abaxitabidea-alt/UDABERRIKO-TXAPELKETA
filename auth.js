@@ -1,4 +1,5 @@
 // CONFIGURACIÓN ÚNICA DE CUENTAS DE CLUBES
+// ...
 const CLUB_ACCOUNTS = {
   "txaruta": "txaruta",
   "erreka": "erreka",
