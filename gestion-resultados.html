@@ -46,7 +46,7 @@
       <div style="max-width: 400px; margin: 0 auto;">
         <div class="form-group">
           <label>Usuario (Club):</label>
-          <input type="text" id="username" placeholder="Ej: Txaruta">
+          <input type="text" id="username" placeholder="Ej: txaruta">
         </div>
         <div class="form-group">
           <label>Contraseña:</label>
@@ -59,7 +59,7 @@
 
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <h2>Klubaren Partidak: <span id="club-title" style="color:var(--accent);"></span></h2>
+        <h2>Klubaren Partidak: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
@@ -79,14 +79,16 @@
       </table>
     </div>
   </div>
-<script src="auth.js"></script>
+
+  <script src="auth.js"></script>
   <script>
-   
+    let currentClub = null;
 
     function login() {
-      const user = document.getElementById('username').value.trim();
-      const pass = document.getElementById('password').value.trim();
-      if (CLUB_ACCOUNTS[user] && CLUB_ACCOUNTS[user] === pass) {
+      const user = document.getElementById('username').value.trim().toLowerCase();
+      const pass = document.getElementById('password').value.trim().toLowerCase();
+      
+      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[user] && CLUB_ACCOUNTS[user].toLowerCase() === pass) {
         currentClub = user;
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('club-section').classList.remove('hidden');
@@ -99,6 +101,8 @@
 
     function logout() {
       currentClub = null;
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
       document.getElementById('club-section').classList.add('hidden');
       document.getElementById('login-section').classList.remove('hidden');
     }
