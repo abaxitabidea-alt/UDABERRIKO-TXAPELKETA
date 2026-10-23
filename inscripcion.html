@@ -331,14 +331,13 @@
       const passVal = document.getElementById('password').value.trim().toLowerCase();
       const errorMsg = document.getElementById('login-error');
 
-      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal] === passVal) {
+      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal].toLowerCase() === passVal) {
         currentClub = userVal;
         errorMsg.style.display = 'none';
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('club-section').classList.remove('hidden');
         document.getElementById('club-title').textContent = currentClub;
         
-        // Mostrar panel organizador si es abaxitabidea
         if (currentClub === 'abaxitabidea') {
           document.getElementById('organizer-section').classList.remove('hidden');
           loadGeneratedMatches();
@@ -448,12 +447,10 @@
       });
     }
 
-    // --- LÓGICA DEL SORTEO ALEATORIO Y MODIFICACIÓN MANUAL ---
     function generateRandomMatches() {
       const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
       const grouped = {};
 
-      // Agrupar parejas de TODOS los clubes por Categoría y Nivel
       for (let club in allClubPairs) {
         allClubPairs[club].forEach(p => {
           const key = `${p.category} — ${p.level}`;
@@ -464,10 +461,8 @@
 
       const generatedMatches = [];
 
-      // Para cada grupo, hacer sorteo aleatorio de cruces
       for (let groupKey in grouped) {
         let pairs = grouped[groupKey];
-        // Mezlcar aleatoriamente el array (Suffle)
         pairs = pairs.sort(() => Math.random() - 0.5);
 
         for (let i = 0; i < pairs.length; i++) {
@@ -489,7 +484,6 @@
         return;
       }
 
-      // Guardar en partidos generales de abaxitabidea
       const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       allMatches["abaxitabidea"] = generatedMatches;
       localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
