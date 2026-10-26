@@ -179,13 +179,13 @@
 
         <span class="filter-label">3. Aukeratu Astea / Selecciona Semana o Jornada:</span>
         <select id="week-filter" class="week-select" onchange="loadMatches()">
-          <option value="ALL">📅 Todas las semanas / Aste guztiak</option>
           <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
           <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
           <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
           <option value="Semana 4">Semana 4 (04/06/2027 - 06/06/2027)</option>
           <option value="Semana 5">Semana 5 (11/06/2027 - 13/06/2027)</option>
           <option value="Semana 6">Semana 6 (18/06/2027 - 20/06/2027)</option>
+          <option value="ALL">📅 Todas las semanas / Aste guztiak</option>
         </select>
       </div>
 
@@ -238,11 +238,9 @@
       const selectedWeek = document.getElementById('week-filter').value;
 
       const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      
-      // 1. Obtener la lista base de partidos generados por el organizador (Abaxitabidea)
       const baseMatches = allData["abaxitabidea"] || [];
-      
-      // 2. Obtener señalamientos realizados por los clubes individuales
+
+      // Recuperar los partidos programados por cada club
       const clubScheduled = [];
       for (let club in allData) {
         if (club !== "abaxitabidea") {
@@ -256,16 +254,16 @@
         const infoStr = bm.info || '';
         const groupStr = bm.group || '';
 
-        // Verificar coincidencia de Categoría y Nivel
+        // Filtro por Categoría y Nivel
         const matchesCategory = infoStr.includes(selectedCategory) || groupStr.includes(selectedCategory);
         const matchesLevel = infoStr.includes(selectedLevel) || groupStr.includes(selectedLevel) || infoStr.includes(selectedLevel.split(' ')[0]);
 
-        // Verificar filtro de Semana/Jornada
-        const matchWeek = bm.week || "Semana 1"; // Por defecto asignados a Semana 1 si no se especifica
+        // Filtro por Semana/Jornada
+        const matchWeek = bm.week || "Semana 1";
         const matchesWeek = (selectedWeek === 'ALL' || matchWeek === selectedWeek);
 
         if (matchesCategory && matchesLevel && matchesWeek) {
-          // Comprobar si algún club ya ha programado/señalado este partido exacto
+          // Verificar si un club ya asignó día/hora/frontón
           const scheduled = clubScheduled.find(cs => cs.info === bm.info || (cs.info && cs.info.includes(bm.info)));
 
           if (scheduled) {
@@ -312,7 +310,6 @@
       });
     }
 
-    // Extrae el nombre del primer club (local) del texto del partido
     function extractLocalClub(infoText) {
       if (!infoText) return "Abaxitabidea";
       const parts = infoText.split(':');
