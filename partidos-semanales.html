@@ -205,7 +205,7 @@
     let isSuperAdmin = false;
 
     function checkSession() {
-      const activeSession = JSON.parse(localStorage.getItem('udaberri_session'));
+      const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
       if (!activeSession || !activeSession.club) {
         document.getElementById('no-session-card').classList.remove('hidden');
         document.getElementById('club-section').classList.add('hidden');
@@ -223,7 +223,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('udaberri_session');
+      sessionStorage.removeItem('udaberri_session');
       window.location.href = 'club-panel.html';
     }
 
