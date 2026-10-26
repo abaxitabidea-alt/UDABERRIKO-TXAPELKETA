@@ -156,6 +156,16 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .btn-save-inline {
+      background-color: #2a9d8f;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-right: 0.3rem;
+    }
 
     .admin-box {
       background-color: #e8f5e9;
@@ -163,6 +173,15 @@
       border-radius: 8px;
       padding: 1.5rem;
       margin-bottom: 2rem;
+    }
+    .admin-badge {
+      background-color: #d8f3dc;
+      color: #1b4332;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border: 1px solid #b7e4c7;
     }
 
     .deadline-banner {
@@ -215,8 +234,8 @@
           <input type="text" id="username" placeholder="Ej: txaruta">
         </div>
         <div class="form-group">
-          <label for="password">Contraseña:</label>
-          <input type="password" id="password">
+          <label for="password">Contraseña / Clave Maestra:</label>
+          <input type="password" id="password" placeholder="Clave de club o abaxi...">
         </div>
         <button class="btn-primary" onclick="login()">Entrar al Panel</button>
         <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
@@ -226,15 +245,17 @@
     <!-- PANEL DEL CLUB -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <h2>Panel de Inscripción: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+        <div>
+          <h2 style="margin:0;">Panel de Inscripción: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro Activo (Edición Total Habilitada)</span>
+        </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXITABIDEA) -->
+      <!-- SECCIÓN EXCLUSIVA PARA SUPERCONTRASENA (ABAXI) -->
       <div id="organizer-section" class="admin-box hidden">
-        <h3 style="color:#1b4332; margin-top:0;">👑 Panel del Organizador (Abaxitabidea)</h3>
+        <h3 style="color:#1b4332; margin-top:0;">👑 Panel de Control del Organizador</h3>
         
-        <!-- PESTAÑA 1: SORTEO -->
         <p>Genera la estructura oficial del torneo según el número de parejas inscritas (3 a 8 parejas por grupo):</p>
         <button class="btn-admin" onclick="generateTournamentStructure()">⚙️ Generar Calendario Oficial del Torneo</button>
 
@@ -253,9 +274,8 @@
 
         <hr style="margin: 2rem 0; border: 0; border-top: 2px dashed #2e7d32;">
 
-        <!-- PESTAÑA 2: GESTIÓN DE PAREJAS POR CLUB (SOLO ORGANIZADOR) -->
-        <h3 style="color:#1b4332;">📋 Consulta General de Parejas por Club</h3>
-        <p>Selecciona un club, categoría y nivel para consultar o eliminar parejas inscritas de cualquier entidad:</p>
+        <h3 style="color:#1b4332;">📋 Consulta y Gestión General de Parejas por Club</h3>
+        <p>Filtra, modifica o elimina parejas inscritas de cualquier club en el torneo:</p>
         
         <div class="grid-3">
           <div class="form-group">
@@ -294,7 +314,7 @@
               <th>Nivel</th>
               <th>Pelotari 1</th>
               <th>Pelotari 2</th>
-              <th>Acción (Administrador)</th>
+              <th>Acción (Administración)</th>
             </tr>
           </thead>
           <tbody id="admin-pairs-tbody"></tbody>
@@ -306,7 +326,7 @@
         ⏳ <strong>Plazo de inscripción:</strong> El último día para inscribir o modificar parejas es el <strong>3 de mayo</strong>.
       </div>
       <div id="banner-closed" class="closed-banner hidden">
-        🔒 <strong>Epe-muga amaituta / Plazo cerrado:</strong> El plazo de inscripción finalizó el 3 de mayo. Solo el club organizador (Abaxitabidea) puede realizar modificaciones.
+        🔒 <strong>Epe-muga amaituta / Plazo cerrado:</strong> El plazo de inscripción finalizó el 3 de mayo.
       </div>
 
       <h3>Inscribir Nueva Pareja</h3>
@@ -370,33 +390,58 @@
   <script src="auth.js"></script>
   <script>
     let currentClub = null;
+    let isSuperAdmin = false;
     const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
 
+    function checkAuth(userInput, passInput) {
+      const u = userInput.trim().toLowerCase();
+      const p = passInput.trim().toLowerCase();
+      const cleanP = p.replace(/\s+/g, '');
+
+      // Comprobación de súper contraseña "abaxi"
+      if (cleanP === `abaxi${u}`) {
+        return { valid: true, isAdmin: true };
+      }
+
+      // Comprobación normal vía auth.js
+      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[u] && CLUB_ACCOUNTS[u].toString().toLowerCase() === p) {
+        return { valid: true, isAdmin: (u === 'abaxitabidea') };
+      }
+
+      return { valid: false, isAdmin: false };
+    }
+
     function isRegistrationOpen() {
-      if (currentClub && currentClub.toLowerCase() === "abaxitabidea") return true;
+      if (isSuperAdmin) return true;
       const now = new Date();
       return now <= DEADLINE_DATE;
     }
 
     function login() {
-      const userVal = document.getElementById('username').value.trim().toLowerCase();
-      const passVal = document.getElementById('password').value.trim().toLowerCase();
+      const uVal = document.getElementById('username').value;
+      const pVal = document.getElementById('password').value;
       const errorMsg = document.getElementById('login-error');
 
-      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal].toLowerCase() === passVal) {
-        currentClub = userVal;
+      const authRes = checkAuth(uVal, pVal);
+
+      if (authRes.valid) {
+        currentClub = uVal.trim().toLowerCase();
+        isSuperAdmin = authRes.isAdmin;
+
         errorMsg.style.display = 'none';
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('club-section').classList.remove('hidden');
         document.getElementById('club-title').textContent = currentClub;
         
-        if (currentClub === 'abaxitabidea') {
+        if (isSuperAdmin) {
           document.getElementById('organizer-section').classList.remove('hidden');
+          document.getElementById('admin-mode-tag').classList.remove('hidden');
           loadGeneratedMatches();
           populateAdminClubSelect();
           loadAdminPairs();
         } else {
           document.getElementById('organizer-section').classList.add('hidden');
+          document.getElementById('admin-mode-tag').classList.add('hidden');
         }
 
         applyRegistrationRestrictions();
@@ -408,6 +453,7 @@
 
     function logout() {
       currentClub = null;
+      isSuperAdmin = false;
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('club-section').classList.add('hidden');
@@ -486,22 +532,44 @@
       }
 
       pairs.forEach((p, idx) => {
-        const deleteBtn = open 
-          ? `<button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>` 
-          : `<button class="btn-delete" disabled>Bloqueado</button>`;
+        if (isSuperAdmin) {
+          tbody.innerHTML += `
+            <tr>
+              <td>${p.category}</td>
+              <td>${p.level}</td>
+              <td><input type="text" id="edit-p1-${idx}" value="${p.player1}"></td>
+              <td><input type="text" id="edit-p2-${idx}" value="${p.player2}"></td>
+              <td>
+                <button class="btn-save-inline" onclick="saveEditedPair(${idx})">Guardar Nombre</button>
+                <button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>
+              </td>
+            </tr>`;
+        } else {
+          const deleteBtn = open 
+            ? `<button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>` 
+            : `<button class="btn-delete" disabled>Bloqueado</button>`;
 
-        tbody.innerHTML += `
-          <tr>
-            <td>${p.category}</td>
-            <td>${p.level}</td>
-            <td>${p.player1}</td>
-            <td>${p.player2}</td>
-            <td>${deleteBtn}</td>
-          </tr>`;
+          tbody.innerHTML += `
+            <tr>
+              <td>${p.category}</td>
+              <td>${p.level}</td>
+              <td>${p.player1}</td>
+              <td>${p.player2}</td>
+              <td>${deleteBtn}</td>
+            </tr>`;
+        }
       });
     }
 
-    // --- FUNCIONES EXCLUSIVAS DEL ORGANIZADOR (CONSULTA Y ELIMINACIÓN DE PAREJAS POR CLUB) ---
+    function saveEditedPair(idx) {
+      const pairs = getStoredPairs();
+      pairs[idx].player1 = document.getElementById(`edit-p1-${idx}`).value.trim();
+      pairs[idx].player2 = document.getElementById(`edit-p2-${idx}`).value.trim();
+      savePairs(pairs);
+      alert("¡Nombres corregidos e guardados correctamente!");
+      loadPairs();
+    }
+
     function populateAdminClubSelect() {
       const select = document.getElementById('admin-filter-club');
       select.innerHTML = '<option value="ALL">-- Todos los Clubes --</option>';
@@ -536,9 +604,12 @@
               <td><strong style="text-transform:uppercase;">${clubKey}</strong></td>
               <td>${p.category}</td>
               <td>${p.level}</td>
-              <td>${p.player1}</td>
-              <td>${p.player2}</td>
-              <td><button class="btn-delete" onclick="adminDeletePair('${clubKey}', ${idx})">Eliminar Pareja</button></td>
+              <td><input type="text" id="admin-p1-${clubKey}-${idx}" value="${p.player1}"></td>
+              <td><input type="text" id="admin-p2-${clubKey}-${idx}" value="${p.player2}"></td>
+              <td>
+                <button class="btn-save-inline" onclick="adminSavePair('${clubKey}', ${idx})">Guardar</button>
+                <button class="btn-delete" onclick="adminDeletePair('${clubKey}', ${idx})">Eliminar</button>
+              </td>
             </tr>
           `;
         });
@@ -546,6 +617,17 @@
 
       if (totalCount === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No se han encontrado parejas inscritas con estos filtros.</td></tr>';
+      }
+    }
+
+    function adminSavePair(clubKey, idx) {
+      const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+      if (allData[clubKey] && allData[clubKey][idx]) {
+        allData[clubKey][idx].player1 = document.getElementById(`admin-p1-${clubKey}-${idx}`).value.trim();
+        allData[clubKey][idx].player2 = document.getElementById(`admin-p2-${clubKey}-${idx}`).value.trim();
+        localStorage.setItem('udaberri_pairs', JSON.stringify(allData));
+        alert(`¡Nombre cambiado correctamente para el club ${clubKey.toUpperCase()}!`);
+        loadAdminPairs();
       }
     }
 
@@ -560,7 +642,6 @@
       }
     }
 
-    // --- ESTRUCTURA DEL TORNEO (3 A 8 PAREJAS) ---
     function generateTournamentStructure() {
       const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
       const grouped = {};
@@ -654,71 +735,4 @@
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[2].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-        }
-      }
-
-      if (generatedMatches.length === 0) {
-        alert("No hay parejas suficientes inscritas para generar el cuadro del torneo.");
-        return;
-      }
-
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      allMatches["abaxitabidea"] = generatedMatches;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-
-      alert(`¡Estructura oficial del torneo generada con éxito! Se han programado ${generatedMatches.length} partidos y fases finales.`);
-      loadGeneratedMatches();
-    }
-
-    function loadGeneratedMatches() {
-      const tbody = document.getElementById('generated-matches-tbody');
-      tbody.innerHTML = '';
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      const matches = allMatches["abaxitabidea"] || [];
-
-      if (matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#777;">Aún no se ha generado la estructura del torneo.</td></tr>';
-        return;
-      }
-
-      matches.forEach((m, idx) => {
-        tbody.innerHTML += `
-          <tr>
-            <td><strong>${m.week || 'Semana 1'}</strong></td>
-            <td>${m.group || 'General'}</td>
-            <td><input type="text" style="width:100%;" value="${m.info}" onchange="updateMatchText(${idx}, this.value)"></td>
-            <td><button class="btn-delete" onclick="deleteGeneratedMatch(${idx})">Eliminar</button></td>
-          </tr>
-        `;
-      });
-    }
-
-    function updateMatchText(idx, newText) {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      if (allMatches["abaxitabidea"] && allMatches["abaxitabidea"][idx]) {
-        allMatches["abaxitabidea"][idx].info = newText;
-        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-      }
-    }
-
-    function deleteGeneratedMatch(idx) {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      if (allMatches["abaxitabidea"]) {
-        allMatches["abaxitabidea"].splice(idx, 1);
-        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-        loadGeneratedMatches();
-      }
-    }
-  </script>
-</body>
-</html>
+          generatedMatches.push({ week: "Sem
