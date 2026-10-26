@@ -116,6 +116,7 @@
       border-radius: 4px;
       margin-top: 2rem;
       font-size: 1.2rem;
+      font-weight: bold;
     }
 
     table {
@@ -252,8 +253,7 @@
         }
       }
 
-      // Filtrar partidos que correspondan a la categoría y nivel seleccionados
-      const currentCategoryLevel = `${selectedCategory} — ${selectedLevel}`;
+      // Filtrar partidos de la categoría y nivel seleccionados
       const relevantMatches = baseMatches.filter(bm => {
         const info = bm.info || '';
         const grp = bm.group || '';
@@ -267,24 +267,23 @@
         return;
       }
 
-      // Separar por subgrupos (ej. Grupo A, Grupo B o Grupo Único)
+      // Clasificar en subgrupos reales
       const groupsMap = {};
       relevantMatches.forEach(m => {
-        let subGroup = "Único";
+        let subGroup = "Liguilla";
         if (m.info.includes("Grupo A")) subGroup = "Grupo A";
         else if (m.info.includes("Grupo B")) subGroup = "Grupo B";
+        else if (m.info.includes("SEMIFINAL") || m.info.includes("FINAL")) subGroup = "Fase Final (Play-offs)";
 
         if (!groupsMap[subGroup]) groupsMap[subGroup] = [];
         groupsMap[subGroup].push(m);
       });
 
-      // Dibujar cada grupo con sus partidos y su clasificación
       for (let gName in groupsMap) {
         const groupMatches = groupsMap[gName];
 
-        let htmlGroup = `<div class="group-header">🏆 ${gName === "Único" ? "Calendario de Partidos y Clasificación" : gName}</div>`;
+        let htmlGroup = `<div class="group-header">🏆 ${gName}</div>`;
 
-        // TABLA DE PARTIDOS
         htmlGroup += `
           <table>
             <thead>
@@ -300,7 +299,7 @@
             <tbody>
         `;
 
-        const standings = {}; // Para calcular puntos y tantos acumulados
+        const standings = {};
 
         groupMatches.forEach(bm => {
           const matchWeek = bm.week || "Semana 1";
@@ -328,71 +327,75 @@
             `;
           }
 
-          // Registrar participantes en la clasificación
-          extractTeamsFromInfo(bm.info).forEach(team => {
-            if (team && !standings[team]) {
-              standings[team] = { name: team, pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, pts: 0 };
-            }
-          });
+          // Solo añadir a la tabla de posiciones si es un partido entre parejas reales (no cruces provisionales de semifinales)
+          if (gName !== "Fase Final (Play-offs)") {
+            extractTeamsFromInfo(bm.info).forEach(team => {
+              if (team && !team.includes("Grupo") && !team.includes("Clasificado") && !standings[team]) {
+                standings[team] = { name: team, pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, pts: 0 };
+              }
+            });
 
-          // Calcular puntos si hay resultado anotado
-          if (bm.score && bm.score.includes('-')) {
-            processScore(bm, standings);
+            if (bm.score && bm.score.includes('-')) {
+              processScore(bm, standings);
+            }
           }
         });
 
         htmlGroup += `</tbody></table>`;
 
-        // TABLA DE CLASIFICACIÓN
-        htmlGroup += `
-          <h4 style="color:var(--accent); margin-top:1rem;">📊 Clasificación — ${gName}</h4>
-          <table class="table-standings">
-            <thead>
-              <tr>
-                <th>Pos</th>
-                <th style="text-align:left;">Pareja / Club</th>
-                <th>PJ</th>
-                <th>PG (2pt)</th>
-                <th>PP (1pt)</th>
-                <th>NP (0pt)</th>
-                <th>TF</th>
-                <th>TC</th>
-                <th>Dif</th>
-                <th>Puntos</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
+        // Solo dibujar la tabla de clasificación para la liguilla/grupos (no para la fase final)
+        if (gName !== "Fase Final (Play-offs)") {
+          htmlGroup += `
+            <h4 style="color:var(--accent); margin-top:1rem;">📊 Clasificación — ${gName}</h4>
+            <table class="table-standings">
+              <thead>
+                <tr>
+                  <th>Pos</th>
+                  <th style="text-align:left;">Pareja / Club</th>
+                  <th>PJ</th>
+                  <th>PG (2pt)</th>
+                  <th>PP (1pt)</th>
+                  <th>NP (0pt)</th>
+                  <th>TF</th>
+                  <th>TC</th>
+                  <th>Dif</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
 
-        const sortedStandings = Object.values(standings).sort((a, b) => {
-          if (b.pts !== a.pts) return b.pts - a.pts;
-          return (b.tf - b.tc) - (a.tf - a.tc); // Desempate por diferencia de tantos
-        });
-
-        if (sortedStandings.length === 0) {
-          htmlGroup += `<tr><td colspan="10" style="color:#777;">No hay datos de clasificación aún.</td></tr>`;
-        } else {
-          sortedStandings.forEach((st, idx) => {
-            const dif = st.tf - st.tc;
-            const difText = dif > 0 ? `+${dif}` : `${dif}`;
-            htmlGroup += `
-              <tr>
-                <td><strong>${idx + 1}º</strong></td>
-                <td style="text-align:left;"><strong>${st.name}</strong></td>
-                <td>${st.pj}</td>
-                <td>${st.pg}</td>
-                <td>${st.pp}</td>
-                <td>${st.np}</td>
-                <td>${st.tf}</td>
-                <td>${st.tc}</td>
-                <td>${difText}</td>
-                <td><strong style="color:var(--primary); font-size:1.1rem;">${st.pts}</strong></td>
-              </tr>
-            `;
+          const sortedStandings = Object.values(standings).sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            return (b.tf - b.tc) - (a.tf - a.tc);
           });
+
+          if (sortedStandings.length === 0) {
+            htmlGroup += `<tr><td colspan="10" style="color:#777;">No hay partidos ni datos registrados aún.</td></tr>`;
+          } else {
+            sortedStandings.forEach((st, idx) => {
+              const dif = st.tf - st.tc;
+              const difText = dif > 0 ? `+${dif}` : `${dif}`;
+              htmlGroup += `
+                <tr>
+                  <td><strong>${idx + 1}º</strong></td>
+                  <td style="text-align:left;"><strong>${st.name}</strong></td>
+                  <td>${st.pj}</td>
+                  <td>${st.pg}</td>
+                  <td>${st.pp}</td>
+                  <td>${st.np}</td>
+                  <td>${st.tf}</td>
+                  <td>${st.tc}</td>
+                  <td>${difText}</td>
+                  <td><strong style="color:var(--primary); font-size:1.1rem;">${st.pts}</strong></td>
+                </tr>
+              `;
+            });
+          }
+
+          htmlGroup += `</tbody></table>`;
         }
 
-        htmlGroup += `</tbody></table>`;
         container.innerHTML += htmlGroup;
       }
     }
@@ -415,9 +418,10 @@
 
       const t1 = teams[0];
       const t2 = teams[1];
+      if (!standings[t1] || !standings[t2]) return;
+
       const scores = match.score.split('-').map(s => s.trim().toUpperCase());
 
-      // Caso No Presentado (NP)
       if (scores[0] === 'NP' || scores[1] === 'NP') {
         if (scores[0] === 'NP' && scores[1] !== 'NP') {
           standings[t1].pj++; standings[t1].np++; standings[t1].pts += 0;
@@ -429,7 +433,6 @@
         return;
       }
 
-      // Resultado Numérico Regular
       const s1 = parseInt(scores[0]);
       const s2 = parseInt(scores[1]);
 
