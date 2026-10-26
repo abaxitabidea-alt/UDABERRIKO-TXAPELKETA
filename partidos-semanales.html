@@ -69,31 +69,15 @@
     }
     .hidden { display: none !important; }
 
-    .login-form {
-      max-width: 400px;
-      margin: 0 auto;
-    }
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="password"], input[type="date"], input[type="time"], select {
+    input[type="text"], input[type="date"], input[type="time"], select {
       width: 100%;
       padding: 0.75rem;
       border: 1px solid #ccc;
       border-radius: 4px;
       box-sizing: border-box;
     }
-    button.btn-primary {
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-      width: 100%;
-    }
-    button.btn-primary:hover { background-color: var(--primary); }
 
     .club-header {
       display: flex;
@@ -111,12 +95,6 @@
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
     }
 
     table {
@@ -173,21 +151,11 @@
 
   <div class="container">
     
-    <!-- LOGIN -->
-    <div id="login-section" class="card">
-      <h2 style="text-align:center;">Acceso para Clubes (Señalamientos)</h2>
-      <div class="login-form">
-        <div class="form-group">
-          <label for="username">Usuario (Club):</label>
-          <input type="text" id="username" placeholder="Ej: txaruta">
-        </div>
-        <div class="form-group">
-          <label for="password">Contraseña / Clave Maestra:</label>
-          <input type="password" id="password" placeholder="Clave de club o abaxi...">
-        </div>
-        <button class="btn-primary" onclick="login()">Entrar al Panel</button>
-        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
-      </div>
+    <!-- PANTALLA SI NO HAY SESIÓN -->
+    <div id="no-session-card" class="card" style="text-align:center;">
+      <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
+      <p>Debes iniciar sesión primero desde el panel principal del club.</p>
+      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
     </div>
 
     <!-- PANEL DE SEÑALAMIENTOS -->
@@ -200,7 +168,6 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- SELECTOR DE SEMANAS (DEL 1 AL 6) -->
       <div class="form-group" style="background:#e8f5e9; padding:1rem; border-radius:8px; border:1px solid #c8e6c9;">
         <label for="week-select" style="color:var(--primary); font-size:1.1rem;">📅 Selecciona la Semana o Jornada:</label>
         <select id="week-select" onchange="loadHomeMatches()" style="font-weight:bold; font-size:1rem; color:var(--primary);">
@@ -215,7 +182,6 @@
 
       <h3 style="color:var(--primary); margin-top:1.5rem;" id="matches-section-title">Partidos en Casa</h3>
 
-      <!-- FORMULARIO / TABLA PARA PROGRAMAR PARTIDOS EN CASA -->
       <table>
         <thead>
           <tr>
@@ -235,54 +201,30 @@
   </div>
 
   <script>
-    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
-
     let currentClub = null;
     let isSuperAdmin = false;
 
-    function checkAuth(userInput, passInput) {
-      if (!userInput || !passInput) return { valid: false, isAdmin: false };
-      const u = userInput.trim().toLowerCase();
-      const p = passInput.trim().toLowerCase();
-      const cleanP = p.replace(/\s+/g, '');
-
-      if (!VALID_CLUBS.includes(u)) return { valid: false, isAdmin: false };
-
-      if (cleanP === `abaxi${u}`) return { valid: true, isAdmin: true };
-      if (p === u) return { valid: true, isAdmin: (u === 'abaxitabidea') };
-
-      return { valid: false, isAdmin: false };
-    }
-
-    function login() {
-      const uVal = document.getElementById('username').value;
-      const pVal = document.getElementById('password').value;
-      const errorMsg = document.getElementById('login-error');
-
-      const authRes = checkAuth(uVal, pVal);
-
-      if (authRes.valid) {
-        currentClub = uVal.trim().toLowerCase();
-        isSuperAdmin = authRes.isAdmin;
-
-        errorMsg.style.display = 'none';
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('club-section').classList.remove('hidden');
-        document.getElementById('club-title').textContent = currentClub;
-
-        loadHomeMatches();
-      } else {
-        errorMsg.style.display = 'block';
+    function checkSession() {
+      const activeSession = JSON.parse(localStorage.getItem('udaberri_session'));
+      if (!activeSession || !activeSession.club) {
+        document.getElementById('no-session-card').classList.remove('hidden');
+        document.getElementById('club-section').classList.add('hidden');
+        return;
       }
+
+      currentClub = activeSession.club;
+      isSuperAdmin = activeSession.isAdmin;
+
+      document.getElementById('no-session-card').classList.add('hidden');
+      document.getElementById('club-section').classList.remove('hidden');
+      document.getElementById('club-title').textContent = currentClub;
+
+      loadHomeMatches();
     }
 
     function logout() {
-      currentClub = null;
-      isSuperAdmin = false;
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('club-section').classList.add('hidden');
-      document.getElementById('login-section').classList.remove('hidden');
+      localStorage.removeItem('udaberri_session');
+      window.location.href = 'club-panel.html';
     }
 
     function loadHomeMatches() {
@@ -292,14 +234,10 @@
 
       document.getElementById('matches-section-title').textContent = `Partidos en Casa de ${currentClub.toUpperCase()} (${selectedWeek})`;
 
-      // Recuperar los partidos generados en el sorteo oficial
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       const officialMatches = allMatchesData["abaxitabidea"] || [];
-
-      // Recuperar lo ya programado previamente por el club
       const myScheduled = allMatchesData[currentClub] || [];
 
-      // Filtrar los partidos donde el club actual juegue como LOCAL esa semana
       const homeMatches = officialMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isClubLocal(m.info, currentClub);
@@ -312,7 +250,6 @@
       }
 
       homeMatches.forEach((m, idx) => {
-        // Buscar si ya tiene datos guardados anteriormente
         const savedData = myScheduled.find(s => s.info === m.info) || {};
 
         const dateVal = savedData.date || '';
@@ -354,7 +291,6 @@
       });
     }
 
-    // Identifica si un club es el equipo LOCAL (sale primero en el enfrentamiento "LOCAL vs VISITANTE")
     function isClubLocal(infoText, clubName) {
       if (!infoText || !infoText.includes(':')) return false;
       const parts = infoText.split(':');
@@ -382,7 +318,6 @@
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       let myScheduled = allMatchesData[currentClub] || [];
 
-      // Buscar si ya existía para actualizarlo o crearlo nuevo
       const existingIdx = myScheduled.findIndex(s => s.info === infoText);
       const matchObject = {
         info: infoText,
@@ -401,7 +336,7 @@
       allMatchesData[currentClub] = myScheduled;
       localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
 
-      alert("¡Señalamiento guardado con éxito! Ya se mostrará publicado en el portal de Pelotaris.");
+      alert("¡Señalamiento guardado con éxito!");
     }
 
     function formatDateDisplay(yyyy_mm_dd) {
@@ -409,6 +344,8 @@
       const parts = yyyy_mm_dd.split('-');
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
+
+    document.addEventListener('DOMContentLoaded', checkSession);
   </script>
 </body>
 </html>
