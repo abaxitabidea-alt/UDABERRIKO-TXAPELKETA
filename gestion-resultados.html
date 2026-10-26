@@ -89,7 +89,7 @@
 
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    select, input[type="text"] {
+    select {
       width: 100%;
       padding: 0.75rem;
       border: 1px solid #ccc;
@@ -105,18 +105,54 @@
     th, td {
       padding: 0.75rem;
       border: 1px solid #e0e0e0;
-      text-align: left;
+      text-align: center;
     }
     th { background-color: #e9ecef; }
+
+    .team-cell-left {
+      text-align: right;
+      font-weight: bold;
+      color: var(--primary);
+      width: 35%;
+    }
+    .team-cell-right {
+      text-align: left;
+      font-weight: bold;
+      color: var(--primary);
+      width: 35%;
+    }
+    .score-input {
+      width: 55px;
+      padding: 0.4rem;
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+    }
+    .vs-separator {
+      font-weight: bold;
+      color: #888;
+      padding: 0 0.3rem;
+    }
 
     .btn-save {
       background-color: var(--accent);
       color: white;
       border: none;
-      padding: 0.4rem 0.8rem;
+      padding: 0.5rem 1rem;
       border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
+    }
+    .btn-save:hover { background-color: var(--primary); }
+
+    .category-tag {
+      font-size: 0.85rem;
+      color: #555;
+      font-weight: normal;
+      display: block;
+      margin-bottom: 0.2rem;
     }
   </style>
 </head>
@@ -141,7 +177,7 @@
 
   <div class="container">
     
-    <!-- PANTALLA SI NO HAY SESIÓN -->
+    <!-- SIN SESIÓN -->
     <div id="no-session-card" class="card" style="text-align:center;">
       <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
       <p>Debes iniciar sesión primero desde el panel principal del club.</p>
@@ -153,7 +189,7 @@
       <div class="club-header">
         <div>
           <h2 style="margin:0;">Introducir Resultados: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <p style="margin:0.2rem 0 0 0; color:#666;">Anota los marcadores finales de los partidos en casa (Ej: 22-15 o NP-22).</p>
+          <p style="margin:0.2rem 0 0 0; color:#666;">Introduce los tantos de cada pareja (o escribe "NP" si alguna no se presentó).</p>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
@@ -173,8 +209,9 @@
       <table>
         <thead>
           <tr>
-            <th>Partido / Encuentro</th>
-            <th>Resultado (Ej: 22-18 / NP-22)</th>
+            <th style="text-align:right;">Etxeko Pareja / Local</th>
+            <th style="width:160px;">Emaitza / Resultado</th>
+            <th style="text-align:left;">Kanpoko Pareja / Visitante</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -227,20 +264,65 @@
       });
 
       if (matches.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#777; padding:1.5rem;">No hay partidos asignados para registrar en la ${selectedWeek}.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777; padding:1.5rem;">No hay partidos asignados para registrar en la ${selectedWeek}.</td></tr>`;
         return;
       }
 
       matches.forEach((m, idx) => {
-        const scoreVal = m.score || '';
+        const teams = parseMatchInfo(m.info);
+        const scores = parseExistingScore(m.score);
+
         tbody.innerHTML += `
           <tr>
-            <td><strong>${m.info}</strong></td>
-            <td><input type="text" id="score-${idx}" value="${scoreVal}" placeholder="Ej: 22-14"></td>
-            <td><button class="btn-save" onclick="saveScore(${idx})">Guardar Emaitza</button></td>
+            <td class="team-cell-left">
+              <span class="category-tag">${teams.category}</span>
+              ${teams.local}
+            </td>
+            <td>
+              <input type="text" id="score1-${idx}" class="score-input" value="${scores.s1}" placeholder="22">
+              <span class="vs-separator">-</span>
+              <input type="text" id="score2-${idx}" class="score-input" value="${scores.s2}" placeholder="18">
+            </td>
+            <td class="team-cell-right">
+              <span class="category-tag">${teams.category}</span>
+              ${teams.visitor}
+            </td>
+            <td>
+              <button class="btn-save" onclick="saveScore(${idx})">Gorde</button>
+            </td>
           </tr>
         `;
       });
+    }
+
+    function parseMatchInfo(infoText) {
+      if (!infoText) return { category: '', local: '', visitor: '' };
+      
+      let category = '';
+      let local = '';
+      let visitor = '';
+
+      const parts = infoText.split(':');
+      if (parts.length > 1) {
+        category = parts[0].trim();
+        const teamsStr = parts[1].split('vs');
+        if (teamsStr.length === 2) {
+          local = teamsStr[0].trim();
+          visitor = teamsStr[1].trim();
+        } else {
+          local = parts[1].trim();
+        }
+      } else {
+        local = infoText;
+      }
+
+      return { category, local, visitor };
+    }
+
+    function parseExistingScore(scoreText) {
+      if (!scoreText || !scoreText.includes('-')) return { s1: '', s2: '' };
+      const parts = scoreText.split('-');
+      return { s1: parts[0].trim(), s2: parts[1].trim() };
     }
 
     function isClubLocal(infoText, clubName) {
@@ -257,7 +339,15 @@
 
     function saveScore(idx) {
       const selectedWeek = document.getElementById('week-select').value;
-      const scoreVal = document.getElementById(`score-${idx}`).value.trim();
+      const s1 = document.getElementById(`score1-${idx}`).value.trim().toUpperCase();
+      const s2 = document.getElementById(`score2-${idx}`).value.trim().toUpperCase();
+
+      if (s1 === '' || s2 === '') {
+        alert("Por favor, introduce el resultado de ambos bandos.");
+        return;
+      }
+
+      const scoreFormatted = `${s1}-${s2}`;
 
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       let officialMatches = allMatchesData["abaxitabidea"] || [];
@@ -269,9 +359,9 @@
       });
 
       if (matchesOfWeek[idx]) {
-        matchesOfWeek[idx].score = scoreVal;
+        matchesOfWeek[idx].score = scoreFormatted;
         localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
-        alert("¡Resultado guardado correctamente!");
+        alert("¡Emaitza guardado correctamente!");
       }
     }
 
