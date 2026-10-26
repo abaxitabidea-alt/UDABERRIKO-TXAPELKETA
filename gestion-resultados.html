@@ -3,37 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Udaberriko Txapelketak - Emaitzen Kudeaketa</title>
+  <title>Udaberriko Txapelketak - Emaitzak</title>
   <style>
-    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
-    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
-    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; }
-    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
-    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
+    :root {
+      --primary: #1b4332;
+      --accent: #2d6a4f;
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
+
+    nav {
+      background-color: #143225;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      border-bottom: 4px solid transparent;
+      transition: all 0.2s ease;
+    }
+    nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
+    nav a.active {
+      border-bottom-color: #52b788;
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .container {
+      max-width: 950px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
     .hidden { display: none !important; }
+
+    .club-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .logout-btn {
+      background-color: #d90429;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="password"], input[type="number"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
     th { background-color: #e9ecef; }
-    .score-input { width: 60px !important; text-align: center; display: inline-block; }
+
+    .btn-save {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>Udaberriko Txapelketak</h1>
-    <p>Emaitzak Sartu / Introducir Resultados (Klubak)</p>
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-title">
+      <h1>Udaberriko Txapelketak</h1>
+      <p>Gestión de Resultados / Emaitzak</p>
+    </div>
+    <div class="header-spacer"></div>
   </header>
 
   <nav>
-    <a href="index.html">← Hasiera</a>
+    <a href="index.html">← Hasiera / Inicio</a>
     <a href="club-panel.html">Klub Atala</a>
     <a href="inscripcion.html">Inscripción</a>
     <a href="partidos-semanales.html">Asteko Partidak</a>
@@ -41,133 +140,142 @@
   </nav>
 
   <div class="container">
-    <div id="login-section" class="card">
-      <h2 style="text-align:center;">Acceso para Clubes (Emaitzak)</h2>
-      <div style="max-width: 400px; margin: 0 auto;">
-        <div class="form-group">
-          <label>Usuario (Club):</label>
-          <input type="text" id="username" placeholder="Ej: txaruta">
-        </div>
-        <div class="form-group">
-          <label>Contraseña:</label>
-          <input type="password" id="password">
-        </div>
-        <button class="btn-primary" style="width:100%;" onclick="login()">Entrar al Panel</button>
-        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
-      </div>
+    
+    <!-- PANTALLA SI NO HAY SESIÓN -->
+    <div id="no-session-card" class="card" style="text-align:center;">
+      <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
+      <p>Debes iniciar sesión primero desde el panel principal del club.</p>
+      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
     </div>
 
+    <!-- PANEL DE RESULTADOS -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <h2>Klubaren Partidak: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+        <div>
+          <h2 style="margin:0;">Introducir Resultados: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <p style="margin:0.2rem 0 0 0; color:#666;">Anota los marcadores finales de los partidos en casa (Ej: 22-15 o NP-22).</p>
+        </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <p>Introduzca el resultado de los partidos finalizados. Las victorias otorgan <strong>2 puntos</strong> y las derrotas <strong>0.1 puntos</strong>.</p>
+      <div class="form-group" style="background:#e8f5e9; padding:1rem; border-radius:8px; border:1px solid #c8e6c9;">
+        <label for="week-select" style="color:var(--primary); font-size:1.1rem;">📅 Selecciona la Semana:</label>
+        <select id="week-select" onchange="loadResultsMatches()" style="font-weight:bold; font-size:1rem; color:var(--primary);">
+          <option value="Semana 1">Semana 1</option>
+          <option value="Semana 2">Semana 2</option>
+          <option value="Semana 3">Semana 3</option>
+          <option value="Semana 4">Semana 4</option>
+          <option value="Semana 5">Semana 5</option>
+          <option value="Semana 6">Semana 6</option>
+        </select>
+      </div>
 
       <table>
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Partida / Enfrentamiento</th>
-            <th>Tanteoa / Resultado</th>
-            <th>Egoera / Estado</th>
-            <th>Gorde / Guardar</th>
+            <th>Partido / Encuentro</th>
+            <th>Resultado (Ej: 22-18 / NP-22)</th>
+            <th>Acción</th>
           </tr>
         </thead>
         <tbody id="results-tbody"></tbody>
       </table>
+
     </div>
+
   </div>
 
-  <script src="auth.js"></script>
   <script>
     let currentClub = null;
+    let isSuperAdmin = false;
 
-    function login() {
-      const user = document.getElementById('username').value.trim().toLowerCase();
-      const pass = document.getElementById('password').value.trim().toLowerCase();
-      
-      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[user] && CLUB_ACCOUNTS[user].toLowerCase() === pass) {
-        currentClub = user;
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('club-section').classList.remove('hidden');
-        document.getElementById('club-title').textContent = currentClub;
-        loadClubMatches();
-      } else {
-        document.getElementById('login-error').style.display = 'block';
+    function checkSession() {
+      const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
+      if (!activeSession || !activeSession.club) {
+        document.getElementById('no-session-card').classList.remove('hidden');
+        document.getElementById('club-section').classList.add('hidden');
+        return;
       }
+
+      currentClub = activeSession.club;
+      isSuperAdmin = activeSession.isAdmin;
+
+      document.getElementById('no-session-card').classList.add('hidden');
+      document.getElementById('club-section').classList.remove('hidden');
+      document.getElementById('club-title').textContent = currentClub;
+
+      loadResultsMatches();
     }
 
     function logout() {
-      currentClub = null;
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('club-section').classList.add('hidden');
-      document.getElementById('login-section').classList.remove('hidden');
+      sessionStorage.removeItem('udaberri_session');
+      window.location.href = 'club-panel.html';
     }
 
-    function loadClubMatches() {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      const matches = allMatches[currentClub] || [];
+    function loadResultsMatches() {
+      const selectedWeek = document.getElementById('week-select').value;
       const tbody = document.getElementById('results-tbody');
       tbody.innerHTML = '';
 
+      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const officialMatches = allMatchesData["abaxitabidea"] || [];
+
+      const matches = officialMatches.filter(m => {
+        const isMatchWeek = (m.week === selectedWeek);
+        const isLocal = isSuperAdmin || isClubLocal(m.info, currentClub);
+        return isMatchWeek && isLocal;
+      });
+
       if (matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Ez dago partidarik erregistratuta. / No hay partidos registrados.</td></tr>';
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#777; padding:1.5rem;">No hay partidos asignados para registrar en la ${selectedWeek}.</td></tr>`;
         return;
       }
 
       matches.forEach((m, idx) => {
-        const score1 = m.score1 !== undefined ? m.score1 : '';
-        const score2 = m.score2 !== undefined ? m.score2 : '';
-        const status = (m.score1 !== undefined && m.score2 !== undefined && m.score1 !== '') 
-          ? '<span style="color:green; font-weight:bold;">Jokatuta</span>' 
-          : '<span style="color:orange;">Jokatu gabe</span>';
-
+        const scoreVal = m.score || '';
         tbody.innerHTML += `
           <tr>
-            <td>${m.date} (${m.time})</td>
-            <td><strong>${m.info || 'Partida ' + m.order}</strong><br><small>${m.fronton}</small></td>
-            <td>
-              <input type="number" id="s1-${idx}" class="score-input" value="${score1}" min="0" max="22"> - 
-              <input type="number" id="s2-${idx}" class="score-input" value="${score2}" min="0" max="22">
-            </td>
-            <td>${status}</td>
-            <td><button class="btn-primary" onclick="saveScore(${idx})">Gorde</button></td>
+            <td><strong>${m.info}</strong></td>
+            <td><input type="text" id="score-${idx}" value="${scoreVal}" placeholder="Ej: 22-14"></td>
+            <td><button class="btn-save" onclick="saveScore(${idx})">Guardar Emaitza</button></td>
           </tr>
         `;
       });
     }
 
-    function saveScore(idx) {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      const matches = allMatches[currentClub] || [];
-
-      const s1 = parseInt(document.getElementById(`s1-${idx}`).value);
-      const s2 = parseInt(document.getElementById(`s2-${idx}`).value);
-
-      if (isNaN(s1) || isNaN(s2)) {
-        alert("Sartu bi tanteoak mesedez.");
-        return;
+    function isClubLocal(infoText, clubName) {
+      if (!infoText || !infoText.includes(':')) return false;
+      const parts = infoText.split(':');
+      if (parts.length > 1) {
+        const teams = parts[1].split('vs');
+        if (teams.length > 0) {
+          return teams[0].trim().toLowerCase().startsWith(clubName.toLowerCase());
+        }
       }
-
-      matches[idx].score1 = s1;
-      matches[idx].score2 = s2;
-      
-      if (s1 > s2) {
-        matches[idx].points1 = 2.0; matches[idx].points2 = 0.1;
-      } else if (s2 > s1) {
-        matches[idx].points1 = 0.1; matches[idx].points2 = 2.0;
-      } else {
-        matches[idx].points1 = 1.0; matches[idx].points2 = 1.0;
-      }
-
-      allMatches[currentClub] = matches;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-      alert("Emaitza gordeta! / ¡Resultado guardado!");
-      loadClubMatches();
+      return false;
     }
+
+    function saveScore(idx) {
+      const selectedWeek = document.getElementById('week-select').value;
+      const scoreVal = document.getElementById(`score-${idx}`).value.trim();
+
+      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      let officialMatches = allMatchesData["abaxitabidea"] || [];
+
+      const matchesOfWeek = officialMatches.filter(m => {
+        const isMatchWeek = (m.week === selectedWeek);
+        const isLocal = isSuperAdmin || isClubLocal(m.info, currentClub);
+        return isMatchWeek && isLocal;
+      });
+
+      if (matchesOfWeek[idx]) {
+        matchesOfWeek[idx].score = scoreVal;
+        localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
+        alert("¡Resultado guardado correctamente!");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', checkSession);
   </script>
 </body>
 </html>
