@@ -69,13 +69,9 @@
     }
     .hidden { display: none !important; }
     
-    .login-form {
-      max-width: 400px;
-      margin: 0 auto;
-    }
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="password"], select {
+    input[type="text"], select {
       width: 100%;
       padding: 0.75rem;
       border: 1px solid #ccc;
@@ -106,7 +102,6 @@
       font-size: 1rem;
       margin-bottom: 1rem;
     }
-    .btn-admin:hover { background-color: #005f73; }
     
     .club-header {
       display: flex;
@@ -225,41 +220,30 @@
 
   <div class="container">
     
-    <!-- LOGIN -->
-    <div id="login-section" class="card">
-      <h2 style="text-align:center;">Acceso para Clubes (Inscripciones)</h2>
-      <div class="login-form">
-        <div class="form-group">
-          <label for="username">Usuario (Club):</label>
-          <input type="text" id="username" placeholder="Ej: erreka">
-        </div>
-        <div class="form-group">
-          <label for="password">Contraseña / Clave Maestra:</label>
-          <input type="password" id="password" placeholder="Clave de club o abaxi...">
-        </div>
-        <button class="btn-primary" onclick="login()">Entrar al Panel</button>
-        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
-      </div>
+    <!-- PANTALLA SI NO HAY SESIÓN -->
+    <div id="no-session-card" class="card" style="text-align:center;">
+      <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
+      <p>Debes iniciar sesión primero desde el panel principal del club.</p>
+      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
     </div>
 
-    <!-- PANEL DEL CLUB -->
+    <!-- PANEL DE TRABAJO -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
         <div>
-          <h2 style="margin:0;">Panel de Inscripción: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro Activo (Edición Total Habilitada)</span>
+          <h2 style="margin:0;">Inscripciones: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro Activo</span>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- SECCIÓN EXCLUSIVA PARA SUPERCONTRASENA (ABAXI) -->
+      <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXI) -->
       <div id="organizer-section" class="admin-box hidden">
         <h3 style="color:#1b4332; margin-top:0;">👑 Panel de Control del Organizador</h3>
-        
-        <p>Genera la estructura oficial del torneo según el número de parejas inscritas (3 a 8 parejas por grupo):</p>
+        <p>Genera la estructura oficial del torneo según el número de parejas inscritas:</p>
         <button class="btn-admin" onclick="generateTournamentStructure()">⚙️ Generar Calendario Oficial del Torneo</button>
 
-        <h4 style="margin-top:1.5rem;">Partidos y Cruces Generados / Edición Manual</h4>
+        <h4 style="margin-top:1.5rem;">Partidos Generados / Edición Manual</h4>
         <table>
           <thead>
             <tr>
@@ -275,8 +259,6 @@
         <hr style="margin: 2rem 0; border: 0; border-top: 2px dashed #2e7d32;">
 
         <h3 style="color:#1b4332;">📋 Consulta y Gestión General de Parejas por Club</h3>
-        <p>Filtra, modifica o elimina parejas inscritas de cualquier club en el torneo:</p>
-        
         <div class="grid-3">
           <div class="form-group">
             <label for="admin-filter-club">Filtrar por Club:</label>
@@ -314,14 +296,13 @@
               <th>Nivel</th>
               <th>Pelotari 1</th>
               <th>Pelotari 2</th>
-              <th>Acción (Administración)</th>
+              <th>Acción</th>
             </tr>
           </thead>
           <tbody id="admin-pairs-tbody"></tbody>
         </table>
       </div>
 
-      <!-- AVISO DE FECHA LÍMITE -->
       <div id="banner-deadline" class="deadline-banner">
         ⏳ <strong>Plazo de inscripción:</strong> El último día para inscribir o modificar parejas es el <strong>3 de mayo</strong>.
       </div>
@@ -394,76 +375,42 @@
     let isSuperAdmin = false;
     const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
 
-    function checkAuth(userInput, passInput) {
-      if (!userInput || !passInput) return { valid: false, isAdmin: false };
-      const u = userInput.trim().toLowerCase();
-      const p = passInput.trim().toLowerCase();
-      const cleanP = p.replace(/\s+/g, '');
-
-      if (!VALID_CLUBS.includes(u)) {
-        return { valid: false, isAdmin: false };
+    function checkSession() {
+      const activeSession = JSON.parse(localStorage.getItem('udaberri_session'));
+      if (!activeSession || !activeSession.club) {
+        document.getElementById('no-session-card').classList.remove('hidden');
+        document.getElementById('club-section').classList.add('hidden');
+        return;
       }
 
-      // 1. Clave Maestra "abaxi" (ej. abaxierreka, abaxi erreka)
-      if (cleanP === `abaxi${u}`) {
-        return { valid: true, isAdmin: true };
+      currentClub = activeSession.club;
+      isSuperAdmin = activeSession.isAdmin;
+
+      document.getElementById('no-session-card').classList.add('hidden');
+      document.getElementById('club-section').classList.remove('hidden');
+      document.getElementById('club-title').textContent = currentClub;
+
+      if (isSuperAdmin) {
+        document.getElementById('organizer-section').classList.remove('hidden');
+        document.getElementById('admin-mode-tag').classList.remove('hidden');
+        loadGeneratedMatches();
+        populateAdminClubSelect();
+        loadAdminPairs();
       }
 
-      // 2. Clave normal del club
-      if (p === u) {
-        return { valid: true, isAdmin: (u === 'abaxitabidea') };
-      }
+      applyRegistrationRestrictions();
+      loadPairs();
+    }
 
-      return { valid: false, isAdmin: false };
+    function logout() {
+      localStorage.removeItem('udaberri_session');
+      window.location.href = 'club-panel.html';
     }
 
     function isRegistrationOpen() {
       if (isSuperAdmin) return true;
       const now = new Date();
       return now <= DEADLINE_DATE;
-    }
-
-    function login() {
-      const uVal = document.getElementById('username').value;
-      const pVal = document.getElementById('password').value;
-      const errorMsg = document.getElementById('login-error');
-
-      const authRes = checkAuth(uVal, pVal);
-
-      if (authRes.valid) {
-        currentClub = uVal.trim().toLowerCase();
-        isSuperAdmin = authRes.isAdmin;
-
-        errorMsg.style.display = 'none';
-        document.getElementById('login-section').classList.add('hidden');
-        document.getElementById('club-section').classList.remove('hidden');
-        document.getElementById('club-title').textContent = currentClub;
-        
-        if (isSuperAdmin) {
-          document.getElementById('organizer-section').classList.remove('hidden');
-          document.getElementById('admin-mode-tag').classList.remove('hidden');
-          loadGeneratedMatches();
-          populateAdminClubSelect();
-          loadAdminPairs();
-        } else {
-          document.getElementById('organizer-section').classList.add('hidden');
-          document.getElementById('admin-mode-tag').classList.add('hidden');
-        }
-
-        applyRegistrationRestrictions();
-        loadPairs();
-      } else {
-        errorMsg.style.display = 'block';
-      }
-    }
-
-    function logout() {
-      currentClub = null;
-      isSuperAdmin = false;
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-      document.getElementById('club-section').classList.add('hidden');
-      document.getElementById('login-section').classList.remove('hidden');
     }
 
     function applyRegistrationRestrictions() {
@@ -804,6 +751,8 @@
         loadGeneratedMatches();
       }
     }
+
+    document.addEventListener('DOMContentLoaded', checkSession);
   </script>
 </body>
 </html>
