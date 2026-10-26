@@ -113,7 +113,35 @@
       font-weight: bold;
     }
 
-    /* PESTAÑAS DE CATEGORÍA PARA EL ORGANIZADOR (ABAXI) */
+    /* BARRA DE ACCESOS DIRECTOS PARA ABAXI */
+    .admin-nav-shortcuts {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      background: #e8f5e9;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #c8e6c9;
+      justify-content: space-around;
+      flex-wrap: wrap;
+    }
+    .btn-shortcut {
+      background-color: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-shortcut:hover {
+      background-color: var(--accent);
+    }
+
+    /* PESTAÑAS DE CATEGORÍA */
     .cat-tabs {
       display: flex;
       gap: 0.5rem;
@@ -310,6 +338,13 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
+      <!-- BOTONES DE NAVEGACIÓN RÁPIDA A TODAS LAS SECCIONES -->
+      <div class="admin-nav-shortcuts">
+        <a href="gestion-resultados.html" class="btn-shortcut">🏆 Ir a Modificar Emaitzak (Resultados)</a>
+        <a href="partidos-semanales.html" class="btn-shortcut">📅 Ir a Asteko Partidak (Señalamientos)</a>
+        <a href="inscripcion.html" class="btn-shortcut">📝 Ir a Inscripciones</a>
+      </div>
+
       <!-- PESTAÑAS DE CATEGORÍAS (5 PESTAÑAS) -->
       <div class="cat-tabs">
         <button class="tab-btn active" onclick="switchCategory('Benjamín', this)">Benjamín</button>
@@ -336,19 +371,16 @@
       const p = passInput.trim().toLowerCase();
       const cleanP = p.replace(/\s+/g, '');
 
-      // Acceso directo Organizador Maestro Abaxi
       if (u === 'abaxi' || u === 'abaxitabidea') {
         if (cleanP === 'abaxi' || cleanP === 'abaxiabaxitabidea' || p === 'abaxitabidea') {
           return { valid: true, isAdmin: true };
         }
       }
 
-      // Claves maestras por club "abaxi + nombreclub"
       if (cleanP === `abaxi${u}`) {
         return { valid: true, isAdmin: true };
       }
 
-      // Claves estándar por club
       if (VALID_CLUBS.includes(u) && p === u) {
         return { valid: true, isAdmin: (u === 'abaxitabidea') };
       }
@@ -414,7 +446,6 @@
       const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
 
       levels.forEach(lvl => {
-        // Extraer parejas de este nivel y categoría concreta
         const matchedPairs = [];
         for (let clubKey in allPairsData) {
           allPairsData[clubKey].forEach((p, idx) => {
@@ -492,7 +523,6 @@
       }
     }
 
-    // GENERAR PARTIDOS EXCLUSIVOS DE ESTA CATEGORÍA Y NIVEL
     function generateLevelMatches(catName, lvlName) {
       const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
       const categoryPairs = [];
@@ -584,11 +614,9 @@
         newMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
       }
 
-      // Reemplazar o añadir los partidos de esta categoría específica
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       let masterMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Limpiar partidos antiguos de este grupo antes de insertar los nuevos
       masterMatches = masterMatches.filter(m => m.group !== groupKey && !m.info.includes(groupKey));
       masterMatches.push(...newMatches);
 
