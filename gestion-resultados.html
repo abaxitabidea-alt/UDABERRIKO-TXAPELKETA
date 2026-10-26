@@ -106,6 +106,7 @@
       padding: 0.75rem;
       border: 1px solid #e0e0e0;
       text-align: center;
+      vertical-align: middle;
     }
     th { background-color: #e9ecef; }
 
@@ -121,19 +122,29 @@
       color: var(--primary);
       width: 35%;
     }
+
+    /* CONTENEDOR EN HORIZONTAL */
+    .score-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
     .score-input {
-      width: 55px;
+      width: 50px;
       padding: 0.4rem;
       text-align: center;
       font-size: 1.1rem;
       font-weight: bold;
       border: 2px solid var(--accent);
       border-radius: 4px;
+      box-sizing: border-box;
     }
     .vs-separator {
       font-weight: bold;
-      color: #888;
-      padding: 0 0.3rem;
+      color: #666;
+      font-size: 1.1rem;
     }
 
     .btn-save {
@@ -210,7 +221,7 @@
         <thead>
           <tr>
             <th style="text-align:right;">Etxeko Pareja / Local</th>
-            <th style="width:160px;">Emaitza / Resultado</th>
+            <th style="width:180px;">Emaitza / Resultado</th>
             <th style="text-align:left;">Kanpoko Pareja / Visitante</th>
             <th>Acción</th>
           </tr>
@@ -279,9 +290,11 @@
               ${teams.local}
             </td>
             <td>
-              <input type="text" id="score1-${idx}" class="score-input" value="${scores.s1}" placeholder="22">
-              <span class="vs-separator">-</span>
-              <input type="text" id="score2-${idx}" class="score-input" value="${scores.s2}" placeholder="18">
+              <div class="score-container">
+                <input type="text" id="score1-${idx}" class="score-input" value="${scores.s1}" placeholder="22">
+                <span class="vs-separator">-</span>
+                <input type="text" id="score2-${idx}" class="score-input" value="${scores.s2}" placeholder="18">
+              </div>
             </td>
             <td class="team-cell-right">
               <span class="category-tag">${teams.category}</span>
