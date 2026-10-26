@@ -68,7 +68,7 @@
       margin-bottom: 2rem;
     }
     .hidden { display: none !important; }
-    
+
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
     input[type="text"], select {
@@ -89,20 +89,7 @@
       font-weight: bold;
       width: 100%;
     }
-    button.btn-primary:hover { background-color: var(--primary); }
 
-    .btn-admin {
-      background-color: #028090;
-      color: white;
-      border: none;
-      padding: 0.8rem 1.2rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 1rem;
-      margin-bottom: 1rem;
-    }
-    
     .club-header {
       display: flex;
       justify-content: space-between;
@@ -120,18 +107,13 @@
       cursor: pointer;
       font-weight: bold;
     }
-    
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1rem;
-    }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -143,6 +125,7 @@
       text-align: left;
     }
     th { background-color: #e9ecef; }
+    
     .btn-delete {
       background-color: #e63946;
       color: white;
@@ -151,47 +134,11 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    .btn-save-inline {
-      background-color: #2a9d8f;
-      color: white;
-      border: none;
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-      margin-right: 0.3rem;
-    }
-
-    .admin-box {
-      background-color: #e8f5e9;
-      border: 2px dashed #2e7d32;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .admin-badge {
-      background-color: #d8f3dc;
-      color: #1b4332;
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      border: 1px solid #b7e4c7;
-    }
 
     .deadline-banner {
       background-color: #ffe0b2;
       border: 1px solid #ffe0b2;
       color: #e65100;
-      padding: 0.8rem 1rem;
-      border-radius: 6px;
-      margin-bottom: 1.5rem;
-      font-weight: 600;
-    }
-    .closed-banner {
-      background-color: #ffcdd2;
-      border: 1px solid #ef9a9a;
-      color: #c62828;
       padding: 0.8rem 1rem;
       border-radius: 6px;
       margin-bottom: 1.5rem;
@@ -220,94 +167,22 @@
 
   <div class="container">
     
-    <!-- PANTALLA SI NO HAY SESIÓN -->
+    <!-- SIN SESIÓN -->
     <div id="no-session-card" class="card" style="text-align:center;">
       <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
-      <p>Debes iniciar sesión primero desde el panel principal del club.</p>
-      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
+      <p>Debes iniciar sesión primero desde el panel de acceso.</p>
+      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel Principal</a>
     </div>
 
-    <!-- PANEL DE TRABAJO -->
+    <!-- PANEL DE TRABAJO DEL CLUB -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <div>
-          <h2 style="margin:0;">Inscripciones: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro Activo</span>
-        </div>
+        <h2 style="margin:0;">Inscripciones: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXI) -->
-      <div id="organizer-section" class="admin-box hidden">
-        <h3 style="color:#1b4332; margin-top:0;">👑 Panel de Control del Organizador</h3>
-        <p>Genera la estructura oficial del torneo según el número de parejas inscritas:</p>
-        <button class="btn-admin" onclick="generateTournamentStructure()">⚙️ Generar Calendario Oficial del Torneo</button>
-
-        <h4 style="margin-top:1.5rem;">Partidos Generados / Edición Manual</h4>
-        <table>
-          <thead>
-            <tr>
-              <th>Jornada / Semana</th>
-              <th>Categoría — Nivel</th>
-              <th>Enfrentamiento / Partido</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="generated-matches-tbody"></tbody>
-        </table>
-
-        <hr style="margin: 2rem 0; border: 0; border-top: 2px dashed #2e7d32;">
-
-        <h3 style="color:#1b4332;">📋 Consulta y Gestión General de Parejas por Club</h3>
-        <div class="grid-3">
-          <div class="form-group">
-            <label for="admin-filter-club">Filtrar por Club:</label>
-            <select id="admin-filter-club" onchange="loadAdminPairs()">
-              <option value="ALL">-- Todos los Clubes --</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="admin-filter-cat">Categoría:</label>
-            <select id="admin-filter-cat" onchange="loadAdminPairs()">
-              <option value="ALL">-- Todas las Categorías --</option>
-              <option value="Benjamín">Benjamín</option>
-              <option value="Alevín">Alevín</option>
-              <option value="Infantil">Infantil</option>
-              <option value="Cadete">Cadete</option>
-              <option value="Juvenil">Juvenil</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="admin-filter-level">Nivel:</label>
-            <select id="admin-filter-level" onchange="loadAdminPairs()">
-              <option value="ALL">-- Todos los Niveles --</option>
-              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
-              <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
-              <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
-            </select>
-          </div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Club</th>
-              <th>Categoría</th>
-              <th>Nivel</th>
-              <th>Pelotari 1</th>
-              <th>Pelotari 2</th>
-              <th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="admin-pairs-tbody"></tbody>
-        </table>
-      </div>
-
-      <div id="banner-deadline" class="deadline-banner">
+      <div class="deadline-banner">
         ⏳ <strong>Plazo de inscripción:</strong> El último día para inscribir o modificar parejas es el <strong>3 de mayo</strong>.
-      </div>
-      <div id="banner-closed" class="closed-banner hidden">
-        🔒 <strong>Epe-muga amaituta / Plazo cerrado:</strong> El plazo de inscripción finalizó el 3 de mayo.
       </div>
 
       <h3>Inscribir Nueva Pareja</h3>
@@ -369,11 +244,7 @@
   </div>
 
   <script>
-    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
-
     let currentClub = null;
-    let isSuperAdmin = false;
-    const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
 
     function checkSession() {
       const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
@@ -384,50 +255,17 @@
       }
 
       currentClub = activeSession.club;
-      isSuperAdmin = activeSession.isAdmin;
 
       document.getElementById('no-session-card').classList.add('hidden');
       document.getElementById('club-section').classList.remove('hidden');
       document.getElementById('club-title').textContent = currentClub;
 
-      if (isSuperAdmin) {
-        document.getElementById('organizer-section').classList.remove('hidden');
-        document.getElementById('admin-mode-tag').classList.remove('hidden');
-        loadGeneratedMatches();
-        populateAdminClubSelect();
-        loadAdminPairs();
-      }
-
-      applyRegistrationRestrictions();
       loadPairs();
     }
 
     function logout() {
       sessionStorage.removeItem('udaberri_session');
       window.location.href = 'club-panel.html';
-    }
-
-    function isRegistrationOpen() {
-      if (isSuperAdmin) return true;
-      const now = new Date();
-      return now <= DEADLINE_DATE;
-    }
-
-    function applyRegistrationRestrictions() {
-      const open = isRegistrationOpen();
-      const formInputs = document.querySelectorAll('#pair-form input, #pair-form select, #btn-add-pair');
-      const bannerDeadline = document.getElementById('banner-deadline');
-      const bannerClosed = document.getElementById('banner-closed');
-
-      if (!open) {
-        formInputs.forEach(el => el.disabled = true);
-        bannerDeadline.classList.add('hidden');
-        bannerClosed.classList.remove('hidden');
-      } else {
-        formInputs.forEach(el => el.disabled = false);
-        bannerDeadline.classList.remove('hidden');
-        bannerClosed.classList.add('hidden');
-      }
     }
 
     function getStoredPairs() {
@@ -443,11 +281,6 @@
 
     function addPair(e) {
       e.preventDefault();
-      if (!isRegistrationOpen()) {
-        alert("Plazo de inscripción cerrado.");
-        return;
-      }
-
       const pairs = getStoredPairs();
       pairs.push({
         category: document.getElementById('category').value,
@@ -462,11 +295,6 @@
     }
 
     function deletePair(idx) {
-      if (!isRegistrationOpen()) {
-        alert("Plazo de inscripción cerrado.");
-        return;
-      }
-
       const pairs = getStoredPairs();
       pairs.splice(idx, 1);
       savePairs(pairs);
@@ -477,7 +305,6 @@
       const tbody = document.getElementById('pairs-tbody');
       tbody.innerHTML = '';
       const pairs = getStoredPairs();
-      const open = isRegistrationOpen();
 
       if (pairs.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#777;">No hay parejas inscritas por este club.</td></tr>';
@@ -485,271 +312,15 @@
       }
 
       pairs.forEach((p, idx) => {
-        if (isSuperAdmin) {
-          tbody.innerHTML += `
-            <tr>
-              <td>${p.category}</td>
-              <td>${p.level}</td>
-              <td><input type="text" id="edit-p1-${idx}" value="${p.player1}"></td>
-              <td><input type="text" id="edit-p2-${idx}" value="${p.player2}"></td>
-              <td>
-                <button class="btn-save-inline" onclick="saveEditedPair(${idx})">Guardar Nombre</button>
-                <button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>
-              </td>
-            </tr>`;
-        } else {
-          const deleteBtn = open 
-            ? `<button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button>` 
-            : `<button class="btn-delete" disabled>Bloqueado</button>`;
-
-          tbody.innerHTML += `
-            <tr>
-              <td>${p.category}</td>
-              <td>${p.level}</td>
-              <td>${p.player1}</td>
-              <td>${p.player2}</td>
-              <td>${deleteBtn}</td>
-            </tr>`;
-        }
-      });
-    }
-
-    function saveEditedPair(idx) {
-      const pairs = getStoredPairs();
-      pairs[idx].player1 = document.getElementById(`edit-p1-${idx}`).value.trim();
-      pairs[idx].player2 = document.getElementById(`edit-p2-${idx}`).value.trim();
-      savePairs(pairs);
-      alert("¡Nombres corregidos y guardados correctamente!");
-      loadPairs();
-    }
-
-    function populateAdminClubSelect() {
-      const select = document.getElementById('admin-filter-club');
-      select.innerHTML = '<option value="ALL">-- Todos los Clubes --</option>';
-      VALID_CLUBS.forEach(club => {
-        select.innerHTML += `<option value="${club}">${club.toUpperCase()}</option>`;
-      });
-    }
-
-    function loadAdminPairs() {
-      const tbody = document.getElementById('admin-pairs-tbody');
-      tbody.innerHTML = '';
-
-      const selectedClub = document.getElementById('admin-filter-club').value;
-      const selectedCat = document.getElementById('admin-filter-cat').value;
-      const selectedLevel = document.getElementById('admin-filter-level').value;
-
-      const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-      let totalCount = 0;
-
-      for (let clubKey in allData) {
-        if (selectedClub !== 'ALL' && clubKey !== selectedClub) continue;
-
-        allData[clubKey].forEach((p, idx) => {
-          if (selectedCat !== 'ALL' && p.category !== selectedCat) return;
-          if (selectedLevel !== 'ALL' && p.level !== selectedLevel) return;
-
-          totalCount++;
-          tbody.innerHTML += `
-            <tr>
-              <td><strong style="text-transform:uppercase;">${clubKey}</strong></td>
-              <td>${p.category}</td>
-              <td>${p.level}</td>
-              <td><input type="text" id="admin-p1-${clubKey}-${idx}" value="${p.player1}"></td>
-              <td><input type="text" id="admin-p2-${clubKey}-${idx}" value="${p.player2}"></td>
-              <td>
-                <button class="btn-save-inline" onclick="adminSavePair('${clubKey}', ${idx})">Guardar</button>
-                <button class="btn-delete" onclick="adminDeletePair('${clubKey}', ${idx})">Eliminar</button>
-              </td>
-            </tr>
-          `;
-        });
-      }
-
-      if (totalCount === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No se han encontrado parejas inscritas con estos filtros.</td></tr>';
-      }
-    }
-
-    function adminSavePair(clubKey, idx) {
-      const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-      if (allData[clubKey] && allData[clubKey][idx]) {
-        allData[clubKey][idx].player1 = document.getElementById(`admin-p1-${clubKey}-${idx}`).value.trim();
-        allData[clubKey][idx].player2 = document.getElementById(`admin-p2-${clubKey}-${idx}`).value.trim();
-        localStorage.setItem('udaberri_pairs', JSON.stringify(allData));
-        alert(`¡Nombre cambiado correctamente para el club ${clubKey.toUpperCase()}!`);
-        loadAdminPairs();
-      }
-    }
-
-    function adminDeletePair(clubKey, idx) {
-      if (confirm(`¿Seguro que deseas eliminar esta pareja del club ${clubKey.toUpperCase()}?`)) {
-        const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-        if (allData[clubKey]) {
-          allData[clubKey].splice(idx, 1);
-          localStorage.setItem('udaberri_pairs', JSON.stringify(allData));
-          loadAdminPairs();
-        }
-      }
-    }
-
-    function generateTournamentStructure() {
-      const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-      const grouped = {};
-
-      for (let club in allClubPairs) {
-        allClubPairs[club].forEach(p => {
-          const key = `${p.category} — ${p.level}`;
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push({ club: club, p1: p.player1, p2: p.player2, label: `${club.toUpperCase()} (${p.player1}/${p.player2})` });
-        });
-      }
-
-      const generatedMatches = [];
-
-      for (let groupKey in grouped) {
-        let teams = grouped[groupKey].sort(() => Math.random() - 0.5);
-        const count = teams.length;
-        if (count < 2) continue;
-
-        if (count === 3) {
-          const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[0].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-        }
-        else if (count === 4) {
-          const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-        }
-        else if (count === 5) {
-          const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-        }
-        else if (count === 6) {
-          const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[4].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-        }
-        else if (count === 7) {
-          const gA = teams.slice(0, 4);
-          const gB = teams.slice(4, 7);
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[0].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-        }
-        else if (count >= 8) {
-          const gA = teams.slice(0, 4);
-          const gB = teams.slice(4, 8);
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[2].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-        }
-      }
-
-      if (generatedMatches.length === 0) {
-        alert("No hay parejas suficientes inscritas para generar el cuadro del torneo.");
-        return;
-      }
-
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      allMatches["abaxitabidea"] = generatedMatches;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-
-      alert(`¡Estructura oficial del torneo generada con éxito! Se han programado ${generatedMatches.length} partidos y fases finales.`);
-      loadGeneratedMatches();
-    }
-
-    function loadGeneratedMatches() {
-      const tbody = document.getElementById('generated-matches-tbody');
-      tbody.innerHTML = '';
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      const matches = allMatches["abaxitabidea"] || [];
-
-      if (matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#777;">Aún no se ha generado la estructura del torneo.</td></tr>';
-        return;
-      }
-
-      matches.forEach((m, idx) => {
         tbody.innerHTML += `
           <tr>
-            <td><strong>${m.week || 'Semana 1'}</strong></td>
-            <td>${m.group || 'General'}</td>
-            <td><input type="text" style="width:100%;" value="${m.info}" onchange="updateMatchText(${idx}, this.value)"></td>
-            <td><button class="btn-delete" onclick="deleteGeneratedMatch(${idx})">Eliminar</button></td>
-          </tr>
-        `;
+            <td>${p.category}</td>
+            <td>${p.level}</td>
+            <td>${p.player1}</td>
+            <td>${p.player2}</td>
+            <td><button class="btn-delete" onclick="deletePair(${idx})">Eliminar</button></td>
+          </tr>`;
       });
-    }
-
-    function updateMatchText(idx, newText) {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      if (allMatches["abaxitabidea"] && allMatches["abaxitabidea"][idx]) {
-        allMatches["abaxitabidea"][idx].info = newText;
-        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-      }
-    }
-
-    function deleteGeneratedMatch(idx) {
-      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      if (allMatches["abaxitabidea"]) {
-        allMatches["abaxitabidea"].splice(idx, 1);
-        localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
-        loadGeneratedMatches();
-      }
     }
 
     document.addEventListener('DOMContentLoaded', checkSession);
