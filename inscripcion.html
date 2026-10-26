@@ -131,6 +131,11 @@
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+    }
     
     table {
       width: 100%;
@@ -228,8 +233,9 @@
       <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXITABIDEA) -->
       <div id="organizer-section" class="admin-box hidden">
         <h3 style="color:#1b4332; margin-top:0;">👑 Panel del Organizador (Abaxitabidea)</h3>
-        <p>Genera la estructura oficial del torneo según el número de parejas inscritas (3 a 8 parejas por grupo):</p>
         
+        <!-- PESTAÑA 1: SORTEO -->
+        <p>Genera la estructura oficial del torneo según el número de parejas inscritas (3 a 8 parejas por grupo):</p>
         <button class="btn-admin" onclick="generateTournamentStructure()">⚙️ Generar Calendario Oficial del Torneo</button>
 
         <h4 style="margin-top:1.5rem;">Partidos y Cruces Generados / Edición Manual</h4>
@@ -243,6 +249,55 @@
             </tr>
           </thead>
           <tbody id="generated-matches-tbody"></tbody>
+        </table>
+
+        <hr style="margin: 2rem 0; border: 0; border-top: 2px dashed #2e7d32;">
+
+        <!-- PESTAÑA 2: GESTIÓN DE PAREJAS POR CLUB (SOLO ORGANIZADOR) -->
+        <h3 style="color:#1b4332;">📋 Consulta General de Parejas por Club</h3>
+        <p>Selecciona un club, categoría y nivel para consultar o eliminar parejas inscritas de cualquier entidad:</p>
+        
+        <div class="grid-3">
+          <div class="form-group">
+            <label for="admin-filter-club">Filtrar por Club:</label>
+            <select id="admin-filter-club" onchange="loadAdminPairs()">
+              <option value="ALL">-- Todos los Clubes --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="admin-filter-cat">Categoría:</label>
+            <select id="admin-filter-cat" onchange="loadAdminPairs()">
+              <option value="ALL">-- Todas las Categorías --</option>
+              <option value="Benjamín">Benjamín</option>
+              <option value="Alevín">Alevín</option>
+              <option value="Infantil">Infantil</option>
+              <option value="Cadete">Cadete</option>
+              <option value="Juvenil">Juvenil</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="admin-filter-level">Nivel:</label>
+            <select id="admin-filter-level" onchange="loadAdminPairs()">
+              <option value="ALL">-- Todos los Niveles --</option>
+              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+              <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
+              <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
+            </select>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Club</th>
+              <th>Categoría</th>
+              <th>Nivel</th>
+              <th>Pelotari 1</th>
+              <th>Pelotari 2</th>
+              <th>Acción (Administrador)</th>
+            </tr>
+          </thead>
+          <tbody id="admin-pairs-tbody"></tbody>
         </table>
       </div>
 
@@ -338,6 +393,8 @@
         if (currentClub === 'abaxitabidea') {
           document.getElementById('organizer-section').classList.remove('hidden');
           loadGeneratedMatches();
+          populateAdminClubSelect();
+          loadAdminPairs();
         } else {
           document.getElementById('organizer-section').classList.add('hidden');
         }
@@ -444,7 +501,66 @@
       });
     }
 
-    // --- ALGORITMO OFICIAL DE ESTRUCTURA DEL TORNEO (3 A 8 PAREJAS) ---
+    // --- FUNCIONES EXCLUSIVAS DEL ORGANIZADOR (CONSULTA Y ELIMINACIÓN DE PAREJAS POR CLUB) ---
+    function populateAdminClubSelect() {
+      const select = document.getElementById('admin-filter-club');
+      select.innerHTML = '<option value="ALL">-- Todos los Clubes --</option>';
+      if (typeof CLUB_ACCOUNTS !== 'undefined') {
+        for (let club in CLUB_ACCOUNTS) {
+          select.innerHTML += `<option value="${club}">${club.toUpperCase()}</option>`;
+        }
+      }
+    }
+
+    function loadAdminPairs() {
+      const tbody = document.getElementById('admin-pairs-tbody');
+      tbody.innerHTML = '';
+
+      const selectedClub = document.getElementById('admin-filter-club').value;
+      const selectedCat = document.getElementById('admin-filter-cat').value;
+      const selectedLevel = document.getElementById('admin-filter-level').value;
+
+      const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+      let totalCount = 0;
+
+      for (let clubKey in allData) {
+        if (selectedClub !== 'ALL' && clubKey !== selectedClub) continue;
+
+        allData[clubKey].forEach((p, idx) => {
+          if (selectedCat !== 'ALL' && p.category !== selectedCat) return;
+          if (selectedLevel !== 'ALL' && p.level !== selectedLevel) return;
+
+          totalCount++;
+          tbody.innerHTML += `
+            <tr>
+              <td><strong style="text-transform:uppercase;">${clubKey}</strong></td>
+              <td>${p.category}</td>
+              <td>${p.level}</td>
+              <td>${p.player1}</td>
+              <td>${p.player2}</td>
+              <td><button class="btn-delete" onclick="adminDeletePair('${clubKey}', ${idx})">Eliminar Pareja</button></td>
+            </tr>
+          `;
+        });
+      }
+
+      if (totalCount === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No se han encontrado parejas inscritas con estos filtros.</td></tr>';
+      }
+    }
+
+    function adminDeletePair(clubKey, idx) {
+      if (confirm(`¿Seguro que deseas eliminar esta pareja del club ${clubKey.toUpperCase()}?`)) {
+        const allData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+        if (allData[clubKey]) {
+          allData[clubKey].splice(idx, 1);
+          localStorage.setItem('udaberri_pairs', JSON.stringify(allData));
+          loadAdminPairs();
+        }
+      }
+    }
+
+    // --- ESTRUCTURA DEL TORNEO (3 A 8 PAREJAS) ---
     function generateTournamentStructure() {
       const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
       const grouped = {};
@@ -462,135 +578,91 @@
       for (let groupKey in grouped) {
         let teams = grouped[groupKey].sort(() => Math.random() - 0.5);
         const count = teams.length;
-
         if (count < 2) continue;
 
-        // CASO 1: 3 PAREJAS (4 semanas de doble vuelta + Semana 6 Final)
         if (count === 3) {
           const p = teams;
-          // Vuelta 1
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          // Vuelta 2
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[0].label}` });
-          // Semana 6 Final
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
-
-        // CASO 2: 4 PAREJAS (3 semanas liguilla + Semana 6 Final)
         else if (count === 4) {
           const p = teams;
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
-
-        // CASO 3: 5 PAREJAS (4 semanas liguilla + Semana 6 Final)
         else if (count === 5) {
           const p = teams;
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
-
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
-
-        // CASO 4: 6 PAREJAS (5 semanas liguilla + Semana 6 Final)
         else if (count === 6) {
           const p = teams;
-          // Rondas Round Robin 1 a 5
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[4].label} vs ${p[5].label}` });
-
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[5].label}` });
-
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[5].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[5].label}` });
-
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[5].label}` });
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[4].label}` });
-
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
-
-        // CASO 5: 7 PAREJAS (Grupo A de 4 parejas / Grupo B de 3 parejas + Semifinales S5 + Final S6)
         else if (count === 7) {
           const gA = teams.slice(0, 4);
           const gB = teams.slice(4, 7);
-
-          // Partidos Grupo A (4 parejas, 3 jornadas)
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-
-          // Partidos Grupo B (3 parejas, doble vuelta S1-S4)
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
           generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[0].label}` });
-
-          // Semifinales (Semana 5)
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-
-          // Final (Semana 6)
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
         }
-
-        // CASO 6: 8 PAREJAS (Grupo A de 4 parejas / Grupo B de 4 parejas + Semifinales S5 + Final S6)
         else if (count >= 8) {
           const gA = teams.slice(0, 4);
           const gB = teams.slice(4, 8);
-
-          // Grupo A
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-
-          // Grupo B
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
           generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[2].label} vs ${gB[3].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
           generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[3].label}` });
           generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
-
-          // Semifinales (Semana 5)
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-
-          // Final (Semana 6)
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
         }
       }
