@@ -87,6 +87,16 @@
       font-weight: bold;
     }
 
+    .admin-badge {
+      background-color: #d8f3dc;
+      color: #1b4332;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border: 1px solid #b7e4c7;
+    }
+
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
     select {
@@ -123,7 +133,6 @@
       width: 35%;
     }
 
-    /* CONTENEDOR EN HORIZONTAL */
     .score-container {
       display: flex;
       align-items: center;
@@ -200,7 +209,8 @@
       <div class="club-header">
         <div>
           <h2 style="margin:0;">Introducir Resultados: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <p style="margin:0.2rem 0 0 0; color:#666;">Introduce los tantos de cada pareja (o escribe "NP" si alguna no se presentó).</p>
+          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro (Edición Total de Marcadores Habilitada)</span>
+          <p style="margin:0.2rem 0 0 0; color:#666;" id="subtitle-text">Introduce los tantos de cada pareja (o escribe "NP" si alguna no se presentó).</p>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
@@ -252,6 +262,13 @@
       document.getElementById('club-section').classList.remove('hidden');
       document.getElementById('club-title').textContent = currentClub;
 
+      if (isSuperAdmin) {
+        document.getElementById('admin-mode-tag').classList.remove('hidden');
+        document.getElementById('subtitle-text').textContent = "Visualizando todos los partidos del torneo. Puedes corregir cualquier resultado en caso de error.";
+      } else {
+        document.getElementById('admin-mode-tag').classList.add('hidden');
+      }
+
       loadResultsMatches();
     }
 
@@ -268,6 +285,7 @@
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
+      // Si es SuperAdmin ve TODOS los partidos de esa semana; si es un club regular, ve solo sus partidos como local
       const matches = officialMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isSuperAdmin || isClubLocal(m.info, currentClub);
@@ -301,7 +319,7 @@
               ${teams.visitor}
             </td>
             <td>
-              <button class="btn-save" onclick="saveScore(${idx})">Gorde</button>
+              <button class="btn-save" onclick="saveScore(${idx})">Gorde / Guardar</button>
             </td>
           </tr>
         `;
@@ -365,6 +383,7 @@
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       let officialMatches = allMatchesData["abaxitabidea"] || [];
 
+      // Recuperar la misma lista filtrada para modificar exactamente el partido correspondiente
       const matchesOfWeek = officialMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isSuperAdmin || isClubLocal(m.info, currentClub);
@@ -374,7 +393,7 @@
       if (matchesOfWeek[idx]) {
         matchesOfWeek[idx].score = scoreFormatted;
         localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
-        alert("¡Emaitza guardado correctamente!");
+        alert("¡Resultado o corrección guardada con éxito!");
       }
     }
 
