@@ -1,27 +1,26 @@
 // CONFIGURACIÓN ÚNICA DE CUENTAS DE CLUBES
-// ...
 const CLUB_ACCOUNTS = {
   "txaruta": "txaruta",
   "erreka": "erreka",
   "sanmiguel": "sanmiguel",
-  "oberena": "oberena"
-  "abaxitabidea": "abaxitabidea"
-  "bortzirial": "bortziriak"
-   "zugarralde": "zugarralde"
- "sansebastian": "sansebastian"
- "berriozar": "berriozar"
- "ameskoa": "ameskoa"
- "agoitz": "agoitz"
- "araxes": "araxes"
- "ardoi": "ardoi"
- "kantolagua": "kantolagua"
- "irurtzun": "irurtzun"
- "lagunak": "lagunak"
- "mutilendako": "mutilendako"
- "pilotajauku": "pilotajauku"
- "buruzgain": "buruzgain"
- "umoreona": "umoreona"
- "lodosa": "lodosa"
- "leitza": "leitza"
- "aldabide": "aldabide"
+  "oberena": "oberena",
+  "abaxitabidea": "abaxitabidea",
+  "bortziriak": "bortziriak",
+  "zugarralde": "zugarralde",
+  "sansebastian": "sansebastian",
+  "berriozar": "berriozar",
+  "ameskoa": "ameskoa",
+  "agoitz": "agoitz",
+  "araxes": "araxes",
+  "ardoi": "ardoi",
+  "kantolagua": "kantolagua",
+  "irurtzun": "irurtzun",
+  "lagunak": "lagunak",
+  "mutilendako": "mutilendako",
+  "pilotajauku": "pilotajauku",
+  "buruzgain": "buruzgain",
+  "umoreona": "umoreona",
+  "lodosa": "lodosa",
+  "leitza": "leitza",
+  "aldabide": "aldabide"
 };
