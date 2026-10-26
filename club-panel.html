@@ -284,8 +284,7 @@
           club: uVal.trim().toLowerCase(),
           isAdmin: authRes.isAdmin
         };
-        // Guardar sesión persistente
-        localStorage.setItem('udaberri_session', JSON.stringify(sessionData));
+        sessionStorage.setItem('udaberri_session', JSON.stringify(sessionData));
         errorMsg.style.display = 'none';
         showClubDashboard(sessionData);
       } else {
@@ -294,7 +293,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('udaberri_session');
+      sessionStorage.removeItem('udaberri_session');
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('club-section').classList.add('hidden');
@@ -313,9 +312,8 @@
       }
     }
 
-    // Al cargar la página, comprobar si ya existía una sesión activa
     document.addEventListener('DOMContentLoaded', () => {
-      const activeSession = JSON.parse(localStorage.getItem('udaberri_session'));
+      const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
       if (activeSession && activeSession.club) {
         showClubDashboard(activeSession);
       }
