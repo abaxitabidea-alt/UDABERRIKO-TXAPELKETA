@@ -94,10 +94,6 @@
       width: 100%;
     }
     button.btn-primary:hover { background-color: var(--primary); }
-    button:disabled {
-      background-color: #a0a0a0 !important;
-      cursor: not-allowed !important;
-    }
 
     .btn-admin {
       background-color: #028090;
@@ -232,15 +228,16 @@
       <!-- SECCIÓN EXCLUSIVA DE ORGANIZADOR (ABAXITABIDEA) -->
       <div id="organizer-section" class="admin-box hidden">
         <h3 style="color:#1b4332; margin-top:0;">👑 Panel del Organizador (Abaxitabidea)</h3>
-        <p>Genera los enfrentamientos de forma aleatoria por categorías y niveles, y haz los cambios manuales necesarios:</p>
+        <p>Genera el calendario automático distribuyendo exactamente <strong>1 partido por pareja en cada fin de semana (Semana 1 a Semana 6)</strong>:</p>
         
-        <button class="btn-admin" onclick="generateRandomMatches()">⚙️ Sorteo y Generación Automática de Partidos</button>
+        <button class="btn-admin" onclick="generateRandomMatches()">⚙️ Generar Calendario Semanal Automático</button>
 
-        <h4 style="margin-top:1.5rem;">Partidos Generados / Modificación Manual</h4>
+        <h4 style="margin-top:1.5rem;">Partidos Generados por Jornadas / Edición Manual</h4>
         <table>
           <thead>
             <tr>
-              <th>Categoría / Nivel</th>
+              <th>Jornada / Semana</th>
+              <th>Categoría — Nivel</th>
               <th>Enfrentamiento / Partido</th>
               <th>Acción</th>
             </tr>
@@ -447,48 +444,72 @@
       });
     }
 
+    // --- ALGORITMO ROUND-ROBIN PARA 1 PARTIDO POR PAREJA POR JORNADA ---
     function generateRandomMatches() {
       const allClubPairs = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
       const grouped = {};
 
+      // 1. Agrupar todas las parejas por Categoría y Nivel
       for (let club in allClubPairs) {
         allClubPairs[club].forEach(p => {
           const key = `${p.category} — ${p.level}`;
           if (!grouped[key]) grouped[key] = [];
-          grouped[key].push({ club: club, p1: p.player1, p2: p.player2 });
+          grouped[key].push({ club: club, p1: p.player1, p2: p.player2, name: `${club.toUpperCase()} (${p.player1}/${p.player2})` });
         });
       }
 
       const generatedMatches = [];
 
+      // 2. Generar el calendario en rondas (Round Robin) para cada grupo
       for (let groupKey in grouped) {
-        let pairs = grouped[groupKey];
-        pairs = pairs.sort(() => Math.random() - 0.5);
+        let teams = [...grouped[groupKey]];
+        if (teams.length < 2) continue;
 
-        for (let i = 0; i < pairs.length; i++) {
-          for (let j = i + 1; j < pairs.length; j++) {
-            generatedMatches.push({
-              group: groupKey,
-              info: `${groupKey}: ${pairs[i].club.toUpperCase()} (${pairs[i].p1}/${pairs[i].p2}) vs ${pairs[j].club.toUpperCase()} (${pairs[j].p1}/${pairs[j].p2})`,
-              date: "Por determinar",
-              fronton: "Por determinar",
-              order: "1º Partido",
-              time: "00:00"
-            });
+        // Si es impar, añadir comodín de descanso
+        if (teams.length % 2 !== 0) {
+          teams.push({ name: "DESCANSO", club: "" });
+        }
+
+        const numTeams = teams.length;
+        const numRounds = numTeams - 1;
+        const half = numTeams / 2;
+
+        for (let round = 0; round < numRounds; round++) {
+          const weekName = `Semana ${round + 1}`;
+          
+          for (let i = 0; i < half; i++) {
+            const team1 = teams[i];
+            const team2 = teams[numTeams - 1 - i];
+
+            if (team1.name !== "DESCANSO" && team2.name !== "DESCANSO") {
+              generatedMatches.push({
+                week: weekName,
+                group: groupKey,
+                info: `${groupKey}: ${team1.name} vs ${team2.name}`,
+                date: "Por determinar",
+                fronton: "Por determinar",
+                order: "1º Partido",
+                time: "00:00"
+              });
+            }
           }
+
+          // Rotar elementos para la siguiente jornada (fijando el primero)
+          teams.splice(1, 0, teams.pop());
         }
       }
 
       if (generatedMatches.length === 0) {
-        alert("No hay parejas suficiente inscritas para generar el sorteo.");
+        alert("No hay suficientes parejas inscritas para generar el calendario.");
         return;
       }
 
+      // Guardar partidos ordenados por jornada
       const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       allMatches["abaxitabidea"] = generatedMatches;
       localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
 
-      alert(`¡Sorteo realizado con éxito! Se han generado ${generatedMatches.length} partidos.`);
+      alert(`¡Calendario generado con éxito! Se han distribuido ${generatedMatches.length} partidos a razón de 1 por fin de semana por pareja.`);
       loadGeneratedMatches();
     }
 
@@ -499,14 +520,15 @@
       const matches = allMatches["abaxitabidea"] || [];
 
       if (matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#777;">Aún no se ha realizado ningún sorteo automático.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#777;">Aún no se ha generado el calendario. Haz clic en el botón superior.</td></tr>';
         return;
       }
 
       matches.forEach((m, idx) => {
         tbody.innerHTML += `
           <tr>
-            <td><strong>${m.group || 'General'}</strong></td>
+            <td><strong>${m.week || 'Semana 1'}</strong></td>
+            <td>${m.group || 'General'}</td>
             <td><input type="text" style="width:100%;" value="${m.info}" onchange="updateMatchText(${idx}, this.value)"></td>
             <td><button class="btn-delete" onclick="deleteGeneratedMatch(${idx})">Eliminar</button></td>
           </tr>
