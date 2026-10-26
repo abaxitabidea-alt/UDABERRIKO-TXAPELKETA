@@ -121,6 +121,23 @@
       text-align: left;
     }
     th { background-color: #e9ecef; }
+    
+    .badge-pending {
+      color: #d97706;
+      background-color: #fef3c7;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .badge-confirmed {
+      color: #15803d;
+      background-color: #dcfce7;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -221,51 +238,93 @@
       const selectedWeek = document.getElementById('week-filter').value;
 
       const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      let filteredMatches = [];
-
-      // Buscar partidos en todos los clubes
+      
+      // 1. Obtener la lista base de partidos generados por el organizador (Abaxitabidea)
+      const baseMatches = allData["abaxitabidea"] || [];
+      
+      // 2. Obtener señalamientos realizados por los clubes individuales
+      const clubScheduled = [];
       for (let club in allData) {
-        allData[club].forEach(m => {
-          const matchInfo = m.info || '';
-          const groupKey = m.group || '';
-
-          // 1. Filtrado por Categoría y Nivel EXACTO
-          const matchCategoryLevel = `${selectedCategory} — ${selectedLevel}`;
-          const matchesCategory = matchInfo.includes(selectedCategory) || groupKey.includes(selectedCategory);
-          const matchesLevel = matchInfo.includes(selectedLevel) || groupKey.includes(selectedLevel) || matchInfo.includes(selectedLevel.split(' ')[0]);
-
-          // 2. Filtrado por Semana/Jornada
-          let matchesWeek = true;
-          if (selectedWeek !== 'ALL') {
-            matchesWeek = m.week === selectedWeek || (m.date && m.date.includes(selectedWeek));
-          }
-
-          if (matchesCategory && matchesLevel && matchesWeek) {
-            filteredMatches.push({ ...m, clubName: club });
-          }
-        });
+        if (club !== "abaxitabidea") {
+          allData[club].forEach(m => clubScheduled.push({ ...m, clubOwner: club }));
+        }
       }
 
-      if (filteredMatches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">Ez dago partidarik erregistratuta kategoria eta aste honetan. / No hay partidos para este filtro.</td></tr>';
+      let filteredList = [];
+
+      baseMatches.forEach(bm => {
+        const infoStr = bm.info || '';
+        const groupStr = bm.group || '';
+
+        // Verificar coincidencia de Categoría y Nivel
+        const matchesCategory = infoStr.includes(selectedCategory) || groupStr.includes(selectedCategory);
+        const matchesLevel = infoStr.includes(selectedLevel) || groupStr.includes(selectedLevel) || infoStr.includes(selectedLevel.split(' ')[0]);
+
+        // Verificar filtro de Semana/Jornada
+        const matchWeek = bm.week || "Semana 1"; // Por defecto asignados a Semana 1 si no se especifica
+        const matchesWeek = (selectedWeek === 'ALL' || matchWeek === selectedWeek);
+
+        if (matchesCategory && matchesLevel && matchesWeek) {
+          // Comprobar si algún club ya ha programado/señalado este partido exacto
+          const scheduled = clubScheduled.find(cs => cs.info === bm.info || (cs.info && cs.info.includes(bm.info)));
+
+          if (scheduled) {
+            filteredList.push({
+              date: scheduled.date,
+              time: scheduled.time,
+              fronton: scheduled.fronton,
+              order: scheduled.order,
+              info: bm.info,
+              club: scheduled.clubOwner,
+              confirmed: true
+            });
+          } else {
+            filteredList.push({
+              date: `<span class="badge-pending">Por señalar</span>`,
+              time: `--:--`,
+              fronton: `<span class="badge-pending">Por determinar</span>`,
+              order: `-`,
+              info: bm.info,
+              club: extractLocalClub(bm.info),
+              confirmed: false
+            });
+          }
+        }
+      });
+
+      if (filteredList.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">Ez dago partidarik kategoria, maila eta aste honetan. / No hay partidos para este filtro.</td></tr>';
         return;
       }
 
-      filteredMatches.forEach(m => {
+      filteredList.forEach(m => {
+        const statusBadge = m.confirmed ? `<span class="badge-confirmed">${m.date}</span>` : m.date;
         tbody.innerHTML += `
           <tr>
-            <td>${m.date || 'Por determinar'}</td>
-            <td>${m.time || '00:00'}</td>
-            <td>${m.fronton || 'Por determinar'}</td>
-            <td>${m.order || '1º Partido'}</td>
+            <td>${statusBadge}</td>
+            <td>${m.time}</td>
+            <td>${m.fronton}</td>
+            <td>${m.order}</td>
             <td><strong>${m.info}</strong></td>
-            <td><span style="text-transform: capitalize;">${m.clubName}</span></td>
+            <td><span style="text-transform: capitalize;">${m.club}</span></td>
           </tr>
         `;
       });
     }
 
-    // Carga inicial
+    // Extrae el nombre del primer club (local) del texto del partido
+    function extractLocalClub(infoText) {
+      if (!infoText) return "Abaxitabidea";
+      const parts = infoText.split(':');
+      if (parts.length > 1) {
+        const teams = parts[1].split('vs');
+        if (teams.length > 0) {
+          return teams[0].trim().split(' ')[0];
+        }
+      }
+      return "Abaxitabidea";
+    }
+
     document.addEventListener('DOMContentLoaded', loadMatches);
   </script>
 </body>
