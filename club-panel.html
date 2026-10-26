@@ -291,7 +291,7 @@
       </div>
     </div>
 
-    <!-- VISTA CLUB REGULAR -->
+    <!-- VISTA CLUB REGULAR (INCLUYE ABAXITABIDEA) -->
     <div id="club-dashboard" class="card hidden">
       <div class="club-header">
         <h2 style="margin:0;">Klub Panel: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
@@ -328,7 +328,7 @@
       </div>
     </div>
 
-    <!-- VISTA ORGANIZADOR MAESTRO (ABAXI) -->
+    <!-- VISTA ORGANIZADOR MAESTRO (EXCLUSIVO ABAXI) -->
     <div id="organizer-dashboard" class="card hidden">
       <div class="club-header">
         <div>
@@ -371,18 +371,16 @@
       const p = passInput.trim().toLowerCase();
       const cleanP = p.replace(/\s+/g, '');
 
-      if (u === 'abaxi' || u === 'abaxitabidea') {
-        if (cleanP === 'abaxi' || cleanP === 'abaxiabaxitabidea' || p === 'abaxitabidea') {
+      // 1. SOLAMENTE 'abaxi' ha de ser Administrador Maestro
+      if (u === 'abaxi') {
+        if (cleanP === 'abaxi') {
           return { valid: true, isAdmin: true };
         }
       }
 
-      if (cleanP === `abaxi${u}`) {
-        return { valid: true, isAdmin: true };
-      }
-
+      // 2. Todos los demás clubes (incluido abaxitabidea) entran como club regular
       if (VALID_CLUBS.includes(u) && p === u) {
-        return { valid: true, isAdmin: (u === 'abaxitabidea') };
+        return { valid: true, isAdmin: false };
       }
 
       return { valid: false, isAdmin: false };
