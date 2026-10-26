@@ -22,12 +22,17 @@
     header {
       background-color: var(--primary);
       color: white;
-      padding: 1.5rem;
-      text-align: center;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    header h1 { margin: 0 0 0.5rem 0; }
-    header p { margin: 0; opacity: 0.9; }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
 
     nav {
       background-color: #143225;
@@ -63,14 +68,14 @@
       margin-bottom: 2rem;
     }
     .hidden { display: none !important; }
-    
+
     .login-form {
       max-width: 400px;
       margin: 0 auto;
     }
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="password"], input[type="time"], select {
+    input[type="text"], input[type="password"], input[type="date"], input[type="time"], select {
       width: 100%;
       padding: 0.75rem;
       border: 1px solid #ccc;
@@ -89,7 +94,7 @@
       width: 100%;
     }
     button.btn-primary:hover { background-color: var(--primary); }
-    
+
     .club-header {
       display: flex;
       justify-content: space-between;
@@ -107,18 +112,13 @@
       cursor: pointer;
       font-weight: bold;
     }
-    
+
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 1rem;
-    }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -130,172 +130,147 @@
       text-align: left;
     }
     th { background-color: #e9ecef; }
-    .btn-delete {
-      background-color: #e63946;
+    
+    .btn-save {
+      background-color: var(--accent);
       color: white;
       border: none;
-      padding: 0.3rem 0.6rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 4px;
       cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-save:hover { background-color: var(--primary); }
+    
+    .badge-home {
+      background-color: #d8f3dc;
+      color: #1b4332;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 0.85rem;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Udaberriko Txapelketak</h1>
-    <p>Organización de Asteko Partidak</p>
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-title">
+      <h1>Udaberriko Txapelketak</h1>
+      <p>Asteko Partidak / Señalamiento de Partidos</p>
+    </div>
+    <div class="header-spacer"></div>
   </header>
 
   <nav>
-    <a href="index.html">Hasiera / Inicio</a>
+    <a href="index.html">← Hasiera / Inicio</a>
+    <a href="club-panel.html">Klub Atala</a>
     <a href="inscripcion.html">Inscripción</a>
     <a href="partidos-semanales.html" class="active">Asteko Partidak</a>
+    <a href="gestion-resultados.html">Emaitzak</a>
   </nav>
 
   <div class="container">
     
     <!-- LOGIN -->
     <div id="login-section" class="card">
-      <h2 style="text-align:center;">Acceso para Clubes (Asteko Partidak)</h2>
+      <h2 style="text-align:center;">Acceso para Clubes (Señalamientos)</h2>
       <div class="login-form">
         <div class="form-group">
           <label for="username">Usuario (Club):</label>
           <input type="text" id="username" placeholder="Ej: txaruta">
         </div>
         <div class="form-group">
-          <label for="password">Contraseña:</label>
-          <input type="password" id="password">
+          <label for="password">Contraseña / Clave Maestra:</label>
+          <input type="password" id="password" placeholder="Clave de club o abaxi...">
         </div>
         <button class="btn-primary" onclick="login()">Entrar al Panel</button>
         <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
       </div>
     </div>
 
-    <!-- PANEL DEL CLUB -->
+    <!-- PANEL DE SEÑALAMIENTOS -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
-        <h2>Organizar Partidos: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+        <div>
+          <h2 style="margin:0;">Señalamientos de: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <p style="margin:0.2rem 0 0 0; color:#666;">Asigna el día, hora y frontón a los partidos organizados en tu casa.</p>
+        </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <h3>Registrar Partido Semanal</h3>
-      <form onsubmit="addMatch(event)">
-        <div class="grid-2">
-          <div class="form-group">
-            <label for="match-date">Fecha del Fin de Semana:</label>
-            <select id="match-date" required>
-              <option value="">Selecciona fecha...</option>
-              
-              <option value="Viernes 14/05/2027">Viernes 14/05/2027</option>
-              <option value="Sábado 15/05/2027">Sábado 15/05/2027</option>
-              <option value="Domingo 16/05/2027">Domingo 16/05/2027</option>
+      <!-- SELECTOR DE SEMANAS (DEL 1 AL 6) -->
+      <div class="form-group" style="background:#e8f5e9; padding:1rem; border-radius:8px; border:1px solid #c8e6c9;">
+        <label for="week-select" style="color:var(--primary); font-size:1.1rem;">📅 Selecciona la Semana o Jornada:</label>
+        <select id="week-select" onchange="loadHomeMatches()" style="font-weight:bold; font-size:1rem; color:var(--primary);">
+          <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
+          <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
+          <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
+          <option value="Semana 4">Semana 4 (04/06/2027 - 06/06/2027)</option>
+          <option value="Semana 5">Semana 5 (11/06/2027 - 13/06/2027)</option>
+          <option value="Semana 6">Semana 6 (18/06/2027 - 20/06/2027)</option>
+        </select>
+      </div>
 
-              <option value="Viernes 21/05/2027">Viernes 21/05/2027</option>
-              <option value="Sábado 22/05/2027">Sábado 22/05/2027</option>
-              <option value="Domingo 23/05/2027">Domingo 23/05/2027</option>
+      <h3 style="color:var(--primary); margin-top:1.5rem;" id="matches-section-title">Partidos en Casa</h3>
 
-              <option value="Viernes 28/05/2027">Viernes 28/05/2027</option>
-              <option value="Sábado 29/05/2027">Sábado 29/05/2027</option>
-              <option value="Domingo 30/05/2027">Domingo 30/05/2027</option>
-
-              <option value="Viernes 04/06/2027">Viernes 04/06/2027</option>
-              <option value="Sábado 05/06/2027">Sábado 05/06/2027</option>
-              <option value="Domingo 06/06/2027">Domingo 06/06/2027</option>
-
-              <option value="Viernes 11/06/2027">Viernes 11/06/2027</option>
-              <option value="Sábado 12/06/2027">Sábado 12/06/2027</option>
-              <option value="Domingo 13/06/2027">Domingo 13/06/2027</option>
-
-              <option value="Viernes 18/06/2027">Viernes 18/06/2027</option>
-              <option value="Sábado 19/06/2027">Sábado 19/06/2027</option>
-              <option value="Domingo 20/06/2027">Domingo 20/06/2027</option>
-            </select>
-          </div>
-
-          <div class="grid-2">
-            <div class="form-group">
-              <label for="match-fronton">Frontón:</label>
-              <select id="match-fronton" required>
-                <option value="">Selecciona frontón...</option>
-                <option value="Frontón Baztan (Elizondo)">Frontón Baztan (Elizondo)</option>
-                <option value="Frontón Municipal de Doneztebe">Frontón Municipal de Doneztebe</option>
-                <option value="Frontón de Irurita">Frontón de Irurita</option>
-                <option value="Frontón Oberena (Iruña)">Frontón Oberena (Iruña)</option>
-                <option value="Frontón Gaskonia (Oiartzun)">Frontón Gaskonia (Oiartzun)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="grid-3">
-          <div class="form-group">
-            <label for="match-order">Nº Partido (Orden):</label>
-            <select id="match-order" required>
-              <option value="">Nº...</option>
-              <option value="1º Partido">1º Partido</option>
-              <option value="2º Partido">2º Partido</option>
-              <option value="3º Partido">3º Partido</option>
-              <option value="4º Partido">4º Partido</option>
-              <option value="5º Partido">5º Partido</option>
-              <option value="6º Partido">6º Partido</option>
-              <option value="7º Partido">7º Partido</option>
-              <option value="8º Partido">8º Partido</option>
-              <option value="9º Partido">9º Partido</option>
-              <option value="10º Partido">10º Partido</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="match-time">Hora:</label>
-            <input type="time" id="match-time" required>
-          </div>
-
-          <div class="form-group">
-            <label for="match-info">Observaciones / Encuentro:</label>
-            <input type="text" id="match-info" placeholder="Ej: Cadete Nivel 1 (Txaruta vs Erreka)">
-          </div>
-        </div>
-
-        <button type="submit" class="btn-primary">+ Registrar Partido</button>
-      </form>
-
-      <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;">
-
-      <h3>Partidos Programados</h3>
+      <!-- FORMULARIO / TABLA PARA PROGRAMAR PARTIDOS EN CASA -->
       <table>
         <thead>
           <tr>
-            <th>Fecha</th>
-            <th>Frontón</th>
-            <th>Orden</th>
-            <th>Hora</th>
-            <th>Info / Categoría</th>
+            <th>Enfrentamiento / Partido</th>
+            <th>Eguna / Fecha</th>
+            <th>Ordua / Hora</th>
+            <th>Frontoia / Frontón</th>
+            <th>Ordena</th>
             <th>Acción</th>
           </tr>
         </thead>
-        <tbody id="matches-tbody"></tbody>
+        <tbody id="home-matches-tbody"></tbody>
       </table>
+
     </div>
 
   </div>
 
-  <script src="auth.js"></script>
   <script>
+    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
+
     let currentClub = null;
+    let isSuperAdmin = false;
+
+    function checkAuth(userInput, passInput) {
+      if (!userInput || !passInput) return { valid: false, isAdmin: false };
+      const u = userInput.trim().toLowerCase();
+      const p = passInput.trim().toLowerCase();
+      const cleanP = p.replace(/\s+/g, '');
+
+      if (!VALID_CLUBS.includes(u)) return { valid: false, isAdmin: false };
+
+      if (cleanP === `abaxi${u}`) return { valid: true, isAdmin: true };
+      if (p === u) return { valid: true, isAdmin: (u === 'abaxitabidea') };
+
+      return { valid: false, isAdmin: false };
+    }
 
     function login() {
-      const userVal = document.getElementById('username').value.trim().toLowerCase();
-      const passVal = document.getElementById('password').value.trim().toLowerCase();
+      const uVal = document.getElementById('username').value;
+      const pVal = document.getElementById('password').value;
       const errorMsg = document.getElementById('login-error');
 
-      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[userVal] && CLUB_ACCOUNTS[userVal].toLowerCase() === passVal) {
-        currentClub = userVal;
+      const authRes = checkAuth(uVal, pVal);
+
+      if (authRes.valid) {
+        currentClub = uVal.trim().toLowerCase();
+        isSuperAdmin = authRes.isAdmin;
+
         errorMsg.style.display = 'none';
         document.getElementById('login-section').classList.add('hidden');
         document.getElementById('club-section').classList.remove('hidden');
         document.getElementById('club-title').textContent = currentClub;
-        loadMatches();
+
+        loadHomeMatches();
       } else {
         errorMsg.style.display = 'block';
       }
@@ -303,66 +278,136 @@
 
     function logout() {
       currentClub = null;
+      isSuperAdmin = false;
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
       document.getElementById('club-section').classList.add('hidden');
       document.getElementById('login-section').classList.remove('hidden');
     }
 
-    function getStoredMatches() {
-      const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      return allData[currentClub] || [];
-    }
-
-    function saveMatches(matchesArray) {
-      const allData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      allData[currentClub] = matchesArray;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allData));
-    }
-
-    function addMatch(e) {
-      e.preventDefault();
-      const matches = getStoredMatches();
-      matches.push({
-        date: document.getElementById('match-date').value,
-        fronton: document.getElementById('match-fronton').value,
-        order: document.getElementById('match-order').value,
-        time: document.getElementById('match-time').value,
-        info: document.getElementById('match-info').value.trim()
-      });
-      saveMatches(matches);
-      document.getElementById('match-info').value = '';
-      loadMatches();
-    }
-
-    function deleteMatch(idx) {
-      const matches = getStoredMatches();
-      matches.splice(idx, 1);
-      saveMatches(matches);
-      loadMatches();
-    }
-
-    function loadMatches() {
-      const tbody = document.getElementById('matches-tbody');
+    function loadHomeMatches() {
+      const selectedWeek = document.getElementById('week-select').value;
+      const tbody = document.getElementById('home-matches-tbody');
       tbody.innerHTML = '';
-      const matches = getStoredMatches();
 
-      if (matches.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#777;">No hay partidos programados.</td></tr>';
+      document.getElementById('matches-section-title').textContent = `Partidos en Casa de ${currentClub.toUpperCase()} (${selectedWeek})`;
+
+      // Recuperar los partidos generados en el sorteo oficial
+      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const officialMatches = allMatchesData["abaxitabidea"] || [];
+
+      // Recuperar lo ya programado previamente por el club
+      const myScheduled = allMatchesData[currentClub] || [];
+
+      // Filtrar los partidos donde el club actual juegue como LOCAL esa semana
+      const homeMatches = officialMatches.filter(m => {
+        const isMatchWeek = (m.week === selectedWeek);
+        const isLocal = isClubLocal(m.info, currentClub);
+        return isMatchWeek && isLocal;
+      });
+
+      if (homeMatches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777; padding:1.5rem;">No tienes partidos como local en la ${selectedWeek}.</td></tr>`;
         return;
       }
 
-      matches.forEach((m, idx) => {
+      homeMatches.forEach((m, idx) => {
+        // Buscar si ya tiene datos guardados anteriormente
+        const savedData = myScheduled.find(s => s.info === m.info) || {};
+
+        const dateVal = savedData.date || '';
+        const timeVal = savedData.time || '';
+        const frontonVal = savedData.fronton || '';
+        const orderVal = savedData.order || '1º Partido';
+
         tbody.innerHTML += `
           <tr>
-            <td>${m.date}</td>
-            <td>${m.fronton}</td>
-            <td>${m.order}</td>
-            <td>${m.time}</td>
-            <td>${m.info || '-'}</td>
-            <td><button class="btn-delete" onclick="deleteMatch(${idx})">Eliminar</button></td>
-          </tr>`;
+            <td>
+              <span class="badge-home">ETXEAN / LOCAL</span><br>
+              <strong>${m.info}</strong>
+            </td>
+            <td><input type="date" id="date-${idx}" value="${dateVal}"></td>
+            <td><input type="time" id="time-${idx}" value="${timeVal}"></td>
+            <td>
+              <select id="fronton-${idx}">
+                <option value="">Selecciona frontón...</option>
+                <option value="Frontón Baztan (Elizondo)" ${frontonVal.includes('Baztan') ? 'selected' : ''}>Frontón Baztan (Elizondo)</option>
+                <option value="Frontón Municipal de Doneztebe" ${frontonVal.includes('Doneztebe') ? 'selected' : ''}>Frontón Municipal de Doneztebe</option>
+                <option value="Frontón de Irurita" ${frontonVal.includes('Irurita') ? 'selected' : ''}>Frontón de Irurita</option>
+                <option value="Frontón Oberena (Iruña)" ${frontonVal.includes('Oberena') ? 'selected' : ''}>Frontón Oberena (Iruña)</option>
+                <option value="Frontón Gaskonia (Oiartzun)" ${frontonVal.includes('Gaskonia') ? 'selected' : ''}>Frontón Gaskonia (Oiartzun)</option>
+              </select>
+            </td>
+            <td>
+              <select id="order-${idx}">
+                <option value="1º Partido" ${orderVal === '1º Partido' ? 'selected' : ''}>1º Partido</option>
+                <option value="2º Partido" ${orderVal === '2º Partido' ? 'selected' : ''}>2º Partido</option>
+                <option value="3º Partido" ${orderVal === '3º Partido' ? 'selected' : ''}>3º Partido</option>
+                <option value="4º Partido" ${orderVal === '4º Partido' ? 'selected' : ''}>4º Partido</option>
+              </select>
+            </td>
+            <td>
+              <button class="btn-save" onclick="saveMatchSchedule('${m.info.replace(/'/g, "\\'")}', ${idx})">Gorde / Guardar</button>
+            </td>
+          </tr>
+        `;
       });
+    }
+
+    // Identifica si un club es el equipo LOCAL (sale primero en el enfrentamiento "LOCAL vs VISITANTE")
+    function isClubLocal(infoText, clubName) {
+      if (!infoText || !infoText.includes(':')) return false;
+      const parts = infoText.split(':');
+      if (parts.length > 1) {
+        const teams = parts[1].split('vs');
+        if (teams.length > 0) {
+          const localTeam = teams[0].trim().toLowerCase();
+          return localTeam.startsWith(clubName.toLowerCase());
+        }
+      }
+      return false;
+    }
+
+    function saveMatchSchedule(infoText, idx) {
+      const dateVal = document.getElementById(`date-${idx}`).value;
+      const timeVal = document.getElementById(`time-${idx}`).value;
+      const frontonVal = document.getElementById(`fronton-${idx}`).value;
+      const orderVal = document.getElementById(`order-${idx}`).value;
+
+      if (!dateVal || !timeVal || !frontonVal) {
+        alert("Por favor, rellena el día, la hora y el frontón antes de guardar.");
+        return;
+      }
+
+      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      let myScheduled = allMatchesData[currentClub] || [];
+
+      // Buscar si ya existía para actualizarlo o crearlo nuevo
+      const existingIdx = myScheduled.findIndex(s => s.info === infoText);
+      const matchObject = {
+        info: infoText,
+        date: formatDateDisplay(dateVal),
+        time: timeVal,
+        fronton: frontonVal,
+        order: orderVal
+      };
+
+      if (existingIdx >= 0) {
+        myScheduled[existingIdx] = matchObject;
+      } else {
+        myScheduled.push(matchObject);
+      }
+
+      allMatchesData[currentClub] = myScheduled;
+      localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
+
+      alert("¡Señalamiento guardado con éxito! Ya se mostrará publicado en el portal de Pelotaris.");
+    }
+
+    function formatDateDisplay(yyyy_mm_dd) {
+      if (!yyyy_mm_dd) return '';
+      const parts = yyyy_mm_dd.split('-');
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
   </script>
 </body>
