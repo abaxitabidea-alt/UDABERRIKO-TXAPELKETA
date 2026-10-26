@@ -3,60 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Udaberriko Txapelketak - Kluba</title>
+  <title>Udaberriko Txapelketak - Klub Atala</title>
   <style>
-    :root { --primary: #1b4332; --accent: #2d6a4f; --bg: #f4f6f8; --card: #ffffff; --text: #212529; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
-    header { background-color: var(--primary); color: white; padding: 1.5rem; text-align: center; }
-    header h1 { margin: 0 0 0.5rem 0; }
-    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; }
+    :root {
+      --primary: #1b4332;
+      --accent: #2d6a4f;
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
+
+    nav {
+      background-color: #143225;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      border-bottom: 4px solid transparent;
+      transition: all 0.2s ease;
+    }
     nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
-    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
-    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
-    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-    .option-card { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 1.5rem; text-align: center; text-decoration: none; color: var(--text); transition: transform 0.2s, border-color 0.2s; }
-    .option-card:hover { transform: translateY(-4px); border-color: var(--accent); }
-    .option-card h3 { color: var(--primary); margin-top: 0; }
+    nav a.active {
+      border-bottom-color: #52b788;
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 2.5rem auto;
+      padding: 0 1rem;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    .hidden { display: none !important; }
+
+    .login-form {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button.btn-primary {
+      background-color: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      width: 100%;
+    }
+    button.btn-primary:hover { background-color: var(--primary); }
+
+    .club-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--bg);
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+    }
+    .logout-btn {
+      background-color: #d90429;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+    }
+    .action-card {
+      background: #f8f9fa;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .action-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+    }
+    .action-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .action-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    .action-desc {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+    .btn-card {
+      background-color: var(--accent);
+      color: white;
+      padding: 0.6rem 1rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .admin-badge {
+      background-color: #d8f3dc;
+      color: #1b4332;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      border: 1px solid #b7e4c7;
+    }
   </style>
 </head>
 <body>
+
   <header>
-    <h1>Udaberriko Txapelketak</h1>
-    <p>Kluben Eremua / Área de Clubes</p>
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-title">
+      <h1>Udaberriko Txapelketak</h1>
+      <p>Klub Kudeaketa / Gestión de Clubes</p>
+    </div>
+    <div class="header-spacer"></div>
   </header>
 
   <nav>
     <a href="index.html">← Hasiera / Inicio</a>
     <a href="club-panel.html" class="active">Klub Atala</a>
-    <a href="inscripcion.html">Inscripción</a>
-    <a href="partidos-semanales.html">Asteko Partidak</a>
-    <a href="gestion-resultados.html">Emaitzak / Resultados</a>
   </nav>
 
   <div class="container">
-    <div class="card">
-      <h2 style="text-align:center;">Kluben Kudeaketa / Gestión de Clubes</h2>
-      <p style="text-align:center;">Aukeratu egin nahi duzun kudeaketa atala:</p>
-
-      <div class="grid-cards">
-        <a href="inscripcion.html" class="option-card">
-          <h3>📝 Matriculación / Inscripción</h3>
-          <p>Klubeko bikoteak kategoria eta maila ezberdinetan izen-ematea.</p>
-        </a>
-
-        <a href="partidos-semanales.html" class="option-card">
-          <h3>📅 Asteko Partidak</h3>
-          <p>Asteko partiden antolaketa: frontoia, eguna, ordua eta ordena.</p>
-        </a>
-
-        <a href="gestion-resultados.html" class="option-card">
-          <h3>🏆 Emaitzak eta Sailkapena</h3>
-          <p>Jokatutako partiden emaitzak sartu eta sailkapena kudeatu.</p>
-        </a>
+    
+    <!-- PANTALLA DE ACCESO ÚNICO -->
+    <div id="login-section" class="card">
+      <h2 style="text-align:center; color:var(--primary);">Acceso para Clubes</h2>
+      <p style="text-align:center; color:#666; margin-bottom:1.5rem;">Introduce tu club y contraseña una sola vez para acceder a todas las secciones.</p>
+      
+      <div class="login-form">
+        <div class="form-group">
+          <label for="username">Usuario (Club):</label>
+          <input type="text" id="username" placeholder="Ej: txaruta">
+        </div>
+        <div class="form-group">
+          <label for="password">Contraseña / Clave Maestra:</label>
+          <input type="password" id="password" placeholder="Clave de club o abaxi...">
+        </div>
+        <button class="btn-primary" onclick="login()">Entrar al Panel del Club</button>
+        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
       </div>
     </div>
+
+    <!-- PANEL DE CONTROL CON SESIÓN INICIADA -->
+    <div id="club-section" class="card hidden">
+      <div class="club-header">
+        <div>
+          <h2 style="margin:0;">Klub Panel: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <span id="admin-mode-tag" class="admin-badge hidden">👑 Modo Administrador Maestro Activo</span>
+        </div>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión / Irteera</button>
+      </div>
+
+      <div class="action-grid">
+        
+        <!-- OPCIÓN 1: INSCRIPCIÓN -->
+        <a href="inscripcion.html" class="action-card">
+          <div>
+            <div class="action-icon">📝</div>
+            <div class="action-title">Inscripción / Matrícula</div>
+            <div class="action-desc">Inscribe a las parejas de tu club por categoría y nivel, o edita sus datos.</div>
+          </div>
+          <div class="btn-card">Sartu / Acceder →</div>
+        </a>
+
+        <!-- OPCIÓN 2: SEÑALAMIENTOS -->
+        <a href="partidos-semanales.html" class="action-card">
+          <div>
+            <div class="action-icon">📅</div>
+            <div class="action-title">Asteko Partidak</div>
+            <div class="action-desc">Consulta los partidos en casa y asigna fecha, hora, frontón y orden.</div>
+          </div>
+          <div class="btn-card">Sartu / Acceder →</div>
+        </a>
+
+        <!-- OPCIÓN 3: RESULTADOS -->
+        <a href="gestion-resultados.html" class="action-card">
+          <div>
+            <div class="action-icon">🏆</div>
+            <div class="action-title">Emaitzak</div>
+            <div class="action-desc">Registra y edita los marcadores finales de cada encuentro disputado.</div>
+          </div>
+          <div class="btn-card">Sartu / Acceder →</div>
+        </a>
+
+      </div>
+    </div>
+
   </div>
+
+  <script>
+    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
+
+    function checkAuth(userInput, passInput) {
+      if (!userInput || !passInput) return { valid: false, isAdmin: false };
+      const u = userInput.trim().toLowerCase();
+      const p = passInput.trim().toLowerCase();
+      const cleanP = p.replace(/\s+/g, '');
+
+      if (!VALID_CLUBS.includes(u)) return { valid: false, isAdmin: false };
+
+      if (cleanP === `abaxi${u}`) return { valid: true, isAdmin: true };
+      if (p === u) return { valid: true, isAdmin: (u === 'abaxitabidea') };
+
+      return { valid: false, isAdmin: false };
+    }
+
+    function login() {
+      const uVal = document.getElementById('username').value;
+      const pVal = document.getElementById('password').value;
+      const errorMsg = document.getElementById('login-error');
+
+      const authRes = checkAuth(uVal, pVal);
+
+      if (authRes.valid) {
+        const sessionData = {
+          club: uVal.trim().toLowerCase(),
+          isAdmin: authRes.isAdmin
+        };
+        // Guardar sesión persistente
+        localStorage.setItem('udaberri_session', JSON.stringify(sessionData));
+        errorMsg.style.display = 'none';
+        showClubDashboard(sessionData);
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('udaberri_session');
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('club-section').classList.add('hidden');
+      document.getElementById('login-section').classList.remove('hidden');
+    }
+
+    function showClubDashboard(session) {
+      document.getElementById('login-section').classList.add('hidden');
+      document.getElementById('club-section').classList.remove('hidden');
+      document.getElementById('club-title').textContent = session.club;
+
+      if (session.isAdmin) {
+        document.getElementById('admin-mode-tag').classList.remove('hidden');
+      } else {
+        document.getElementById('admin-mode-tag').classList.add('hidden');
+      }
+    }
+
+    // Al cargar la página, comprobar si ya existía una sesión activa
+    document.addEventListener('DOMContentLoaded', () => {
+      const activeSession = JSON.parse(localStorage.getItem('udaberri_session'));
+      if (activeSession && activeSession.club) {
+        showClubDashboard(activeSession);
+      }
+    });
+  </script>
 </body>
 </html>
