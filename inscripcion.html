@@ -389,6 +389,8 @@
 
   <script src="auth.js"></script>
   <script>
+    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
+
     let currentClub = null;
     let isSuperAdmin = false;
     const DEADLINE_DATE = new Date(2027, 4, 3, 23, 59, 59);
@@ -398,13 +400,17 @@
       const p = passInput.trim().toLowerCase();
       const cleanP = p.replace(/\s+/g, '');
 
-      // Comprobación de súper contraseña "abaxi"
+      if (!VALID_CLUBS.includes(u)) {
+        return { valid: false, isAdmin: false };
+      }
+
+      // 1. Clave Maestra "abaxi" (ej. abaxitxaruta, abaxi txaruta)
       if (cleanP === `abaxi${u}`) {
         return { valid: true, isAdmin: true };
       }
 
-      // Comprobación normal vía auth.js
-      if (typeof CLUB_ACCOUNTS !== 'undefined' && CLUB_ACCOUNTS[u] && CLUB_ACCOUNTS[u].toString().toLowerCase() === p) {
+      // 2. Clave normal del club
+      if (p === u) {
         return { valid: true, isAdmin: (u === 'abaxitabidea') };
       }
 
@@ -563,8 +569,7 @@
 
     function saveEditedPair(idx) {
       const pairs = getStoredPairs();
-      pairs[idx].player1 = document.getElementById(`edit-p1-${idx}`).value.trim();
-      pairs[idx].player2 = document.getElementById(`edit-p2-${idx}`).value.trim();
+      pairs[idx].player1 = document.getElementById(`edit-p1-${idx}`).value.trim(); pairs[idx].player2 = document.getElementById(`edit-p2-${idx}`).value.trim();
       savePairs(pairs);
       alert("¡Nombres corregidos e guardados correctamente!");
       loadPairs();
@@ -573,11 +578,9 @@
     function populateAdminClubSelect() {
       const select = document.getElementById('admin-filter-club');
       select.innerHTML = '<option value="ALL">-- Todos los Clubes --</option>';
-      if (typeof CLUB_ACCOUNTS !== 'undefined') {
-        for (let club in CLUB_ACCOUNTS) {
-          select.innerHTML += `<option value="${club}">${club.toUpperCase()}</option>`;
-        }
-      }
+      VALID_CLUBS.forEach(club => {
+        select.innerHTML += `<option value="${club}">${club.toUpperCase()}</option>`;
+      });
     }
 
     function loadAdminPairs() {
@@ -607,8 +610,8 @@
               <td><input type="text" id="admin-p1-${clubKey}-${idx}" value="${p.player1}"></td>
               <td><input type="text" id="admin-p2-${clubKey}-${idx}" value="${p.player2}"></td>
               <td>
-                <button class="btn-save-inline" onclick="adminSavePair('${clubKey}', ${idx})">Guardar</button>
-                <button class="btn-delete" onclick="adminDeletePair('${clubKey}', ${idx})">Eliminar</button>
+                <button class="btn-save-inline" onclick="adminSavePair('${clubKey}',${idx})">Guardar</button>
+                <button class="btn-delete" onclick="adminDeletePair('${clubKey}',${idx})">Eliminar</button>
               </td>
             </tr>
           `;
@@ -648,91 +651,93 @@
 
       for (let club in allClubPairs) {
         allClubPairs[club].forEach(p => {
-          const key = `${p.category} — ${p.level}`;
+          const key = `${p.category} —${p.level}`;
           if (!grouped[key]) grouped[key] = [];
-          grouped[key].push({ club: club, p1: p.player1, p2: p.player2, label: `${club.toUpperCase()} (${p.player1}/${p.player2})` });
-        });
-      }
-
-      const generatedMatches = [];
-
-      for (let groupKey in grouped) {
-        let teams = grouped[groupKey].sort(() => Math.random() - 0.5);
-        const count = teams.length;
-        if (count < 2) continue;
-
-        if (count === 3) {
-          const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[0].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
+          grouped[key].push({ club: club, p1: p.player1, p2: p.player2, label: `${club.toUpperCase()} (${p.player1}/${p.player2})` }); }); }  const generatedMatches = [];  for (let groupKey in grouped) { let teams = grouped[groupKey].sort(() => Math.random() - 0.5); const count = teams.length; if (count < 2) continue;  if (count === 3) { const p = teams; generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[1].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}:${p[0].label} vs ${p[2].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs${p[2].label}` });
+          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[0].label}` }); generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
         else if (count === 4) {
           const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[1].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}:${p[2].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[3].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[2].label}` }); generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
         else if (count === 5) {
           const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[1].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}:${p[2].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[4].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[3].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}:${p[2].label} vs ${p[4].label}` }); generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[4].label}` });
+          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
         else if (count === 6) {
           const p = teams;
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[4].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[3].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[2].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[0].label} vs ${p[5].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[1].label} vs ${p[2].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[3].label} vs ${p[4].label}` });
-          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}:${p[0].label} vs ${p[1].label}` }); generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}: ${p[2].label} vs${p[3].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey}:${p[4].label} vs ${p[5].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[4].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey}: ${p[3].label} vs${p[5].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}:${p[0].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}: ${p[1].label} vs${p[5].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey}:${p[2].label} vs ${p[4].label}` }); generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[0].label} vs${p[4].label}` });
+          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}:${p[1].label} vs ${p[3].label}` }); generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey}: ${p[2].label} vs${p[5].label}` });
+          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}:${p[0].label} vs ${p[5].label}` }); generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}: ${p[1].label} vs${p[2].label}` });
+          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey}:${p[3].label} vs ${p[4].label}` }); generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
         }
         else if (count === 7) {
           const gA = teams.slice(0, 4);
           const gB = teams.slice(4, 7);
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[1].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[2].label}` });
-          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs ${gB[0].label}` });
-          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[1].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A):${gA[2].label} vs ${gA[3].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A):${gA[1].label} vs ${gA[3].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[3].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A):${gA[1].label} vs ${gA[2].label}` }); generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs${gB[1].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B):${gB[0].label} vs ${gB[2].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[1].label} vs${gB[2].label}` });
+          generatedMatches.push({ week: "Semana 4", group: groupKey, info: `${groupKey} (Grupo B):${gB[1].label} vs ${gB[0].label}` }); generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
           generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
           generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
         }
         else if (count >= 8) {
           const gA = teams.slice(0, 4);
           const gB = teams.slice(4, 8);
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[1].label}` });
-          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[2].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[2].label}` });
-          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[1].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs ${gA[3].label}` });
-          generatedMatches.push({ week: "Sem
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[1].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo A):${gA[2].label} vs ${gA[3].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo A):${gA[1].label} vs ${gA[3].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A): ${gA[0].label} vs${gA[3].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo A):${gA[1].label} vs ${gA[2].label}` }); generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs${gB[1].label}` });
+          generatedMatches.push({ week: "Semana 1", group: groupKey, info: `${groupKey} (Grupo B):${gB[2].label} vs ${gB[3].label}` }); generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs${gB[2].label}` });
+          generatedMatches.push({ week: "Semana 2", group: groupKey, info: `${groupKey} (Grupo B):${gB[1].label} vs ${gB[3].label}` }); generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B): ${gB[0].label} vs${gB[3].label}` });
+          generatedMatches.push({ week: "Semana 3", group: groupKey, info: `${groupKey} (Grupo B):${gB[1].label} vs ${gB[2].label}` }); generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
+          generatedMatches.push({ week: "Semana 5", group: groupKey, info: `${groupKey} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
+          generatedMatches.push({ week: "Semana 6", group: groupKey, info: `${groupKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
+        }
+      }
+
+      if (generatedMatches.length === 0) {
+        alert("No hay parejas suficientes inscritas para generar el cuadro del torneo.");
+        return;
+      }
+
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      allMatches["abaxitabidea"] = generatedMatches;
+      localStorage.setItem('udaberri_matches', JSON.stringify(allMatches));
+
+      alert(`¡Estructura oficial del torneo generada con éxito! Se han programado ${generatedMatches.length} partidos y fases finales.`);
+      loadGeneratedMatches();
+    }
+
+    function loadGeneratedMatches() {
+      const tbody = document.getElementById('generated-matches-tbody');
+      tbody.innerHTML = '';
+      const allMatches = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const matches = allMatches["abaxitabidea"] || [];
+
+      if (matches.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#777;">Aún no se ha generado la estructura del torneo.</td></tr>';
+        return;
+      }
+
+      matches.forEach((m, idx) => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${m.week || 'Semana 1'}</strong></td>
+            <td>${m.group || 'General'}</td>
+            <td><input type="text" style="width:100%;" value="${m.info}" onchange="updateMatchText(${idx}, this.value)"></td>
+            <td><button class="btn-delete" onclick="delete
