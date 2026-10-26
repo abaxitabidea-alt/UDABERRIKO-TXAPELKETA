@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Udaberriko Txapelketak - Hasiera</title>
+  <title>Udaberriko Txapelketak - Hasiera / Inicio</title>
   <style>
     :root {
       --primary: #1b4332;
@@ -19,7 +19,6 @@
       margin: 0;
       padding: 0;
     }
-    
     header {
       background-color: var(--primary);
       color: white;
@@ -29,130 +28,160 @@
       justify-content: space-between;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .header-logo {
-      height: 55px;
-      width: auto;
-      border-radius: 6px;
-    }
-    .header-title {
-      flex-grow: 1;
-      text-align: center;
-    }
-    .header-title h1 {
-      margin: 0 0 0.2rem 0;
-      font-size: 2rem;
-    }
-    .header-title p {
-      margin: 0;
-      opacity: 0.9;
-      font-size: 0.95rem;
-    }
-    .header-spacer {
-      width: 55px; 
-    }
+    .header-logo { height: 50px; width: auto; border-radius: 4px; }
+    .header-title { flex-grow: 1; text-align: center; }
+    .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
+    .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
+    .header-spacer { width: 50px; }
 
-    @media (max-width: 600px) {
-      header {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-      .header-spacer { display: none; }
+    nav {
+      background-color: #143225;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      border-bottom: 4px solid transparent;
+      transition: all 0.2s ease;
+    }
+    nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
+    nav a.active {
+      border-bottom-color: #52b788;
+      background-color: rgba(255, 255, 255, 0.15);
     }
 
     .container {
       max-width: 900px;
-      margin: 2.5rem auto;
+      margin: 3rem auto;
       padding: 0 1rem;
     }
-    .card {
+    .welcome-card {
       background: var(--card);
-      border-radius: 12px;
+      border-radius: 8px;
       padding: 2.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
     }
-    .grid-portal {
+    .welcome-card h2 {
+      color: var(--primary);
+      margin-top: 0;
+      font-size: 2rem;
+    }
+    .welcome-card p {
+      color: #555;
+      font-size: 1.1rem;
+      line-height: 1.6;
+    }
+
+    .portal-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 2rem;
-      margin-top: 2rem;
     }
     .portal-card {
-      background: #ffffff;
-      border: 3px solid #e9ecef;
-      border-radius: 12px;
-      padding: 2rem 1.5rem;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 2rem;
       text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
       text-decoration: none;
       color: var(--text);
-      transition: all 0.3s ease;
+      border: 2px solid transparent;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
     }
     .portal-card:hover {
-      transform: translateY(-6px);
       border-color: var(--accent);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.1);
     }
-    
-    /* Estilo y tamaño controlado para las imágenes de los botones */
-    .portal-img {
-      height: 130px;
-      width: auto;
-      max-width: 100%;
-      object-fit: contain;
-      border-radius: 8px;
-      margin-bottom: 1.2rem;
+    .portal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
     }
-
-    .portal-card h2 {
+    .portal-title {
+      font-size: 1.4rem;
+      font-weight: bold;
       color: var(--primary);
-      margin: 0 0 0.5rem 0;
+      margin-bottom: 0.5rem;
     }
-    .portal-card p {
-      color: #6c757d;
-      margin: 0;
+    .portal-desc {
+      color: #666;
       font-size: 0.95rem;
-      line-height: 1.4;
+      margin-bottom: 1.5rem;
+    }
+    .btn-portal {
+      background-color: var(--accent);
+      color: white;
+      padding: 0.75rem 1.2rem;
+      border-radius: 4px;
+      font-weight: bold;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <img src="logo.png" alt="Abaxitabidea Logo" class="header-logo" onerror="this.style.display='none'">
-    
+    <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-title">
       <h1>Udaberriko Txapelketak</h1>
-      <p>Pelota Vasca / Esku Pilota — Antolatzailea: Abaxitabidea</p>
+      <p>Hasiera / Portada Oficial</p>
     </div>
-
     <div class="header-spacer"></div>
   </header>
 
+  <nav>
+    <a href="index.html" class="active">Hasiera / Inicio</a>
+    <a href="club-panel.html">Klub Atala</a>
+    <a href="pelotari.html">Partidak eta Emaitzak</a>
+  </nav>
+
   <div class="container">
-    <div class="card">
-      <h2 style="text-align:center; color: var(--primary);">Nola sartu nahi duzu? / ¿Cómo deseas acceder?</h2>
-      <p style="text-align:center; color: #555;">Hautatu zure profila txapelketaren kudeaketan edo kontsultan sartzeko:</p>
-
-      <div class="grid-portal">
-        <!-- OPCIÓN 1: CLUB -->
-        <a href="club-panel.html" class="portal-card">
-          <img src="club.jpg" alt="Kluba / Club" class="portal-img" onerror="this.src='https://via.placeholder.com/130?text=KLUBA'">
-          <h2>KLUBA / CLUB</h2>
-          <p>Kluben eremua: Izena emateak, partidak antolatu eta emaitzak sartu.</p>
-        </a>
-
-        <!-- OPCIÓN 2: PELOTARI -->
-        <a href="pelotari.html" class="portal-card">
-          <img src="pelotari.jpg" alt="Pelotari" class="portal-img" onerror="this.src='https://via.placeholder.com/130?text=PELOTARI'">
-          <h2>PELOTARI</h2>
-          <p>Kontsulta publikoa: Partidak, ordutegiak, frontoiak, emaitzak eta sailkapena.</p>
-        </a>
-      </div>
+    
+    <div class="welcome-card">
+      <h2>Ongi Etorri Udaberriko Txapelketara</h2>
+      <p>Aukeratu zure atala jarraitzeko: Klub atala inskripzioak eta señalamenduak kudeatzeko, edo Pelotari atala partidak, ordutegiak eta sailkapena kontsultatzeko.</p>
     </div>
+
+    <div class="portal-grid">
+      
+      <!-- ACCESO A CLUBES -->
+      <a href="club-panel.html" class="portal-card">
+        <div>
+          <div class="portal-icon">🏛️</div>
+          <div class="portal-title">Klub Atala</div>
+          <div class="portal-desc">Acceso restringido para clubes. Inskripzioak egin, asteko partidak seinalatu eta emaitzak sartu.</div>
+        </div>
+        <div class="btn-portal">Sartu Kluba / Entrar Club →</div>
+      </a>
+
+      <!-- ACCESO A PELOTARIS Y PÚBLICO -->
+      <a href="pelotari.html" class="portal-card">
+        <div>
+          <div class="portal-icon">⚾</div>
+          <div class="portal-title">Pelotari Portal</div>
+          <div class="portal-desc">Consulta pública. Partida guztiak, ordutegiak, frontoiak eta taldeen sailkapenak ikusi.</div>
+        </div>
+        <div class="btn-portal">Ikusi Partidak / Ver Partidos →</div>
+      </a>
+
+    </div>
+
   </div>
 
+  <!-- SCRIPT DE SEGURIDAD: Cierra la sesión automáticamente al pisar la portada principal -->
+  <script>
+    sessionStorage.removeItem('udaberri_session');
+    localStorage.removeItem('udaberri_session');
+  </script>
 </body>
 </html>
