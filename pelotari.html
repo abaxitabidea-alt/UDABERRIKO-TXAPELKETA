@@ -56,7 +56,7 @@
     }
 
     .container {
-      max-width: 950px;
+      max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1rem;
     }
@@ -68,54 +68,24 @@
       margin-bottom: 2rem;
     }
 
-    .filter-section { margin-bottom: 1.5rem; }
-    .filter-label {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      display: block;
-      color: var(--primary);
-    }
-    .btn-group {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
-    .btn-filter {
-      background-color: #e9ecef;
-      border: 1px solid #ced4da;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-    .btn-filter.active {
-      background-color: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    select.week-select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid var(--accent);
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: bold;
-      color: var(--primary);
-      background-color: #f8f9fa;
+    .filter-box {
+      background: #e8f5e9;
+      padding: 1.2rem;
+      border-radius: 8px;
+      border: 1px solid #c8e6c9;
       margin-bottom: 1.5rem;
     }
-
-    .group-header {
-      background-color: #e8f5e9;
-      color: var(--primary);
-      padding: 0.8rem 1rem;
-      border-left: 5px solid var(--accent);
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 0.4rem; }
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
       border-radius: 4px;
-      margin-top: 2rem;
-      font-size: 1.2rem;
       font-weight: bold;
     }
 
@@ -123,37 +93,30 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      margin-bottom: 1.5rem;
+      background: white;
     }
     th, td {
       padding: 0.75rem;
       border: 1px solid #e0e0e0;
-      text-align: left;
-    }
-    th { background-color: #e9ecef; }
-    
-    .table-standings th {
-      background-color: #2d6a4f;
-      color: white;
       text-align: center;
     }
-    .table-standings td { text-align: center; }
+    th { background-color: #e9ecef; }
 
-    .badge-pending {
-      color: #d97706;
-      background-color: #fef3c7;
+    .tag-scheduled {
+      background-color: #d8f3dc;
+      color: #1b4332;
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
+      font-weight: bold;
       font-size: 0.85rem;
-      font-weight: 600;
     }
-    .badge-confirmed {
-      color: #15803d;
-      background-color: #dcfce7;
+    .tag-pending {
+      background-color: #fff3cd;
+      color: #856404;
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
+      font-weight: bold;
       font-size: 0.85rem;
-      font-weight: 600;
     }
   </style>
 </head>
@@ -163,297 +126,120 @@
     <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-title">
       <h1>Udaberriko Txapelketak</h1>
-      <p>Pelotari Portal / Consulta Pública y Clasificación</p>
+      <p>Pelotari Portal / Egutegia eta Partidak</p>
     </div>
     <div class="header-spacer"></div>
   </header>
 
   <nav>
     <a href="index.html">← Hasiera / Inicio</a>
+    <a href="club-panel.html">Klub Atala</a>
     <a href="pelotari.html" class="active">Partidak eta Emaitzak</a>
   </nav>
 
   <div class="container">
     <div class="card">
-      
-      <!-- FILTROS DE CATEGORÍA Y NIVEL -->
-      <div class="filter-section">
-        <span class="filter-label">1. Aukeratu Kategoria / Selecciona Categoría:</span>
-        <div class="btn-group" id="cat-group">
-          <button class="btn-filter active" onclick="setCategory('Benjamín', this)">Benjamín</button>
-          <button class="btn-filter" onclick="setCategory('Alevín', this)">Alevín</button>
-          <button class="btn-filter" onclick="setCategory('Infantil', this)">Infantil</button>
-          <button class="btn-filter" onclick="setCategory('Cadete', this)">Cadete</button>
-          <button class="btn-filter" onclick="setCategory('Juvenil', this)">Juvenil</button>
-        </div>
+      <h2 style="color:var(--primary); margin-top:0;">📅 Partidak eta Ordutegiak</h2>
+      <p style="color:#666;">Aukeratu kategoria, maila eta astea partiduen xehetasunak ikusteko.</p>
 
-        <span class="filter-label">2. Aukeratu Maila / Selecciona Nivel:</span>
-        <div class="btn-group" id="level-group">
-          <button class="btn-filter active" onclick="setLevel('1. Maila (Primera)', this)">1ª Maila (Primera)</button>
-          <button class="btn-filter" onclick="setLevel('2. Maila (Segunda)', this)">2ª Maila (Segunda)</button>
-          <button class="btn-filter" onclick="setLevel('3. Maila (Tercera)', this)">3ª Maila (Tercera)</button>
+      <div class="filter-box">
+        <div class="filter-grid">
+          <div>
+            <label for="filter-cat">1. Kategoria / Categoría:</label>
+            <select id="filter-cat" onchange="renderPublicMatches()">
+              <option value="Benjamín">Benjamín</option>
+              <option value="Alevín">Alevín</option>
+              <option value="Infantil" selected>Infantil</option>
+              <option value="Cadete">Cadete</option>
+              <option value="Juvenil">Juvenil</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-level">2. Maila / Nivel:</label>
+            <select id="filter-level" onchange="renderPublicMatches()">
+              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+              <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
+              <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
+            </select>
+          </div>
+          <div>
+            <label for="filter-week">3. Astea / Semana:</label>
+            <select id="filter-week" onchange="renderPublicMatches()">
+              <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
+              <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
+              <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
+              <option value="Semana 4">Semana 4 (04/06/2027 - 06/06/2027)</option>
+              <option value="Semana 5">Semana 5 (11/06/2027 - 13/06/2027)</option>
+              <option value="Semana 6">Semana 6 (18/06/2027 - 20/06/2027)</option>
+            </select>
+          </div>
         </div>
-
-        <span class="filter-label">3. Aukeratu Astea / Selecciona Semana o Jornada:</span>
-        <select id="week-filter" class="week-select" onchange="loadMatchesAndStandings()">
-          <option value="ALL">📅 Todas las semanas / Aste guztiak</option>
-          <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
-          <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
-          <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
-          <option value="Semana 4">Semana 4 (04/06/2027 - 06/06/2027)</option>
-          <option value="Semana 5">Semana 5 (11/06/2027 - 13/06/2027)</option>
-          <option value="Semana 6">Semana 6 (18/06/2027 - 20/06/2027)</option>
-        </select>
       </div>
 
-      <h3 style="color:var(--primary);" id="current-filter-title">Benjamín — 1. Maila (Primera)</h3>
-
-      <div id="content-container"></div>
-
+      <div id="matches-display-container"></div>
     </div>
   </div>
 
   <script>
-    let selectedCategory = 'Benjamín';
-    let selectedLevel = '1. Maila (Primera)';
+    function renderPublicMatches() {
+      const selectedCat = document.getElementById('filter-cat').value;
+      const selectedLevel = document.getElementById('filter-level').value;
+      const selectedWeek = document.getElementById('filter-week').value;
+      const container = document.getElementById('matches-display-container');
 
-    function setCategory(cat, btn) {
-      selectedCategory = cat;
-      document.querySelectorAll('#cat-group .btn-filter').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      updateTitle();
-      loadMatchesAndStandings();
-    }
-
-    function setLevel(lvl, btn) {
-      selectedLevel = lvl;
-      document.querySelectorAll('#level-group .btn-filter').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      updateTitle();
-      loadMatchesAndStandings();
-    }
-
-    function updateTitle() {
-      document.getElementById('current-filter-title').textContent = `${selectedCategory} — ${selectedLevel}`;
-    }
-
-    function loadMatchesAndStandings() {
-      const container = document.getElementById('content-container');
-      container.innerHTML = '';
-      const selectedWeek = document.getElementById('week-filter').value;
-
+      const groupKey = `${selectedCat} — ${selectedLevel}`;
+      
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      const baseMatches = allMatchesData["abaxitabidea"] || [];
+      const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Señalamientos de clubes
-      const clubScheduled = [];
-      for (let club in allMatchesData) {
-        if (club !== "abaxitabidea") {
-          allMatchesData[club].forEach(m => clubScheduled.push({ ...m, clubOwner: club }));
-        }
-      }
+      // Filtrar por semana y grupo
+      const matches = officialMatches.filter(m => m.week === selectedWeek && m.info.includes(selectedCat) && m.info.includes(selectedLevel.split(' ')[0]));
 
-      // Filtrar partidos de la categoría y nivel seleccionados
-      const relevantMatches = baseMatches.filter(bm => {
-        const info = bm.info || '';
-        const grp = bm.group || '';
-        const matchesCat = info.includes(selectedCategory) || grp.includes(selectedCategory);
-        const matchesLvl = info.includes(selectedLevel) || grp.includes(selectedLevel) || info.includes(selectedLevel.split(' ')[0]);
-        return matchesCat && matchesLvl;
-      });
-
-      if (relevantMatches.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#777; margin:2rem 0;">Ez dago partidarik kategoria eta maila honetan. / No hay partidos registrados para este filtro.</p>';
+      if (matches.length === 0) {
+        container.innerHTML = `<p style="text-align:center; color:#777; padding:2rem;">Ez dago partidarik aste honetan aukeratutako mailan. / No hay partidos esta semana en esta categoría.</p>`;
         return;
       }
 
-      // Clasificar en subgrupos reales
-      const groupsMap = {};
-      relevantMatches.forEach(m => {
-        let subGroup = "Liguilla";
-        if (m.info.includes("Grupo A")) subGroup = "Grupo A";
-        else if (m.info.includes("Grupo B")) subGroup = "Grupo B";
-        else if (m.info.includes("SEMIFINAL") || m.info.includes("FINAL")) subGroup = "Fase Final (Play-offs)";
+      let html = `
+        <h3 style="color:var(--primary);">${groupKey} (${selectedWeek})</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Eguna / Fecha</th>
+              <th>Ordua / Hora</th>
+              <th>Frontoia / Frontón</th>
+              <th>Ordena</th>
+              <th>Topaketa / Encuentro</th>
+              <th>Emaitza / Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
 
-        if (!groupsMap[subGroup]) groupsMap[subGroup] = [];
-        groupsMap[subGroup].push(m);
-      });
+      matches.forEach(m => {
+        const dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
+        const timeDisp = m.time || '--:--';
+        const frontonDisp = m.fronton || '<span class="tag-pending">Por determinar</span>';
+        const orderDisp = m.order || '-';
+        const scoreDisp = m.score || '-';
 
-      for (let gName in groupsMap) {
-        const groupMatches = groupsMap[gName];
-
-        let htmlGroup = `<div class="group-header">🏆 ${gName}</div>`;
-
-        htmlGroup += `
-          <table>
-            <thead>
-              <tr>
-                <th>Eguna / Fecha</th>
-                <th>Ordua / Hora</th>
-                <th>Frontoia / Frontón</th>
-                <th>Ordena</th>
-                <th>Topaketa / Encuentro</th>
-                <th>Resultado</th>
-              </tr>
-            </thead>
-            <tbody>
+        html += `
+          <tr>
+            <td>${dateDisp}</td>
+            <td><strong>${timeDisp}</strong></td>
+            <td>${frontonDisp}</td>
+            <td>${orderDisp}</td>
+            <td style="text-align:left;"><strong>${m.info}</strong></td>
+            <td><strong>${scoreDisp}</strong></td>
+          </tr>
         `;
+      });
 
-        const standings = {};
-
-        groupMatches.forEach(bm => {
-          const matchWeek = bm.week || "Semana 1";
-          const matchesWeekFilter = (selectedWeek === 'ALL' || matchWeek === selectedWeek);
-
-          const scheduled = clubScheduled.find(cs => cs.info === bm.info || (cs.info && cs.info.includes(bm.info)));
-
-          const scoreText = bm.score ? `<strong>${bm.score}</strong>` : `-`;
-
-          if (matchesWeekFilter) {
-            const dateDisplay = scheduled ? `<span class="badge-confirmed">${scheduled.date}</span>` : `<span class="badge-pending">Por señalar</span>`;
-            const timeDisplay = scheduled ? scheduled.time : `--:--`;
-            const frontonDisplay = scheduled ? scheduled.fronton : `<span class="badge-pending">Por determinar</span>`;
-            const orderDisplay = scheduled ? scheduled.order : `-`;
-
-            htmlGroup += `
-              <tr>
-                <td>${dateDisplay}</td>
-                <td>${timeDisplay}</td>
-                <td>${frontonDisplay}</td>
-                <td>${orderDisplay}</td>
-                <td><strong>${bm.info}</strong></td>
-                <td>${scoreText}</td>
-              </tr>
-            `;
-          }
-
-          // Solo añadir a la tabla de posiciones si es un partido entre parejas reales (no cruces provisionales de semifinales)
-          if (gName !== "Fase Final (Play-offs)") {
-            extractTeamsFromInfo(bm.info).forEach(team => {
-              if (team && !team.includes("Grupo") && !team.includes("Clasificado") && !standings[team]) {
-                standings[team] = { name: team, pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, pts: 0 };
-              }
-            });
-
-            if (bm.score && bm.score.includes('-')) {
-              processScore(bm, standings);
-            }
-          }
-        });
-
-        htmlGroup += `</tbody></table>`;
-
-        // Solo dibujar la tabla de clasificación para la liguilla/grupos (no para la fase final)
-        if (gName !== "Fase Final (Play-offs)") {
-          htmlGroup += `
-            <h4 style="color:var(--accent); margin-top:1rem;">📊 Clasificación — ${gName}</h4>
-            <table class="table-standings">
-              <thead>
-                <tr>
-                  <th>Pos</th>
-                  <th style="text-align:left;">Pareja / Club</th>
-                  <th>PJ</th>
-                  <th>PG (2pt)</th>
-                  <th>PP (1pt)</th>
-                  <th>NP (0pt)</th>
-                  <th>TF</th>
-                  <th>TC</th>
-                  <th>Dif</th>
-                  <th>Puntos</th>
-                </tr>
-              </thead>
-              <tbody>
-          `;
-
-          const sortedStandings = Object.values(standings).sort((a, b) => {
-            if (b.pts !== a.pts) return b.pts - a.pts;
-            return (b.tf - b.tc) - (a.tf - a.tc);
-          });
-
-          if (sortedStandings.length === 0) {
-            htmlGroup += `<tr><td colspan="10" style="color:#777;">No hay partidos ni datos registrados aún.</td></tr>`;
-          } else {
-            sortedStandings.forEach((st, idx) => {
-              const dif = st.tf - st.tc;
-              const difText = dif > 0 ? `+${dif}` : `${dif}`;
-              htmlGroup += `
-                <tr>
-                  <td><strong>${idx + 1}º</strong></td>
-                  <td style="text-align:left;"><strong>${st.name}</strong></td>
-                  <td>${st.pj}</td>
-                  <td>${st.pg}</td>
-                  <td>${st.pp}</td>
-                  <td>${st.np}</td>
-                  <td>${st.tf}</td>
-                  <td>${st.tc}</td>
-                  <td>${difText}</td>
-                  <td><strong style="color:var(--primary); font-size:1.1rem;">${st.pts}</strong></td>
-                </tr>
-              `;
-            });
-          }
-
-          htmlGroup += `</tbody></table>`;
-        }
-
-        container.innerHTML += htmlGroup;
-      }
+      html += `</tbody></table>`;
+      container.innerHTML = html;
     }
 
-    function extractTeamsFromInfo(infoText) {
-      if (!infoText || !infoText.includes(':')) return [];
-      const parts = infoText.split(':');
-      if (parts.length > 1) {
-        const teams = parts[1].split('vs');
-        if (teams.length === 2) {
-          return [teams[0].trim(), teams[1].trim()];
-        }
-      }
-      return [];
-    }
-
-    function processScore(match, standings) {
-      const teams = extractTeamsFromInfo(match.info);
-      if (teams.length !== 2) return;
-
-      const t1 = teams[0];
-      const t2 = teams[1];
-      if (!standings[t1] || !standings[t2]) return;
-
-      const scores = match.score.split('-').map(s => s.trim().toUpperCase());
-
-      if (scores[0] === 'NP' || scores[1] === 'NP') {
-        if (scores[0] === 'NP' && scores[1] !== 'NP') {
-          standings[t1].pj++; standings[t1].np++; standings[t1].pts += 0;
-          standings[t2].pj++; standings[t2].pg++; standings[t2].pts += 2; standings[t2].tf += 22; standings[t2].tc += 0;
-        } else if (scores[1] === 'NP' && scores[0] !== 'NP') {
-          standings[t2].pj++; standings[t2].np++; standings[t2].pts += 0;
-          standings[t1].pj++; standings[t1].pg++; standings[t1].pts += 2; standings[t1].tf += 22; standings[t1].tc += 0;
-        }
-        return;
-      }
-
-      const s1 = parseInt(scores[0]);
-      const s2 = parseInt(scores[1]);
-
-      if (!isNaN(s1) && !isNaN(s2)) {
-        standings[t1].pj++;
-        standings[t2].pj++;
-
-        standings[t1].tf += s1; standings[t1].tc += s2;
-        standings[t2].tf += s2; standings[t2].tc += s1;
-
-        if (s1 > s2) {
-          standings[t1].pg++; standings[t1].pts += 2;
-          standings[t2].pp++; standings[t2].pts += 1;
-        } else {
-          standings[t2].pg++; standings[t2].pts += 2;
-          standings[t1].pp++; standings[t1].pts += 1;
-        }
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', loadMatchesAndStandings);
+    document.addEventListener('DOMContentLoaded', renderPublicMatches);
   </script>
 </body>
 </html>
