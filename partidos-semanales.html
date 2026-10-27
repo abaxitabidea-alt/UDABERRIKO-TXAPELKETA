@@ -12,122 +12,38 @@
       --card: #ffffff;
       --text: #212529;
     }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: var(--primary);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .header-logo { height: 50px; width: auto; border-radius: 4px; }
     .header-title { flex-grow: 1; text-align: center; }
     .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
     .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
     .header-spacer { width: 50px; }
 
-    nav {
-      background-color: #143225;
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      padding: 1rem 1.5rem;
-      font-weight: 600;
-      border-bottom: 4px solid transparent;
-      transition: all 0.2s ease;
-    }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; transition: all 0.2s ease; }
     nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
-    nav a.active {
-      border-bottom-color: #52b788;
-      background-color: rgba(255, 255, 255, 0.15);
-    }
+    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
 
-    .container {
-      max-width: 950px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      margin-bottom: 2rem;
-    }
+    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
     .hidden { display: none !important; }
 
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="date"], input[type="time"], select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
+    input[type="text"], input[type="date"], input[type="time"], select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
-    .club-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid var(--bg);
-      padding-bottom: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .logout-btn {
-      background-color: #d90429;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+    .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-    }
-    th, td {
-      padding: 0.75rem;
-      border: 1px solid #e0e0e0;
-      text-align: left;
-    }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
     
-    .btn-save {
-      background-color: var(--accent);
-      color: white;
-      border: none;
-      padding: 0.4rem 0.8rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+    .btn-save { background-color: var(--accent); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .btn-save:hover { background-color: var(--primary); }
     
-    .badge-home {
-      background-color: #d8f3dc;
-      color: #1b4332;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85rem;
-    }
+    .badge-home { background-color: #d8f3dc; color: #1b4332; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
   </style>
 </head>
 <body>
@@ -150,20 +66,17 @@
   </nav>
 
   <div class="container">
-    
-    <!-- PANTALLA SI NO HAY SESIÓN -->
     <div id="no-session-card" class="card" style="text-align:center;">
       <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
       <p>Debes iniciar sesión primero desde el panel principal del club.</p>
       <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
     </div>
 
-    <!-- PANEL DE SEÑALAMIENTOS -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
         <div>
           <h2 style="margin:0;">Señalamientos de: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <p style="margin:0.2rem 0 0 0; color:#666;">Asigna el día, hora y frontón a los partidos organizados en tu casa.</p>
+          <p style="margin:0.2rem 0 0 0; color:#666;">Asigna o modifica el día, hora y frontón a los partidos organizados en tu casa.</p>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
@@ -195,49 +108,24 @@
         </thead>
         <tbody id="home-matches-tbody"></tbody>
       </table>
-
     </div>
-
   </div>
 
   <script>
     let currentClub = null;
     let isSuperAdmin = false;
 
-    // Lista oficial ampliada de frontones FNPV
     const FNPV_FRONTONES = [
-      "Frontón Abadiño / Abaxitabidea",
-      "Frontón Municipal de Aoiz / Agoitz",
-      "Frontón Municipal de Alsasua / Altsasu",
-      "Frontón Municipal de Ameskoa (Eulate)",
-      "Frontón Polideportivo de Zizur Mayor (Ardoi)",
-      "Frontón Municipal de Araitz (Arribe)",
-      "Frontón Toki Eder (Atarrabia / Villava)",
-      "Frontón Retegi (Barañáin)",
-      "Frontón Baztan (Elizondo)",
-      "Frontón Eztegara (Bera)",
-      "Frontón Municipal de Berriozar",
-      "Frontón Buruzgain (Ultzama)",
-      "Frontón Municipal de Doneztebe / Santesteban",
-      "Frontón Ereta (Tafalla)",
-      "Frontón Erreka (Doneztebe)",
-      "Frontón de Irurita",
-      "Frontón Municipal de Irurtzun",
-      "Frontón Labrit (Iruñea / Pamplona)",
-      "Frontón Lagunak (Barañáin)",
-      "Frontón Municipal de Leitza",
-      "Frontón Municipal de Lodosa",
-      "Frontón López (Iturrama - Pamplona)",
-      "Trinquete de Mendillorri (Pamplona)",
-      "Frontón Municipal de Mutilva (Mutilendako)",
-      "Frontón Oberena (Pamplona)",
-      "Frontón Municipal de Oteiza (San Miguel)",
-      "Frontón Pilotajauku (Irurtzun)",
-      "Frontón Cantolagua (Sangüesa)",
-      "Frontón Toki Eder (Garínoain / Pueyo)",
-      "Frontón Umore Ona (Gozizu / Goizueta)",
-      "Frontón Zugarralde (Burlada)",
-      "OTRO"
+      "Frontón Abadiño / Abaxitabidea", "Frontón Municipal de Aoiz / Agoitz", "Frontón Municipal de Alsasua / Altsasu",
+      "Frontón Municipal de Ameskoa (Eulate)", "Frontón Polideportivo de Zizur Mayor (Ardoi)", "Frontón Municipal de Araitz (Arribe)",
+      "Frontón Toki Eder (Atarrabia / Villava)", "Frontón Retegi (Barañáin)", "Frontón Baztan (Elizondo)", "Frontón Eztegara (Bera)",
+      "Frontón Municipal de Berriozar", "Frontón Buruzgain (Ultzama)", "Frontón Municipal de Doneztebe / Santesteban",
+      "Frontón Ereta (Tafalla)", "Frontón Erreka (Doneztebe)", "Frontón de Irurita", "Frontón Municipal de Irurtzun",
+      "Frontón Labrit (Iruñea / Pamplona)", "Frontón Lagunak (Barañáin)", "Frontón Municipal de Leitza", "Frontón Municipal de Lodosa",
+      "Frontón López (Iturrama - Pamplona)", "Trinquete de Mendillorri (Pamplona)", "Frontón Municipal de Mutilva (Mutilendako)",
+      "Frontón Oberena (Pamplona)", "Frontón Municipal de Oteiza (San Miguel)", "Frontón Pilotajauku (Irurtzun)",
+      "Frontón Cantolagua (Sangüesa)", "Frontón Toki Eder (Garínoain / Pueyo)", "Frontón Umore Ona (Gozizu / Goizueta)",
+      "Frontón Zugarralde (Burlada)", "OTRO"
     ];
 
     function checkSession() {
@@ -263,6 +151,19 @@
       window.location.href = 'club-panel.html';
     }
 
+    function isClubLocal(infoText, clubName) {
+      if (!infoText) return false;
+      const parts = infoText.split(':');
+      if (parts.length > 1) {
+        const teams = parts[1].split('vs');
+        if (teams.length > 0) {
+          const localTeamStr = teams[0].trim().toLowerCase();
+          return localTeamStr.includes(clubName.toLowerCase());
+        }
+      }
+      return false;
+    }
+
     function loadHomeMatches() {
       const selectedWeek = document.getElementById('week-select').value;
       const tbody = document.getElementById('home-matches-tbody');
@@ -274,9 +175,7 @@
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
       const homeMatches = officialMatches.filter(m => {
-        const isMatchWeek = (m.week === selectedWeek);
-        const isLocal = isClubLocal(m.info, currentClub);
-        return isMatchWeek && (isSuperAdmin || isLocal);
+        return m.week === selectedWeek && (isSuperAdmin || isClubLocal(m.info, currentClub));
       });
 
       if (homeMatches.length === 0) {
@@ -337,24 +236,10 @@
       const selectVal = document.getElementById(`fronton-${idx}`).value;
       const customInput = document.getElementById(`fronton-custom-${idx}`);
       if (selectVal === 'OTRO') {
-        customInput.style.display = 'block';
-        customInput.focus();
+        customInput.style.display = 'block'; customInput.focus();
       } else {
         customInput.style.display = 'none';
       }
-    }
-
-    function isClubLocal(infoText, clubName) {
-      if (!infoText) return false;
-      const parts = infoText.split(':');
-      if (parts.length > 1) {
-        const teams = parts[1].split('vs');
-        if (teams.length > 0) {
-          const localTeamStr = teams[0].trim().toLowerCase();
-          return localTeamStr.startsWith(clubName.toLowerCase());
-        }
-      }
-      return false;
     }
 
     function saveMatchSchedule(idx) {
@@ -377,9 +262,7 @@
       let masterMatches = allMatchesData["abaxitabidea"] || [];
 
       const homeMatches = masterMatches.filter(m => {
-        const isMatchWeek = (m.week === selectedWeek);
-        const isLocal = isClubLocal(m.info, currentClub);
-        return isMatchWeek && (isSuperAdmin || isLocal);
+        return m.week === selectedWeek && (isSuperAdmin || isClubLocal(m.info, currentClub));
       });
 
       const targetMatch = homeMatches[idx];
@@ -393,7 +276,7 @@
 
           allMatchesData["abaxitabidea"] = masterMatches;
           localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
-          alert("¡Señalamiento guardado con éxito! Se ha publicado en el portal de Pelotaris.");
+          alert("¡Señalamiento guardado con éxito! Se ha actualizado inmediatamente en el portal de Pelotaris.");
         }
       }
     }
