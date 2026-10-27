@@ -236,12 +236,12 @@
 
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       const officialMatches = allMatchesData["abaxitabidea"] || [];
-      const myScheduled = allMatchesData[currentClub] || [];
 
+      // Filtrar los partidos donde el club activo es el equipo LOCAL
       const homeMatches = officialMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isClubLocal(m.info, currentClub);
-        return isMatchWeek && isLocal;
+        return isMatchWeek && (isSuperAdmin || isLocal);
       });
 
       if (homeMatches.length === 0) {
@@ -250,12 +250,10 @@
       }
 
       homeMatches.forEach((m, idx) => {
-        const savedData = myScheduled.find(s => s.info === m.info) || {};
-
-        const dateVal = savedData.date || '';
-        const timeVal = savedData.time || '';
-        const frontonVal = savedData.fronton || '';
-        const orderVal = savedData.order || '1º Partido';
+        const dateVal = m.date || '';
+        const timeVal = m.time || '';
+        const frontonVal = m.fronton || '';
+        const orderVal = m.order || '1º Partido';
 
         tbody.innerHTML += `
           <tr>
@@ -263,7 +261,7 @@
               <span class="badge-home">ETXEAN / LOCAL</span><br>
               <strong>${m.info}</strong>
             </td>
-            <td><input type="date" id="date-${idx}" value="${dateVal}"></td>
+            <td><input type="date" id="date-${idx}" value="${formatDateInput(dateVal)}"></td>
             <td><input type="time" id="time-${idx}" value="${timeVal}"></td>
             <td>
               <select id="fronton-${idx}">
@@ -284,7 +282,7 @@
               </select>
             </td>
             <td>
-              <button class="btn-save" onclick="saveMatchSchedule('${m.info.replace(/'/g, "\\'")}', ${idx})">Gorde / Guardar</button>
+              <button class="btn-save" onclick="saveMatchSchedule(${idx})">Gorde / Guardar</button>
             </td>
           </tr>
         `;
@@ -292,19 +290,20 @@
     }
 
     function isClubLocal(infoText, clubName) {
-      if (!infoText || !infoText.includes(':')) return false;
+      if (!infoText) return false;
       const parts = infoText.split(':');
       if (parts.length > 1) {
         const teams = parts[1].split('vs');
         if (teams.length > 0) {
-          const localTeam = teams[0].trim().toLowerCase();
-          return localTeam.startsWith(clubName.toLowerCase());
+          const localTeamStr = teams[0].trim().toLowerCase();
+          return localTeamStr.startsWith(clubName.toLowerCase());
         }
       }
       return false;
     }
 
-    function saveMatchSchedule(infoText, idx) {
+    function saveMatchSchedule(idx) {
+      const selectedWeek = document.getElementById('week-select').value;
       const dateVal = document.getElementById(`date-${idx}`).value;
       const timeVal = document.getElementById(`time-${idx}`).value;
       const frontonVal = document.getElementById(`fronton-${idx}`).value;
@@ -316,33 +315,43 @@
       }
 
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
-      let myScheduled = allMatchesData[currentClub] || [];
+      let masterMatches = allMatchesData["abaxitabidea"] || [];
 
-      const existingIdx = myScheduled.findIndex(s => s.info === infoText);
-      const matchObject = {
-        info: infoText,
-        date: formatDateDisplay(dateVal),
-        time: timeVal,
-        fronton: frontonVal,
-        order: orderVal
-      };
+      // Filtrar los mismos partidos de la vista activa para modificar el índice exacto
+      const homeMatches = masterMatches.filter(m => {
+        const isMatchWeek = (m.week === selectedWeek);
+        const isLocal = isClubLocal(m.info, currentClub);
+        return isMatchWeek && (isSuperAdmin || isLocal);
+      });
 
-      if (existingIdx >= 0) {
-        myScheduled[existingIdx] = matchObject;
-      } else {
-        myScheduled.push(matchObject);
+      const targetMatch = homeMatches[idx];
+      if (targetMatch) {
+        // Guardar directamente en el objeto maestro oficial del torneo
+        const realIdx = masterMatches.findIndex(m => m.info === targetMatch.info && m.week === targetMatch.week);
+        if (realIdx >= 0) {
+          masterMatches[realIdx].date = formatDateDisplay(dateVal);
+          masterMatches[realIdx].time = timeVal;
+          masterMatches[realIdx].fronton = frontonVal;
+          masterMatches[realIdx].order = orderVal;
+
+          allMatchesData["abaxitabidea"] = masterMatches;
+          localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
+          alert("¡Señalamiento guardado con éxito! Se ha publicado en el portal de Pelotaris.");
+        }
       }
-
-      allMatchesData[currentClub] = myScheduled;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
-
-      alert("¡Señalamiento guardado con éxito!");
     }
 
     function formatDateDisplay(yyyy_mm_dd) {
       if (!yyyy_mm_dd) return '';
       const parts = yyyy_mm_dd.split('-');
+      if (parts.length < 3) return yyyy_mm_dd;
       return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+
+    function formatDateInput(dd_mm_yyyy) {
+      if (!dd_mm_yyyy || !dd_mm_yyyy.includes('/')) return dd_mm_yyyy;
+      const parts = dd_mm_yyyy.split('/');
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
 
     document.addEventListener('DOMContentLoaded', checkSession);
