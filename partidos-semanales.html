@@ -188,7 +188,7 @@
             <th>Enfrentamiento / Partido</th>
             <th>Eguna / Fecha</th>
             <th>Ordua / Hora</th>
-            <th>Frontoia / Frontón</th>
+            <th>Frontoia / Frontón (FNPV)</th>
             <th>Ordena</th>
             <th>Acción</th>
           </tr>
@@ -203,6 +203,42 @@
   <script>
     let currentClub = null;
     let isSuperAdmin = false;
+
+    // Lista oficial ampliada de frontones FNPV
+    const FNPV_FRONTONES = [
+      "Frontón Abadiño / Abaxitabidea",
+      "Frontón Municipal de Aoiz / Agoitz",
+      "Frontón Municipal de Alsasua / Altsasu",
+      "Frontón Municipal de Ameskoa (Eulate)",
+      "Frontón Polideportivo de Zizur Mayor (Ardoi)",
+      "Frontón Municipal de Araitz (Arribe)",
+      "Frontón Toki Eder (Atarrabia / Villava)",
+      "Frontón Retegi (Barañáin)",
+      "Frontón Baztan (Elizondo)",
+      "Frontón Eztegara (Bera)",
+      "Frontón Municipal de Berriozar",
+      "Frontón Buruzgain (Ultzama)",
+      "Frontón Municipal de Doneztebe / Santesteban",
+      "Frontón Ereta (Tafalla)",
+      "Frontón Erreka (Doneztebe)",
+      "Frontón de Irurita",
+      "Frontón Municipal de Irurtzun",
+      "Frontón Labrit (Iruñea / Pamplona)",
+      "Frontón Lagunak (Barañáin)",
+      "Frontón Municipal de Leitza",
+      "Frontón Municipal de Lodosa",
+      "Frontón López (Iturrama - Pamplona)",
+      "Trinquete de Mendillorri (Pamplona)",
+      "Frontón Municipal de Mutilva (Mutilendako)",
+      "Frontón Oberena (Pamplona)",
+      "Frontón Municipal de Oteiza (San Miguel)",
+      "Frontón Pilotajauku (Irurtzun)",
+      "Frontón Cantolagua (Sangüesa)",
+      "Frontón Toki Eder (Garínoain / Pueyo)",
+      "Frontón Umore Ona (Gozizu / Goizueta)",
+      "Frontón Zugarralde (Burlada)",
+      "OTRO"
+    ];
 
     function checkSession() {
       const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
@@ -237,7 +273,6 @@
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Filtrar los partidos donde el club activo es el equipo LOCAL
       const homeMatches = officialMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isClubLocal(m.info, currentClub);
@@ -255,6 +290,19 @@
         const frontonVal = m.fronton || '';
         const orderVal = m.order || '1º Partido';
 
+        let optionsHtml = `<option value="">-- Selecciona frontón FNPV --</option>`;
+        let isCustomFronton = true;
+
+        FNPV_FRONTONES.forEach(f => {
+          if (f === "OTRO") return;
+          const selected = (frontonVal === f) ? 'selected' : '';
+          if (selected) isCustomFronton = false;
+          optionsHtml += `<option value="${f}" ${selected}>${f}</option>`;
+        });
+
+        const customSelected = (isCustomFronton && frontonVal !== '') ? 'selected' : '';
+        optionsHtml += `<option value="OTRO" ${customSelected}>Otro / Beste bat...</option>`;
+
         tbody.innerHTML += `
           <tr>
             <td>
@@ -264,14 +312,10 @@
             <td><input type="date" id="date-${idx}" value="${formatDateInput(dateVal)}"></td>
             <td><input type="time" id="time-${idx}" value="${timeVal}"></td>
             <td>
-              <select id="fronton-${idx}">
-                <option value="">Selecciona frontón...</option>
-                <option value="Frontón Baztan (Elizondo)" ${frontonVal.includes('Baztan') ? 'selected' : ''}>Frontón Baztan (Elizondo)</option>
-                <option value="Frontón Municipal de Doneztebe" ${frontonVal.includes('Doneztebe') ? 'selected' : ''}>Frontón Municipal de Doneztebe</option>
-                <option value="Frontón de Irurita" ${frontonVal.includes('Irurita') ? 'selected' : ''}>Frontón de Irurita</option>
-                <option value="Frontón Oberena (Iruña)" ${frontonVal.includes('Oberena') ? 'selected' : ''}>Frontón Oberena (Iruña)</option>
-                <option value="Frontón Gaskonia (Oiartzun)" ${frontonVal.includes('Gaskonia') ? 'selected' : ''}>Frontón Gaskonia (Oiartzun)</option>
+              <select id="fronton-${idx}" onchange="toggleCustomFronton(${idx})">
+                ${optionsHtml}
               </select>
+              <input type="text" id="fronton-custom-${idx}" placeholder="Escribe el frontón..." value="${isCustomFronton ? frontonVal : ''}" style="margin-top:0.4rem; display:${isCustomFronton && frontonVal !== '' ? 'block' : 'none'};">
             </td>
             <td>
               <select id="order-${idx}">
@@ -287,6 +331,17 @@
           </tr>
         `;
       });
+    }
+
+    function toggleCustomFronton(idx) {
+      const selectVal = document.getElementById(`fronton-${idx}`).value;
+      const customInput = document.getElementById(`fronton-custom-${idx}`);
+      if (selectVal === 'OTRO') {
+        customInput.style.display = 'block';
+        customInput.focus();
+      } else {
+        customInput.style.display = 'none';
+      }
     }
 
     function isClubLocal(infoText, clubName) {
@@ -306,8 +361,12 @@
       const selectedWeek = document.getElementById('week-select').value;
       const dateVal = document.getElementById(`date-${idx}`).value;
       const timeVal = document.getElementById(`time-${idx}`).value;
-      const frontonVal = document.getElementById(`fronton-${idx}`).value;
+      let frontonVal = document.getElementById(`fronton-${idx}`).value;
       const orderVal = document.getElementById(`order-${idx}`).value;
+
+      if (frontonVal === 'OTRO') {
+        frontonVal = document.getElementById(`fronton-custom-${idx}`).value.trim();
+      }
 
       if (!dateVal || !timeVal || !frontonVal) {
         alert("Por favor, rellena el día, la hora y el frontón antes de guardar.");
@@ -317,7 +376,6 @@
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       let masterMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Filtrar los mismos partidos de la vista activa para modificar el índice exacto
       const homeMatches = masterMatches.filter(m => {
         const isMatchWeek = (m.week === selectedWeek);
         const isLocal = isClubLocal(m.info, currentClub);
@@ -326,7 +384,6 @@
 
       const targetMatch = homeMatches[idx];
       if (targetMatch) {
-        // Guardar directamente en el objeto maestro oficial del torneo
         const realIdx = masterMatches.findIndex(m => m.info === targetMatch.info && m.week === targetMatch.week);
         if (realIdx >= 0) {
           masterMatches[realIdx].date = formatDateDisplay(dateVal);
