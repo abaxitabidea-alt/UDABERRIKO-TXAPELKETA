@@ -118,6 +118,13 @@
       font-weight: bold;
       font-size: 0.85rem;
     }
+    
+    .section-title {
+      color: var(--primary);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.4rem;
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
@@ -126,7 +133,7 @@
     <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-title">
       <h1>Udaberriko Txapelketak</h1>
-      <p>Pelotari Portal / Egutegia eta Partidak</p>
+      <p>Pelotari Portal / Egutegia, Partidak eta Sailkapenak</p>
     </div>
     <div class="header-spacer"></div>
   </header>
@@ -139,14 +146,14 @@
 
   <div class="container">
     <div class="card">
-      <h2 style="color:var(--primary); margin-top:0;">📅 Partidak eta Ordutegiak</h2>
-      <p style="color:#666;">Aukeratu kategoria, maila eta astea partiduen xehetasunak ikusteko.</p>
+      <h2 style="color:var(--primary); margin-top:0;">⚾ Partidak eta Sailkapenak</h2>
+      <p style="color:#666;">Aukeratu kategoria, maila eta astea partiduen zehaztasunak eta sailkapena ikusteko.</p>
 
       <div class="filter-box">
         <div class="filter-grid">
           <div>
-            <label for="filter-cat">1. Kategoria / Categoría:</label>
-            <select id="filter-cat" onchange="renderPublicMatches()">
+            <label for="filter-cat">1. Aukeratu Kategoria:</label>
+            <select id="filter-cat" onchange="renderPublicPortal()">
               <option value="Benjamín">Benjamín</option>
               <option value="Alevín">Alevín</option>
               <option value="Infantil" selected>Infantil</option>
@@ -155,16 +162,16 @@
             </select>
           </div>
           <div>
-            <label for="filter-level">2. Maila / Nivel:</label>
-            <select id="filter-level" onchange="renderPublicMatches()">
+            <label for="filter-level">2. Aukeratu Maila:</label>
+            <select id="filter-level" onchange="renderPublicPortal()">
               <option value="1. Maila (Primera)">1. Maila (Primera)</option>
               <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
               <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
             </select>
           </div>
           <div>
-            <label for="filter-week">3. Astea / Semana:</label>
-            <select id="filter-week" onchange="renderPublicMatches()">
+            <label for="filter-week">3. Aukeratu Astea:</label>
+            <select id="filter-week" onchange="renderPublicPortal()">
               <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
               <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
               <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
@@ -176,70 +183,209 @@
         </div>
       </div>
 
-      <div id="matches-display-container"></div>
+      <!-- SECCIÓN DE PARTIDOS -->
+      <div id="matches-container"></div>
+
+      <!-- SECCIÓN DE CLASIFICACIÓN -->
+      <div id="standings-container"></div>
+
     </div>
   </div>
 
   <script>
-    function renderPublicMatches() {
+    function renderPublicPortal() {
       const selectedCat = document.getElementById('filter-cat').value;
       const selectedLevel = document.getElementById('filter-level').value;
       const selectedWeek = document.getElementById('filter-week').value;
-      const container = document.getElementById('matches-display-container');
 
       const groupKey = `${selectedCat} — ${selectedLevel}`;
-      
+
       const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Filtrar por semana y grupo
-      const matches = officialMatches.filter(m => m.week === selectedWeek && m.info.includes(selectedCat) && m.info.includes(selectedLevel.split(' ')[0]));
+      // 1. DIBUJAR TABLA DE PARTIDOS DE LA SEMANA SELECCIONADA
+      const matchesContainer = document.getElementById('matches-container');
+      
+      // Filtrar partidos que coincidan con la categoría, nivel y semana
+      const matchesOfWeek = officialMatches.filter(m => {
+        const isCatLvl = m.info.includes(selectedCat) && m.info.includes(selectedLevel.split(' ')[0]);
+        return m.week === selectedWeek && isCatLvl;
+      });
 
-      if (matches.length === 0) {
-        container.innerHTML = `<p style="text-align:center; color:#777; padding:2rem;">Ez dago partidarik aste honetan aukeratutako mailan. / No hay partidos esta semana en esta categoría.</p>`;
+      let matchesHtml = `<h3 class="section-title">📅 ${groupKey} (${selectedWeek})</h3>`;
+
+      if (matchesOfWeek.length === 0) {
+        matchesHtml += `<p style="text-align:center; color:#777; padding:1.5rem;">Ez dago partidarik aste honetan aukeratutako mailan.</p>`;
+      } else {
+        matchesHtml += `
+          <table>
+            <thead>
+              <tr>
+                <th>Eguna / Fecha</th>
+                <th>Ordua / Hora</th>
+                <th>Frontoia / Frontón</th>
+                <th>Ordena</th>
+                <th>Topaketa / Encuentro</th>
+                <th>Emaitza / Resultado</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        matchesOfWeek.forEach(m => {
+          // Buscar si algún club ha hecho el señalamiento en su cuenta
+          let dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
+          let timeDisp = m.time || '--:--';
+          let frontonDisp = m.fronton || `<span class="tag-pending">Por determinar</span>`;
+          let orderDisp = m.order || '-';
+          let scoreDisp = m.score || '-';
+
+          matchesHtml += `
+            <tr>
+              <td>${dateDisp}</td>
+              <td><strong>${timeDisp}</strong></td>
+              <td>${frontonDisp}</td>
+              <td>${orderDisp}</td>
+              <td style="text-align:left;"><strong>${m.info}</strong></td>
+              <td><strong>${scoreDisp}</strong></td>
+            </tr>
+          `;
+        });
+
+        matchesHtml += `</tbody></table>`;
+      }
+
+      matchesContainer.innerHTML = matchesHtml;
+
+      // 2. DIBUJAR TABLA DE CLASIFICACIÓN ACUMULADA
+      renderStandings(selectedCat, selectedLevel);
+    }
+
+    function renderStandings(catName, lvlName) {
+      const container = document.getElementById('standings-container');
+      const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const officialMatches = allMatchesData["abaxitabidea"] || [];
+
+      // Obtener todas las parejas inscritas en esta categoría y nivel
+      const categoryPairs = [];
+      for (let club in allPairsData) {
+        allPairsData[club].forEach(p => {
+          if (p.category === catName && p.level === lvlName) {
+            categoryPairs.push({
+              name: `${club.toUpperCase()} (${p.player1}/${p.player2})`,
+              club: club.toUpperCase(),
+              pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, diff: 0, pts: 0
+            });
+          }
+        });
+      }
+
+      if (categoryPairs.length === 0) {
+        container.innerHTML = `<h3 class="section-title">📊 Sailkapena / Clasificación</h3><p style="color:#777;">No hay parejas inscritas para calcular la clasificación.</p>`;
         return;
       }
 
-      let html = `
-        <h3 style="color:var(--primary);">${groupKey} (${selectedWeek})</h3>
+      // Procesar resultados de los partidos jugados
+      officialMatches.forEach(m => {
+        if (m.info.includes(catName) && m.info.includes(lvlName.split(' ')[0]) && m.score && m.score.includes('-')) {
+          const parts = m.info.split(':');
+          if (parts.length > 1) {
+            const teams = parts[1].split('vs');
+            if (teams.length === 2) {
+              const t1Name = teams[0].trim();
+              const t2Name = teams[1].trim();
+
+              const scoreParts = m.score.split('-');
+              const s1Raw = scoreParts[0].trim().toUpperCase();
+              const s2Raw = scoreParts[1].trim().toUpperCase();
+
+              const p1 = categoryPairs.find(p => p.name === t1Name || t1Name.includes(p.club));
+              const p2 = categoryPairs.find(p => p.name === t2Name || t2Name.includes(p.club));
+
+              if (p1 && p2) {
+                p1.pj++;
+                p2.pj++;
+
+                if (s1Raw === 'NP') {
+                  p1.np++;
+                  p2.pg++;
+                  p2.tf += 22; p2.tc += 0;
+                  p2.pts += 2;
+                } else if (s2Raw === 'NP') {
+                  p2.np++;
+                  p1.pg++;
+                  p1.tf += 22; p1.tc += 0;
+                  p1.pts += 2;
+                } else {
+                  const s1 = parseInt(s1Raw) || 0;
+                  const s2 = parseInt(s2Raw) || 0;
+
+                  p1.tf += s1; p1.tc += s2;
+                  p2.tf += s2; p2.tc += s1;
+
+                  if (s1 > s2) {
+                    p1.pg++; p1.pts += 2;
+                    p2.pp++; p2.pts += 1;
+                  } else {
+                    p2.pg++; p2.pts += 2;
+                    p1.pp++; p1.pts += 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Calcular diferencia de tantos
+      categoryPairs.forEach(p => p.diff = p.tf - p.tc);
+
+      // Ordenar por puntos y luego por diferencia de tantos
+      categoryPairs.sort((a, b) => b.pts - a.pts || b.diff - a.diff);
+
+      let standingsHtml = `
+        <h3 class="section-title">📊 Sailkapena — ${catName} (${lvlName})</h3>
         <table>
           <thead>
             <tr>
-              <th>Eguna / Fecha</th>
-              <th>Ordua / Hora</th>
-              <th>Frontoia / Frontón</th>
-              <th>Ordena</th>
-              <th>Topaketa / Encuentro</th>
-              <th>Emaitza / Resultado</th>
+              <th style="width:50px;">Pos</th>
+              <th style="text-align:left;">Pareja / Club</th>
+              <th>PJ</th>
+              <th>PG (2pt)</th>
+              <th>PP (1pt)</th>
+              <th>NP (0pt)</th>
+              <th>TF</th>
+              <th>TC</th>
+              <th>Dif</th>
+              <th>Puntos</th>
             </tr>
           </thead>
           <tbody>
       `;
 
-      matches.forEach(m => {
-        const dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
-        const timeDisp = m.time || '--:--';
-        const frontonDisp = m.fronton || '<span class="tag-pending">Por determinar</span>';
-        const orderDisp = m.order || '-';
-        const scoreDisp = m.score || '-';
-
-        html += `
+      categoryPairs.forEach((p, idx) => {
+        standingsHtml += `
           <tr>
-            <td>${dateDisp}</td>
-            <td><strong>${timeDisp}</strong></td>
-            <td>${frontonDisp}</td>
-            <td>${orderDisp}</td>
-            <td style="text-align:left;"><strong>${m.info}</strong></td>
-            <td><strong>${scoreDisp}</strong></td>
+            <td><strong>${idx + 1}º</strong></td>
+            <td style="text-align:left;"><strong>${p.name}</strong></td>
+            <td>${p.pj}</td>
+            <td>${p.pg}</td>
+            <td>${p.pp}</td>
+            <td>${p.np}</td>
+            <td>${p.tf}</td>
+            <td>${p.tc}</td>
+            <td>${p.diff > 0 ? '+' + p.diff : p.diff}</td>
+            <td><strong style="color:var(--primary); font-size:1.1rem;">${p.pts}</strong></td>
           </tr>
         `;
       });
 
-      html += `</tbody></table>`;
-      container.innerHTML = html;
+      standingsHtml += `</tbody></table>`;
+      container.innerHTML = standingsHtml;
     }
 
-    document.addEventListener('DOMContentLoaded', renderPublicMatches);
+    document.addEventListener('DOMContentLoaded', renderPublicPortal);
   </script>
 </body>
 </html>
