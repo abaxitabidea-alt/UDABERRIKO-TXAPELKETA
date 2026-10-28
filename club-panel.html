@@ -43,8 +43,8 @@
     .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
     .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-    .admin-nav-shortcuts { display: flex; gap: 1rem; margin-bottom: 1.5rem; background: #e8f5e9; padding: 1rem; border-radius: 8px; border: 1px solid #c8e6c9; justify-content: space-around; flex-wrap: wrap; }
-    .btn-shortcut { background-color: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .admin-nav-shortcuts { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; background: #e8f5e9; padding: 1rem; border-radius: 8px; border: 1px solid #c8e6c9; justify-content: space-around; flex-wrap: wrap; }
+    .btn-shortcut { background-color: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; }
     .btn-shortcut:hover { background-color: var(--accent); }
 
     .cat-tabs { display: flex; gap: 0.5rem; border-bottom: 3px solid var(--primary); margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -158,10 +158,12 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
+      <!-- SHORTCUTS ACTUALIZADOS CON ACCESO A PARTIDAK Y SAILKAPENAK -->
       <div class="admin-nav-shortcuts">
-        <a href="gestion-resultados.html" class="btn-shortcut">🏆 Ir a Modificar Emaitzak (Resultados)</a>
-        <a href="partidos-semanales.html" class="btn-shortcut">📅 Ir a Asteko Partidak (Señalamientos)</a>
-        <a href="inscripcion.html" class="btn-shortcut">📝 Ir a Inscripciones</a>
+        <a href="pelotari.html" class="btn-shortcut">⚾ Consultar Partidak eta Sailkapenak</a>
+        <a href="gestion-resultados.html" class="btn-shortcut">🏆 Modificar Emaitzak</a>
+        <a href="partidos-semanales.html" class="btn-shortcut">📅 Asteko Partidak</a>
+        <a href="inscripcion.html" class="btn-shortcut">📝 Inscripciones</a>
       </div>
 
       <div class="cat-tabs">
@@ -172,7 +174,7 @@
         <button class="tab-btn" onclick="switchCategory('Juvenil', this)">Juvenil</button>
       </div>
 
-      <div id="category-levels-container">Cargando datos frescos de la nube...</div>
+      <div id="category-levels-container">Cargando datos de la nube...</div>
     </div>
   </div>
 
@@ -243,11 +245,10 @@
 
     async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p>Cargando datos de la nube...</p>';
+      container.innerHTML = '<p>Cargando datos frescos de la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
       
-      // Fuerza consulta directa a la nube
       const allPairsData = await getCloudPairs();
       const allMatchesData = await getCloudMatches();
       const masterMatches = allMatchesData["abaxitabidea"] || [];
@@ -346,7 +347,6 @@
     }
 
     async function generateLevelMatches(catName, lvlName) {
-      // FORZAR RECUPERACIÓN DIRECTA DE PAREJAS ACTUALIZADAS EN FIRESTORE
       const allPairsData = await getCloudPairs();
 
       const categoryPairs = [];
