@@ -43,9 +43,12 @@
     
     .btn-save { background-color: var(--accent); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .btn-save:hover { background-color: var(--primary); }
-    
     .badge-home { background-color: #d8f3dc; color: #1b4332; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
   </style>
+
+  <!-- SDK Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -59,7 +62,7 @@
   </header>
 
   <nav>
-    <a href="index.html">← Hasiera / Inicio</a>
+    <a href="index.html" onclick="logout()">← Hasiera / Inicio</a>
     <a href="club-panel.html">Klub Atala</a>
     <a href="inscripcion.html">Inscripción</a>
     <a href="partidos-semanales.html" class="active">Asteko Partidak</a>
@@ -165,19 +168,21 @@
       return false;
     }
 
-    function loadHomeMatches() {
+    async function loadHomeMatches() {
       const selectedWeek = document.getElementById('week-select').value;
       const tbody = document.getElementById('home-matches-tbody');
-      tbody.innerHTML = '';
+      tbody.innerHTML = '<tr><td colspan="6">Cargando partidos de la nube...</td></tr>';
 
       document.getElementById('matches-section-title').textContent = `Partidos en Casa de ${currentClub.toUpperCase()} (${selectedWeek})`;
 
-      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const allMatchesData = await getCloudMatches();
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
       const homeMatches = officialMatches.filter(m => {
         return m.week === selectedWeek && (isSuperAdmin || isClubLocal(m.info, currentClub));
       });
+
+      tbody.innerHTML = '';
 
       if (homeMatches.length === 0) {
         tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#777; padding:1.5rem;">No tienes partidos como local en la ${selectedWeek}.</td></tr>`;
@@ -236,14 +241,11 @@
     function toggleCustomFronton(idx) {
       const selectVal = document.getElementById(`fronton-${idx}`).value;
       const customInput = document.getElementById(`fronton-custom-${idx}`);
-      if (selectVal === 'OTRO') {
-        customInput.style.display = 'block'; customInput.focus();
-      } else {
-        customInput.style.display = 'none';
-      }
+      if (selectVal === 'OTRO') { customInput.style.display = 'block'; customInput.focus(); }
+      else { customInput.style.display = 'none'; }
     }
 
-    function saveMatchSchedule(idx) {
+    async function saveMatchSchedule(idx) {
       const selectedWeek = document.getElementById('week-select').value;
       const dateVal = document.getElementById(`date-${idx}`).value;
       const timeVal = document.getElementById(`time-${idx}`).value;
@@ -259,7 +261,7 @@
         return;
       }
 
-      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const allMatchesData = await getCloudMatches();
       let masterMatches = allMatchesData["abaxitabidea"] || [];
 
       const homeMatches = masterMatches.filter(m => {
@@ -276,8 +278,8 @@
           masterMatches[realIdx].order = orderVal;
 
           allMatchesData["abaxitabidea"] = masterMatches;
-          localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
-          alert("¡Señalamiento guardado con éxito! Se ha actualizado inmediatamente en el portal de Pelotaris.");
+          await saveCloudMatches(allMatchesData);
+          alert("¡Señalamiento guardado con éxito en la NUBE!");
         }
       }
     }
