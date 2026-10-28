@@ -47,6 +47,9 @@
     .btn-shortcut { background-color: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; }
     .btn-shortcut:hover { background-color: var(--accent); }
 
+    .btn-refresh { background-color: #ff9f1c; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 1.5rem auto; font-size: 0.95rem; }
+    .btn-refresh:hover { background-color: #e08700; }
+
     .cat-tabs { display: flex; gap: 0.5rem; border-bottom: 3px solid var(--primary); margin-bottom: 1.5rem; flex-wrap: wrap; }
     .tab-btn { background-color: #e9ecef; border: none; padding: 0.8rem 1.5rem; font-weight: bold; font-size: 1rem; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--primary); }
     .tab-btn.active { background-color: var(--primary); color: white; }
@@ -158,13 +161,14 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- SHORTCUTS ACTUALIZADOS CON ACCESO A PARTIDAK Y SAILKAPENAK -->
       <div class="admin-nav-shortcuts">
         <a href="pelotari.html" class="btn-shortcut">⚾ Consultar Partidak eta Sailkapenak</a>
         <a href="gestion-resultados.html" class="btn-shortcut">🏆 Modificar Emaitzak</a>
         <a href="partidos-semanales.html" class="btn-shortcut">📅 Asteko Partidak</a>
         <a href="inscripcion.html" class="btn-shortcut">📝 Inscripciones</a>
       </div>
+
+      <button class="btn-refresh" onclick="forceReloadCloudData()">🔄 Actualizar parejas desde la Nube (Recargar Nube)</button>
 
       <div class="cat-tabs">
         <button class="tab-btn active" onclick="switchCategory('Benjamín', this)">Benjamín</button>
@@ -236,6 +240,11 @@
       }
     }
 
+    async function forceReloadCloudData() {
+      alert("Consultando la base de datos central de Firebase...");
+      await loadCategoryLevels(currentCategory);
+    }
+
     async function switchCategory(catName, btn) {
       currentCategory = catName;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -245,10 +254,11 @@
 
     async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p>Cargando datos frescos de la nube...</p>';
+      container.innerHTML = '<p style="text-align:center; padding:1.5rem; font-weight:bold;">⌛ Descargando parejas e inscripciones actualizadas desde la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
       
+      // Consultar documento udaberri_pairs directo en Firebase
       const allPairsData = await getCloudPairs();
       const allMatchesData = await getCloudMatches();
       const masterMatches = allMatchesData["abaxitabidea"] || [];
@@ -347,6 +357,10 @@
     }
 
     async function generateLevelMatches(catName, lvlName) {
+      // 1. FORZAR BÚSQUEDA FRESCA Y SIN CÁCHÉ EN FIRESTORE
+      const container = document.getElementById('category-levels-container');
+      container.innerHTML = `<p style="text-align:center; padding:1.5rem; font-weight:bold; color:var(--primary);">⌛ Obteniendo todas las inscripciones reales de la Nube para ${catName} — ${lvlName}...</p>`;
+
       const allPairsData = await getCloudPairs();
 
       const categoryPairs = [];
@@ -365,7 +379,8 @@
 
       const count = categoryPairs.length;
       if (count < 2) {
-        alert(`Se necesitan al menos 2 parejas inscritas en ${catName} — ${lvlName} para generar partidos.`);
+        alert(`Se necesitan al menos 2 parejas inscritas en ${catName} — ${lvlName} para generar partidos. Encontradas: ${count}`);
+        await loadCategoryLevels(currentCategory);
         return;
       }
 
@@ -474,7 +489,7 @@
       allMatchesData["abaxitabidea"] = masterMatches;
       await saveCloudMatches(allMatchesData);
 
-      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}! (${count} parejas)`);
+      alert(`¡Calendario generado y guardado en la NUBE con EXITO! (${count} parejas inscritas incluidas)`);
       await loadCategoryLevels(currentCategory);
     }
 
