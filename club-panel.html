@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Udaberriko Txapelketak - Klub Atala & Antolatzailea</title>
   <script src="firebase-db.js"></script>
   <style>
@@ -169,7 +172,7 @@
         <button class="tab-btn" onclick="switchCategory('Juvenil', this)">Juvenil</button>
       </div>
 
-      <div id="category-levels-container">Cargando datos de la nube...</div>
+      <div id="category-levels-container">Cargando datos frescos de la nube...</div>
     </div>
   </div>
 
@@ -240,10 +243,11 @@
 
     async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p>Cargando datos frescos de la nube...</p>';
+      container.innerHTML = '<p>Cargando datos de la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
       
+      // Fuerza consulta directa a la nube
       const allPairsData = await getCloudPairs();
       const allMatchesData = await getCloudMatches();
       const masterMatches = allMatchesData["abaxitabidea"] || [];
@@ -342,6 +346,7 @@
     }
 
     async function generateLevelMatches(catName, lvlName) {
+      // FORZAR RECUPERACIÓN DIRECTA DE PAREJAS ACTUALIZADAS EN FIRESTORE
       const allPairsData = await getCloudPairs();
 
       const categoryPairs = [];
@@ -469,8 +474,8 @@
       allMatchesData["abaxitabidea"] = masterMatches;
       await saveCloudMatches(allMatchesData);
 
-      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}! (${count} parejas participantes)`);
-      loadCategoryLevels(currentCategory);
+      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}! (${count} parejas)`);
+      await loadCategoryLevels(currentCategory);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
