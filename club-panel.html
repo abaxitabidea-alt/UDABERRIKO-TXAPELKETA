@@ -56,11 +56,9 @@
     th, td { padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
 
-    /* Estado del botón si NO están generados */
     .btn-gen-level { background-color: #028090; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-gen-level:hover { background-color: #005f73; }
 
-    /* Estado del botón si YA están generados */
     .btn-gen-level.generated { background-color: #2b9348; color: white; }
     .btn-gen-level.generated:hover { background-color: #1b4332; }
 
@@ -233,16 +231,16 @@
       }
     }
 
-    function switchCategory(catName, btn) {
+    async function switchCategory(catName, btn) {
       currentCategory = catName;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      loadCategoryLevels(catName);
+      await loadCategoryLevels(catName);
     }
 
     async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p>Cargando datos de la nube...</p>';
+      container.innerHTML = '<p>Cargando datos frescos de la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
       
@@ -264,7 +262,6 @@
           }
         }
 
-        // Comprobar si ya existen partidos generados en la nube para esta categoría y nivel
         const lvlCode = lvl.split(' ')[0];
         const hasGeneratedMatches = masterMatches.some(m => m.info.includes(catName) && m.info.includes(lvlCode));
 
@@ -422,11 +419,9 @@
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[3].label} vs ${p[4].label}` });
         newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
       } else if (count === 7) {
-        // ESQUEMA 7 PAREJAS: GRUPO A (4 PAREJAS) Y GRUPO B (3 PAREJAS)
         const gA = teams.slice(0, 4); const gB = teams.slice(4, 7);
         const keyA = `${groupKeyBase} (Grupo A)`; const keyB = `${groupKeyBase} (Grupo B)`;
         
-        // Grupo A (4 Parejas)
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[1].label}` });
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[2].label} vs ${gA[3].label}` });
         newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[2].label}` });
@@ -434,13 +429,11 @@
         newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[3].label}` });
         newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[2].label}` });
 
-        // Grupo B (3 Parejas)
         newMatches.push({ week: "Semana 1", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[1].label}` });
         newMatches.push({ week: "Semana 2", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[2].label}` });
         newMatches.push({ week: "Semana 3", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[2].label}` });
         newMatches.push({ week: "Semana 4", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[0].label}` });
 
-        // Fases Finales Cruzadas
         newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
         newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
         newMatches.push({ week: "Semana 6", group: groupKeyBase, info: `${groupKeyBase} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
@@ -476,7 +469,7 @@
       allMatchesData["abaxitabidea"] = masterMatches;
       await saveCloudMatches(allMatchesData);
 
-      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}!`);
+      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}! (${count} parejas participantes)`);
       loadCategoryLevels(currentCategory);
     }
 
