@@ -13,33 +13,16 @@
       --card: #ffffff;
       --text: #212529;
     }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0; padding: 0;
-    }
-    header {
-      background-color: var(--primary);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex; align-items: center; justify-content: space-between;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .header-logo { height: 50px; width: auto; border-radius: 4px; }
     .header-title { flex-grow: 1; text-align: center; }
     .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
     .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
     .header-spacer { width: 50px; }
 
-    nav {
-      background-color: #143225;
-      display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;
-    }
-    nav a {
-      color: white; text-decoration: none; padding: 1rem 1.5rem;
-      font-weight: 600; border-bottom: 4px solid transparent; transition: all 0.2s ease;
-    }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; transition: all 0.2s ease; }
     nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
     nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
 
@@ -73,8 +56,13 @@
     th, td { padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
 
+    /* Botón no generado */
     .btn-gen-level { background-color: #028090; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-gen-level:hover { background-color: #005f73; }
+
+    /* Botón ya generado */
+    .btn-gen-level.generated { background-color: #2b9348; color: white; }
+    .btn-gen-level.generated:hover { background-color: #1b4332; }
 
     .btn-save-inline { background-color: #2a9d8f; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .btn-delete { background-color: #e63946; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; }
@@ -84,6 +72,10 @@
     .action-card:hover { border-color: var(--accent); }
     .btn-card { background-color: var(--accent); color: white; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; margin-top: 1rem; }
   </style>
+
+  <!-- SDK Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -97,12 +89,11 @@
   </header>
 
   <nav>
-    <a href="index.html">← Hasiera / Inicio</a>
+    <a href="index.html" onclick="logout()">← Hasiera / Inicio</a>
     <a href="club-panel.html" class="active">Klub Atala</a>
   </nav>
 
   <div class="container">
-    
     <div id="login-section" class="card">
       <h2 style="text-align:center; color:var(--primary);">Acceso al Panel</h2>
       <p style="text-align:center; color:#666; margin-bottom:1.5rem;">Introduce tu usuario de club o las credenciales de organizador maestro.</p>
@@ -161,7 +152,7 @@
       <div class="club-header">
         <div>
           <h2 style="margin:0; color:#1b4332;">👑 Antolatzaile Nagusia / Panel Maestro Abaxi</h2>
-          <p style="margin:0; color:#666;">Gestión global, edición de parejas por categorías y generación individual de cuadros.</p>
+          <p style="margin:0; color:#666;">Gestión global, edición de parejas por categorías y generación individual de cuadros en la nube.</p>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
       </div>
@@ -180,14 +171,12 @@
         <button class="tab-btn" onclick="switchCategory('Juvenil', this)">Juvenil</button>
       </div>
 
-      <div id="category-levels-container"></div>
+      <div id="category-levels-container">Cargando datos de la nube...</div>
     </div>
-
   </div>
 
   <script>
     const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
-
     let currentCategory = 'Benjamín';
 
     function checkAuth(userInput, passInput) {
@@ -199,11 +188,9 @@
       if (u === 'abaxi' && cleanP === 'abaxi') {
         return { valid: true, isAdmin: true };
       }
-
       if (VALID_CLUBS.includes(u) && p === u) {
         return { valid: true, isAdmin: false };
       }
-
       return { valid: false, isAdmin: false };
     }
 
@@ -215,10 +202,7 @@
       const authRes = checkAuth(uVal, pVal);
 
       if (authRes.valid) {
-        const sessionData = {
-          club: uVal.trim().toLowerCase(),
-          isAdmin: authRes.isAdmin
-        };
+        const sessionData = { club: uVal.trim().toLowerCase(), isAdmin: authRes.isAdmin };
         sessionStorage.setItem('udaberri_session', JSON.stringify(sessionData));
         errorMsg.style.display = 'none';
         renderDashboard(sessionData);
@@ -238,7 +222,6 @@
 
     function renderDashboard(session) {
       document.getElementById('login-section').classList.add('hidden');
-      
       if (session.isAdmin) {
         document.getElementById('organizer-dashboard').classList.remove('hidden');
         document.getElementById('club-dashboard').classList.add('hidden');
@@ -257,28 +240,44 @@
       loadCategoryLevels(catName);
     }
 
-    function loadCategoryLevels(catName) {
+    async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '';
+      container.innerHTML = '<p>Cargando datos de la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
-      const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+      
+      const allPairsData = await getCloudPairs();
+      const allMatchesData = await getCloudMatches();
+      const masterMatches = allMatchesData["abaxitabidea"] || [];
+
+      container.innerHTML = '';
 
       levels.forEach(lvl => {
         const matchedPairs = [];
         for (let clubKey in allPairsData) {
-          allPairsData[clubKey].forEach((p, idx) => {
-            if (p.category === catName && p.level === lvl) {
-              matchedPairs.push({ ...p, clubKey, origIdx: idx });
-            }
-          });
+          if (Array.isArray(allPairsData[clubKey])) {
+            allPairsData[clubKey].forEach((p, idx) => {
+              if (p.category === catName && p.level === lvl) {
+                matchedPairs.push({ ...p, clubKey, origIdx: idx });
+              }
+            });
+          }
         }
+
+        // Comprobar si ya existen partidos generados en la nube para esta categoría y nivel
+        const lvlCode = lvl.split(' ')[0]; // "1.", "2." o "3."
+        const hasGeneratedMatches = masterMatches.some(m => m.info.includes(catName) && m.info.includes(lvlCode));
+
+        const btnClass = hasGeneratedMatches ? "btn-gen-level generated" : "btn-gen-level";
+        const btnText = hasGeneratedMatches 
+          ? `✓ Partidos Generados (${catName} - ${lvl})` 
+          : `⚙️ Generar Partidos (${catName} - ${lvl})`;
 
         let lvlHtml = `
           <div class="level-block">
             <div class="level-header">
               <h3 class="level-title">📂 ${catName} — ${lvl} (${matchedPairs.length} parejas inscritas)</h3>
-              <button class="btn-gen-level" onclick="generateLevelMatches('${catName}', '${lvl}')">⚙️ Generar Partidos (${catName} - ${lvl})</button>
+              <button class="${btnClass}" onclick="generateLevelMatches('${catName}', '${lvl}')">${btnText}</button>
             </div>
         `;
 
@@ -320,42 +319,46 @@
       });
     }
 
-    function saveAdminPair(clubKey, idx) {
-      const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+    async function saveAdminPair(clubKey, idx) {
+      const allPairsData = await getCloudPairs();
+
       if (allPairsData[clubKey] && allPairsData[clubKey][idx]) {
         allPairsData[clubKey][idx].player1 = document.getElementById(`p1-${clubKey}-${idx}`).value.trim();
         allPairsData[clubKey][idx].player2 = document.getElementById(`p2-${clubKey}-${idx}`).value.trim();
-        localStorage.setItem('udaberri_pairs', JSON.stringify(allPairsData));
-        alert(`¡Nombre corregido para el club ${clubKey.toUpperCase()}!`);
+        
+        await saveCloudPairs(allPairsData);
+        alert(`¡Nombre corregido para el club ${clubKey.toUpperCase()} en la nube!`);
         loadCategoryLevels(currentCategory);
       }
     }
 
-    function deleteAdminPair(clubKey, idx) {
+    async function deleteAdminPair(clubKey, idx) {
       if (confirm(`¿Eliminar pareja del club ${clubKey.toUpperCase()}?`)) {
-        const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+        const allPairsData = await getCloudPairs();
+
         if (allPairsData[clubKey]) {
           allPairsData[clubKey].splice(idx, 1);
-          localStorage.setItem('udaberri_pairs', JSON.stringify(allPairsData));
+          await saveCloudPairs(allPairsData);
           loadCategoryLevels(currentCategory);
         }
       }
     }
 
-    // GENERACIÓN ESTRUCTURADA SEGÚN EL NÚMERO DE PAREJAS (3 A 8 PAREJAS)
-    function generateLevelMatches(catName, lvlName) {
-      const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-      const categoryPairs = [];
+    async function generateLevelMatches(catName, lvlName) {
+      const allPairsData = await getCloudPairs();
 
+      const categoryPairs = [];
       for (let club in allPairsData) {
-        allPairsData[club].forEach(p => {
-          if (p.category === catName && p.level === lvlName) {
-            categoryPairs.push({
-              club: club,
-              label: `${club.toUpperCase()} (${p.player1}/${p.player2})`
-            });
-          }
-        });
+        if (Array.isArray(allPairsData[club])) {
+          allPairsData[club].forEach(p => {
+            if (p.category === catName && p.level === lvlName) {
+              categoryPairs.push({
+                club: club,
+                label: `${club.toUpperCase()} (${p.player1}/${p.player2})`
+              });
+            }
+          });
+        }
       }
 
       const count = categoryPairs.length;
@@ -368,20 +371,16 @@
       const groupKeyBase = `${catName} — ${lvlName}`;
       const newMatches = [];
 
-      // LÓGICA DE CALENDARIO SEGÚN REGLAS DE TORNEO UDABERRI:
       if (count === 3) {
-        const p = teams;
-        const gKey = `${groupKeyBase}`;
+        const p = teams; const gKey = `${groupKeyBase}`;
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
         newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
         newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[2].label}` });
         newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[0].label}` });
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL): 2º Clasificado vs 3º Clasificado` });
         newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): 1º Clasificado vs Ganador Semifinal` });
-      }
-      else if (count === 4) {
-        const p = teams;
-        const gKey = `${groupKeyBase}`;
+      } else if (count === 4) {
+        const p = teams; const gKey = `${groupKeyBase}`;
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
         newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
@@ -391,10 +390,8 @@
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 1): 1º Clasificado vs 4º Clasificado` });
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 2): 2º Clasificado vs 3º Clasificado` });
         newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      }
-      else if (count === 5) {
-        const p = teams;
-        const gKey = `${groupKeyBase}`;
+      } else if (count === 5) {
+        const p = teams; const gKey = `${groupKeyBase}`;
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
         newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
@@ -406,10 +403,8 @@
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 1): 1º Clasificado vs 4º Clasificado` });
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 2): 2º Clasificado vs 3º Clasificado` });
         newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      }
-      else if (count === 6) {
-        const p = teams;
-        const gKey = `${groupKeyBase}`;
+      } else if (count === 6) {
+        const p = teams; const gKey = `${groupKeyBase}`;
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
         newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[4].label} vs ${p[5].label}` });
@@ -426,15 +421,12 @@
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[2].label}` });
         newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[3].label} vs ${p[4].label}` });
         newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-      }
-      else if (count === 7) {
-        // 7 PAREJAS: GRUPO A (4 parejas) y GRUPO B (3 parejas)
-        const gA = teams.slice(0, 4);
-        const gB = teams.slice(4);
-        const keyA = `${groupKeyBase} (Grupo A)`;
-        const keyB = `${groupKeyBase} (Grupo B)`;
-
-        // Grupo A (4 equipos)
+      } else if (count === 7) {
+        // ESQUEMA 7 PAREJAS: GRUPO A (4 PAREJAS) Y GRUPO B (3 PAREJAS)
+        const gA = teams.slice(0, 4); const gB = teams.slice(4, 7);
+        const keyA = `${groupKeyBase} (Grupo A)`; const keyB = `${groupKeyBase} (Grupo B)`;
+        
+        // Grupo A (4 Parejas)
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[1].label}` });
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[2].label} vs ${gA[3].label}` });
         newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[2].label}` });
@@ -442,24 +434,19 @@
         newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[3].label}` });
         newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[2].label}` });
 
-        // Grupo B (3 equipos)
+        // Grupo B (3 Parejas)
         newMatches.push({ week: "Semana 1", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[1].label}` });
         newMatches.push({ week: "Semana 2", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[2].label}` });
         newMatches.push({ week: "Semana 3", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[2].label}` });
         newMatches.push({ week: "Semana 4", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[0].label}` });
 
-        // Semifinales y Finales Cruzadas
+        // Fases Finales Cruzadas
         newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
         newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
         newMatches.push({ week: "Semana 6", group: groupKeyBase, info: `${groupKeyBase} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      }
-      else if (count >= 8) {
-        // 8+ PAREJAS: GRUPO A (4 parejas) y GRUPO B (4 parejas)
-        const gA = teams.slice(0, 4);
-        const gB = teams.slice(4, 8);
-        const keyA = `${groupKeyBase} (Grupo A)`;
-        const keyB = `${groupKeyBase} (Grupo B)`;
-
+      } else if (count >= 8) {
+        const gA = teams.slice(0, 4); const gB = teams.slice(4, 8);
+        const keyA = `${groupKeyBase} (Grupo A)`; const keyB = `${groupKeyBase} (Grupo B)`;
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[1].label}` });
         newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[2].label} vs ${gA[3].label}` });
         newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[2].label}` });
@@ -479,24 +466,23 @@
         newMatches.push({ week: "Semana 6", group: groupKeyBase, info: `${groupKeyBase} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
       }
 
-      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const allMatchesData = await getCloudMatches();
       let masterMatches = allMatchesData["abaxitabidea"] || [];
-
-      // Limpiar partidos antiguos de este grupo antes de insertar los nuevos
-      masterMatches = masterMatches.filter(m => !m.info.includes(catName) || !m.info.includes(lvlName.split(' ')[0]));
+      
+      const lvlCode = lvlName.split(' ')[0];
+      masterMatches = masterMatches.filter(m => !m.info.includes(catName) || !m.info.includes(lvlCode));
       masterMatches.push(...newMatches);
 
       allMatchesData["abaxitabidea"] = masterMatches;
-      localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
+      await saveCloudMatches(allMatchesData);
 
-      alert(`¡Calendario generado con éxito para ${catName} — ${lvlName}! Se han creado ${newMatches.length} partidos de liga y fases finales.`);
+      alert(`¡Calendario guardado en la NUBE para ${catName} — ${lvlName}!`);
+      loadCategoryLevels(currentCategory);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
       const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
-      if (activeSession && activeSession.club) {
-        renderDashboard(activeSession);
-      }
+      if (activeSession && activeSession.club) renderDashboard(activeSession);
     });
   </script>
 </body>
