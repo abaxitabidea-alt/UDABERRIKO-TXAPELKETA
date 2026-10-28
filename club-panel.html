@@ -56,11 +56,11 @@
     th, td { padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
 
-    /* Botón no generado */
+    /* Estado del botón si NO están generados */
     .btn-gen-level { background-color: #028090; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-gen-level:hover { background-color: #005f73; }
 
-    /* Botón ya generado */
+    /* Estado del botón si YA están generados */
     .btn-gen-level.generated { background-color: #2b9348; color: white; }
     .btn-gen-level.generated:hover { background-color: #1b4332; }
 
@@ -265,7 +265,7 @@
         }
 
         // Comprobar si ya existen partidos generados en la nube para esta categoría y nivel
-        const lvlCode = lvl.split(' ')[0]; // "1.", "2." o "3."
+        const lvlCode = lvl.split(' ')[0];
         const hasGeneratedMatches = masterMatches.some(m => m.info.includes(catName) && m.info.includes(lvlCode));
 
         const btnClass = hasGeneratedMatches ? "btn-gen-level generated" : "btn-gen-level";
