@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Udaberriko Txapelketak - Pelotari Portal</title>
   <script src="firebase-db.js"></script>
+  <!-- Librería SheetJS para generar archivos Excel (.xlsx) con múltiples pestañas -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --primary: #1b4332;
@@ -13,120 +15,42 @@
       --card: #ffffff;
       --text: #212529;
     }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-    }
-    header {
-      background-color: var(--primary);
-      color: white;
-      padding: 1rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; }
+    header { background-color: var(--primary); color: white; padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .header-logo { height: 50px; width: auto; border-radius: 4px; }
     .header-title { flex-grow: 1; text-align: center; }
     .header-title h1 { margin: 0 0 0.2rem 0; font-size: 1.8rem; }
     .header-title p { margin: 0; opacity: 0.9; font-size: 0.95rem; }
     .header-spacer { width: 50px; }
 
-    nav {
-      background-color: #143225;
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      padding: 1rem 1.5rem;
-      font-weight: 600;
-      border-bottom: 4px solid transparent;
-      transition: all 0.2s ease;
-    }
+    nav { background-color: #143225; display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    nav a { color: white; text-decoration: none; padding: 1rem 1.5rem; font-weight: 600; border-bottom: 4px solid transparent; transition: all 0.2s ease; }
     nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
-    nav a.active {
-      border-bottom-color: #52b788;
-      background-color: rgba(255, 255, 255, 0.15);
-    }
+    nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
 
-    .container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    .card {
-      background: var(--card);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      margin-bottom: 2rem;
-    }
+    .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
 
-    .filter-box {
-      background: #e8f5e9;
-      padding: 1.2rem;
-      border-radius: 8px;
-      border: 1px solid #c8e6c9;
-      margin-bottom: 1.5rem;
-    }
-    .filter-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-    }
+    .filter-box { background: #e8f5e9; padding: 1.2rem; border-radius: 8px; border: 1px solid #c8e6c9; margin-bottom: 1.5rem; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; }
     label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 0.4rem; }
-    select {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-weight: bold;
-    }
+    select { width: 100%; padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      background: white;
-    }
-    th, td {
-      padding: 0.75rem;
-      border: 1px solid #e0e0e0;
-      text-align: center;
-    }
+    .btn-excel { background-color: #1d6f42; color: white; border: none; padding: 0.65rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; height: 41px; }
+    .btn-excel:hover { background-color: #144d2e; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: center; }
     th { background-color: #e9ecef; }
 
-    .tag-scheduled {
-      background-color: #d8f3dc;
-      color: #1b4332;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85rem;
-    }
-    .tag-pending {
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
-      font-weight: bold;
-      font-size: 0.85rem;
-    }
-    
-    .section-title {
-      color: var(--primary);
-      border-bottom: 2px solid var(--accent);
-      padding-bottom: 0.4rem;
-      margin-top: 2rem;
-    }
+    .tag-scheduled { background-color: #d8f3dc; color: #1b4332; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+    .tag-pending { background-color: #fff3cd; color: #856404; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+    .section-title { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-top: 2rem; }
   </style>
+
+  <!-- SDK Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -181,38 +105,34 @@
               <option value="Semana 6">Semana 6 (18/06/2027 - 20/06/2027)</option>
             </select>
           </div>
+          <div>
+            <button class="btn-excel" onclick="exportToExcelMultiSheet()">📊 Exportar a Excel (Multi-Pestaña)</button>
+          </div>
         </div>
       </div>
 
-      <!-- SECCIÓN DE PARTIDOS -->
       <div id="matches-container"></div>
-
-      <!-- SECCIÓN DE CLASIFICACIÓN -->
       <div id="standings-container"></div>
-
     </div>
   </div>
 
   <script>
-    function renderPublicPortal() {
+    async function renderPublicPortal() {
       const selectedCat = document.getElementById('filter-cat').value;
       const selectedLevel = document.getElementById('filter-level').value;
       const selectedWeek = document.getElementById('filter-week').value;
 
       const groupKey = `${selectedCat} — ${selectedLevel}`;
 
-      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      const allMatchesData = await getCloudMatches();
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // 1. DIBUJAR TABLA DE PARTIDOS DE LA SEMANA SELECCIONADA
-      const matchesContainer = document.getElementById('matches-container');
-      
-      // Filtrar partidos que coincidan con la categoría, nivel y semana
       const matchesOfWeek = officialMatches.filter(m => {
         const isCatLvl = m.info.includes(selectedCat) && m.info.includes(selectedLevel.split(' ')[0]);
         return m.week === selectedWeek && isCatLvl;
       });
 
+      const matchesContainer = document.getElementById('matches-container');
       let matchesHtml = `<h3 class="section-title">📅 ${groupKey} (${selectedWeek})</h3>`;
 
       if (matchesOfWeek.length === 0) {
@@ -234,7 +154,6 @@
         `;
 
         matchesOfWeek.forEach(m => {
-          // Buscar si algún club ha hecho el señalamiento en su cuenta
           let dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
           let timeDisp = m.time || '--:--';
           let frontonDisp = m.fronton || `<span class="tag-pending">Por determinar</span>`;
@@ -257,37 +176,50 @@
       }
 
       matchesContainer.innerHTML = matchesHtml;
-
-      // 2. DIBUJAR TABLA DE CLASIFICACIÓN ACUMULADA
-      renderStandings(selectedCat, selectedLevel);
+      await renderStandings(selectedCat, selectedLevel);
     }
 
-    function renderStandings(catName, lvlName) {
+    async function renderStandings(catName, lvlName) {
       const container = document.getElementById('standings-container');
-      const allPairsData = JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
-      const allMatchesData = JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+      
+      const allPairsData = await getCloudPairs();
+      const allMatchesData = await getCloudMatches();
+
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Obtener todas las parejas inscritas en esta categoría y nivel
-      const categoryPairs = [];
+      const pairsGroupA = [];
+      const pairsGroupB = [];
+      const pairsGeneral = [];
+
       for (let club in allPairsData) {
-        allPairsData[club].forEach(p => {
-          if (p.category === catName && p.level === lvlName) {
-            categoryPairs.push({
-              name: `${club.toUpperCase()} (${p.player1}/${p.player2})`,
-              club: club.toUpperCase(),
-              pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, diff: 0, pts: 0
-            });
-          }
-        });
+        if (Array.isArray(allPairsData[club])) {
+          allPairsData[club].forEach(p => {
+            if (p.category === catName && p.level === lvlName) {
+              const teamObject = {
+                name: `${club.toUpperCase()} (${p.player1}/${p.player2})`,
+                club: club.toUpperCase(),
+                pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, diff: 0, pts: 0
+              };
+              pairsGeneral.push(teamObject);
+            }
+          });
+        }
       }
 
-      if (categoryPairs.length === 0) {
+      if (pairsGeneral.length === 0) {
         container.innerHTML = `<h3 class="section-title">📊 Sailkapena / Clasificación</h3><p style="color:#777;">No hay parejas inscritas para calcular la clasificación.</p>`;
         return;
       }
 
-      // Procesar resultados de los partidos jugados
+      let isGrouped = false;
+      if (pairsGeneral.length >= 7) {
+        isGrouped = true;
+        pairsGeneral.forEach((p, idx) => {
+          if (idx < 4) pairsGroupA.push(p);
+          else pairsGroupB.push(p);
+        });
+      }
+
       officialMatches.forEach(m => {
         if (m.info.includes(catName) && m.info.includes(lvlName.split(' ')[0]) && m.score && m.score.includes('-')) {
           const parts = m.info.split(':');
@@ -301,37 +233,22 @@
               const s1Raw = scoreParts[0].trim().toUpperCase();
               const s2Raw = scoreParts[1].trim().toUpperCase();
 
-              const p1 = categoryPairs.find(p => p.name === t1Name || t1Name.includes(p.club));
-              const p2 = categoryPairs.find(p => p.name === t2Name || t2Name.includes(p.club));
+              const targetList = isGrouped ? [...pairsGroupA, ...pairsGroupB] : pairsGeneral;
+              const p1 = targetList.find(p => p.name === t1Name || t1Name.includes(p.club));
+              const p2 = targetList.find(p => p.name === t2Name || t2Name.includes(p.club));
 
               if (p1 && p2) {
-                p1.pj++;
-                p2.pj++;
-
+                p1.pj++; p2.pj++;
                 if (s1Raw === 'NP') {
-                  p1.np++;
-                  p2.pg++;
-                  p2.tf += 22; p2.tc += 0;
-                  p2.pts += 2;
+                  p1.np++; p2.pg++; p2.tf += 22; p2.pts += 2;
                 } else if (s2Raw === 'NP') {
-                  p2.np++;
-                  p1.pg++;
-                  p1.tf += 22; p1.tc += 0;
-                  p1.pts += 2;
+                  p2.np++; p1.pg++; p1.tf += 22; p1.pts += 2;
                 } else {
                   const s1 = parseInt(s1Raw) || 0;
                   const s2 = parseInt(s2Raw) || 0;
-
-                  p1.tf += s1; p1.tc += s2;
-                  p2.tf += s2; p2.tc += s1;
-
-                  if (s1 > s2) {
-                    p1.pg++; p1.pts += 2;
-                    p2.pp++; p2.pts += 1;
-                  } else {
-                    p2.pg++; p2.pts += 2;
-                    p1.pp++; p1.pts += 1;
-                  }
+                  p1.tf += s1; p1.tc += s2; p2.tf += s2; p2.tc += s1;
+                  if (s1 > s2) { p1.pg++; p1.pts += 2; p2.pp++; p2.pts += 1; }
+                  else { p2.pg++; p2.pts += 2; p1.pp++; p1.pts += 1; }
                 }
               }
             }
@@ -339,14 +256,19 @@
         }
       });
 
-      // Calcular diferencia de tantos
-      categoryPairs.forEach(p => p.diff = p.tf - p.tc);
+      if (isGrouped) {
+        container.innerHTML = generateTableHTML(pairsGroupA, `📊 Sailkapena — ${catName} (${lvlName}) - Grupo A`) +
+                             generateTableHTML(pairsGroupB, `📊 Sailkapena — ${catName} (${lvlName}) - Grupo B`);
+      } else {
+        container.innerHTML = generateTableHTML(pairsGeneral, `📊 Sailkapena — ${catName} (${lvlName})`);
+      }
+    }
 
-      // Ordenar por puntos y luego por diferencia de tantos
-      categoryPairs.sort((a, b) => b.pts - a.pts || b.diff - a.diff);
+    function generateTableHTML(list, title) {
+      list.forEach(p => p.diff = p.tf - p.tc);
+      list.sort((a, b) => b.pts - a.pts || b.diff - a.diff);
 
-      let standingsHtml = `
-        <h3 class="section-title">📊 Sailkapena — ${catName} (${lvlName})</h3>
+      let html = `<h3 class="section-title">${title}</h3>
         <table>
           <thead>
             <tr>
@@ -362,11 +284,10 @@
               <th>Puntos</th>
             </tr>
           </thead>
-          <tbody>
-      `;
+          <tbody>`;
 
-      categoryPairs.forEach((p, idx) => {
-        standingsHtml += `
+      list.forEach((p, idx) => {
+        html += `
           <tr>
             <td><strong>${idx + 1}º</strong></td>
             <td style="text-align:left;"><strong>${p.name}</strong></td>
@@ -382,8 +303,63 @@
         `;
       });
 
-      standingsHtml += `</tbody></table>`;
-      container.innerHTML = standingsHtml;
+      html += `</tbody></table>`;
+      return html;
+    }
+
+    // FUNCIÓN DE EXPORTACIÓN CON PESTAÑAS INDEPENDIENTES EN EXCEL (.XLSX)
+    async function exportToExcelMultiSheet() {
+      const categories = ["Benjamín", "Alevín", "Infantil", "Cadete", "Juvenil"];
+      const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
+
+      const allMatchesData = await getCloudMatches();
+      const officialMatches = allMatchesData["abaxitabidea"] || [];
+
+      // Crear el libro de trabajo de Excel
+      const wb = XLSX.utils.book_new();
+
+      for (let cat of categories) {
+        for (let lvl of levels) {
+          const lvlCode = lvl.split(' ')[0]; // "1.", "2." o "3."
+          const catLvlMatches = officialMatches.filter(m => m.info.includes(cat) && m.info.includes(lvlCode));
+
+          // Solo crear pestaña si hay datos o partidos generados para esta categoría y nivel
+          if (catLvlMatches.length > 0) {
+            const sheetData = [];
+
+            sheetData.push([`UDABERRIKO TXAPELKETAK - ${cat.toUpperCase()} (${lvl.toUpperCase()})`]);
+            sheetData.push([]);
+            sheetData.push(["JORNADA / WEEK", "FECHA", "HORA", "FRONTÓN", "ORDEN", "ENFORNTAMIENTO / PARTIDO", "RESULTADO"]);
+
+            catLvlMatches.forEach(m => {
+              sheetData.push([
+                m.week || '',
+                m.date || 'Por señalar',
+                m.time || '--:--',
+                m.fronton || 'Por determinar',
+                m.order || '-',
+                m.info || '',
+                m.score || '-'
+              ]);
+            });
+
+            // Convertir la matriz de datos en una hoja de trabajo
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+            // Ajustar el nombre de la pestaña (Ej: "Benjamín - 1. Maila")
+            const sheetName = `${cat.substring(0, 3)} ${lvlCode}`.substring(0, 31);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+          }
+        }
+      }
+
+      if (wb.SheetNames.length === 0) {
+        alert("No hay partidos ni datos disponibles para exportar a Excel.");
+        return;
+      }
+
+      // Descargar el libro completo en formato .xlsx
+      XLSX.writeFile(wb, `Udaberriko_Txapelketak_Completo.xlsx`);
     }
 
     document.addEventListener('DOMContentLoaded', renderPublicPortal);
