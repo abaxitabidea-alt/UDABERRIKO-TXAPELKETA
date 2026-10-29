@@ -15,14 +15,14 @@ if (!firebase.apps.length) {
 
 const db = firebase.firestore();
 
-// Desactivar caché offline para garantizar lectura en tiempo real
+// Configurar transporte directo y limpiar caché previa
 db.settings({
   host: "firestore.googleapis.com",
   ssl: true,
   experimentalForceLongPolling: true
 });
 
-// 1. Obtener parejas inscritas de la nube
+// 1. Obtener parejas inscritas de la nube directamente
 async function getCloudPairs() {
   try {
     const doc = await db.collection("txapelketa").doc("udaberri_pairs").get();
@@ -56,7 +56,7 @@ async function getCloudMatches() {
     }
     return {};
   } catch (error) {
-    console.error("Error leyendo partidos de the nube:", error);
+    console.error("Error leyendo partidos de la nube:", error);
     return {};
   }
 }
