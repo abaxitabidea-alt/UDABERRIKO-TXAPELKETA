@@ -33,7 +33,8 @@
     .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
 
     .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .logout-btn:hover { background-color: #b00020; }
 
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
@@ -130,7 +131,7 @@
       document.getElementById('club-display-name').textContent = currentClub;
       document.getElementById('club-table-title').textContent = currentClub;
 
-      // Descarga inicial rápida solo si es primera vez que entra
+      // Descarga inicial rápida desde Drive al entrar
       await syncFromCloud();
       renderClubPairs();
     }
@@ -214,10 +215,10 @@
 
       await saveCloudPairs(allPairsData);
       
-      // Sincronizar inmediatamente a la nube al guardar
+      // Sincroniza inmediatamente en segundo plano al guardar
       syncToCloud();
 
-      alert("¡Pareja guardada y sincronizada correctamente!");
+      alert("¡Pareja guardada correctamente!");
       document.getElementById('insc-p1').value = '';
       document.getElementById('insc-p2').value = '';
       renderClubPairs();
