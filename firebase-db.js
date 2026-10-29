@@ -8,19 +8,23 @@ const firebaseConfig = {
   appId: "1:1234567890:web:abcdef123456"
 };
 
-// Garantizar inicialización única sin errores
+// Garantizar inicialización única
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-function getDbInstance() {
-  return firebase.firestore();
-}
+const db = firebase.firestore();
 
-// 1. Obtener todas las parejas inscritas directamente del servidor
+// Desactivar caché offline para garantizar lectura en tiempo real
+db.settings({
+  host: "firestore.googleapis.com",
+  ssl: true,
+  experimentalForceLongPolling: true
+});
+
+// 1. Obtener parejas inscritas de la nube
 async function getCloudPairs() {
   try {
-    const db = getDbInstance();
     const doc = await db.collection("txapelketa").doc("udaberri_pairs").get();
     if (doc.exists) {
       return doc.data() || {};
@@ -35,7 +39,6 @@ async function getCloudPairs() {
 // 2. Guardar parejas inscritas en la nube
 async function saveCloudPairs(pairsData) {
   try {
-    const db = getDbInstance();
     await db.collection("txapelketa").doc("udaberri_pairs").set(pairsData);
     return true;
   } catch (error) {
@@ -44,17 +47,16 @@ async function saveCloudPairs(pairsData) {
   }
 }
 
-// 3. Obtener todos los partidos de la nube
+// 3. Obtener partidos de la nube
 async function getCloudMatches() {
   try {
-    const db = getDbInstance();
     const doc = await db.collection("txapelketa").doc("udaberri_matches").get();
     if (doc.exists) {
       return doc.data() || {};
     }
     return {};
   } catch (error) {
-    console.error("Error leyendo partidos de la nube:", error);
+    console.error("Error leyendo partidos de the nube:", error);
     return {};
   }
 }
@@ -62,7 +64,6 @@ async function getCloudMatches() {
 // 4. Guardar partidos en la nube
 async function saveCloudMatches(matchesData) {
   try {
-    const db = getDbInstance();
     await db.collection("txapelketa").doc("udaberri_matches").set(matchesData);
     return true;
   } catch (error) {
