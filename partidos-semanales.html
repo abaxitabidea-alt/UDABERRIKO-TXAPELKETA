@@ -44,6 +44,11 @@
     .btn-save { background-color: var(--accent); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .btn-save:hover { background-color: var(--primary); }
     .badge-home { background-color: #d8f3dc; color: #1b4332; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
+
+    /* Panel de Administración */
+    .admin-generator-box { background: #e3f2fd; border: 2px solid #90caf9; padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem; }
+    .btn-gen { background-color: #0284c7; color: white; border: none; padding: 0.75rem 1.2rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 0.5rem; }
+    .btn-gen:hover { background-color: #0369a1; }
   </style>
 
   <!-- SDK Firebase -->
@@ -83,6 +88,35 @@
           <p style="margin:0.2rem 0 0 0; color:#666;">Asigna o modifica el día, hora y frontón a los partidos organizados en tu casa.</p>
         </div>
         <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+      </div>
+
+      <!-- SECCIÓN EXCLUSIVA DE GENERACIÓN DE PARTIDOS PARA EL ADMINISTRADOR -->
+      <div id="admin-generator-section" class="admin-generator-box hidden">
+        <h3 style="margin-top:0; color:#0369a1;">⚙️ Generador Oficial de Partidos (Modo Admin)</h3>
+        <p style="font-size:0.9rem; color:#333; margin-bottom:1rem;">Genera o actualiza automáticamente la liguilla incluyendo todas las parejas recién inscritas.</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label for="gen-cat">1. Categoría:</label>
+            <select id="gen-cat">
+              <option value="Benjamín">Benjamín</option>
+              <option value="Alevín">Alevín</option>
+              <option value="Infantil">Infantil</option>
+              <option value="Cadete">Cadete</option>
+              <option value="Juvenil">Juvenil</option>
+            </select>
+          </div>
+          <div>
+            <label for="gen-lvl">2. Nivel:</label>
+            <select id="gen-lvl">
+              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+              <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
+              <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-gen" onclick="triggerMatchGeneration()">⚡ Generar Calendario de Partidos</button>
       </div>
 
       <div class="form-group" style="background:#e8f5e9; padding:1rem; border-radius:8px; border:1px solid #c8e6c9;">
@@ -146,6 +180,10 @@
       document.getElementById('no-session-card').classList.add('hidden');
       document.getElementById('club-section').classList.remove('hidden');
       document.getElementById('club-title').textContent = currentClub;
+
+      if (isSuperAdmin) {
+        document.getElementById('admin-generator-section').classList.remove('hidden');
+      }
 
       loadHomeMatches();
     }
@@ -295,6 +333,114 @@
       if (!dd_mm_yyyy || !dd_mm_yyyy.includes('/')) return dd_mm_yyyy;
       const parts = dd_mm_yyyy.split('/');
       return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    // --- GENERADOR OFICIAL DE PARTIDOS QUE LEE PAREJAS EN TIEMPO REAL ---
+    function triggerMatchGeneration() {
+      const cat = document.getElementById('gen-cat').value;
+      const lvl = document.getElementById('gen-lvl').value;
+      generateMatchesForCategory(cat, lvl);
+    }
+
+    async function generateMatchesForCategory(cat, lvl) {
+      if (!cat || !lvl) {
+        alert("Por favor, selecciona una categoría y nivel válidos.");
+        return;
+      }
+
+      const allPairsData = await getCloudPairs();
+      let categoryPairs = [];
+
+      for (let club in allPairsData) {
+        if (Array.isArray(allPairsData[club])) {
+          allPairsData[club].forEach(p => {
+            if (p.category === cat && p.level === lvl) {
+              categoryPairs.push({
+                club: club.toUpperCase(),
+                player1: p.player1,
+                player2: p.player2,
+                displayName: `${club.toUpperCase()} (${p.player1}/${p.player2})`
+              });
+            }
+          });
+        }
+      }
+
+      if (categoryPairs.length < 2) {
+        alert(`Se necesitan al menos 2 parejas inscritas en ${cat} - ${lvl} para generar la liguilla.`);
+        return;
+      }
+
+      let grupos = {};
+      if (categoryPairs.length > 5) {
+        const mitad = Math.ceil(categoryPairs.length / 2);
+        grupos["Grupo A"] = categoryPairs.slice(0, mitad);
+        grupos["Grupo B"] = categoryPairs.slice(mitad);
+      } else {
+        grupos["Grupo A"] = categoryPairs;
+      }
+
+      let generatedMatches = [];
+      const lvlCode = lvl.split(' ')[0]; // Extrae "1.", "2." o "3."
+
+      Object.keys(grupos).forEach(grupoNombre => {
+        let parejasGrupo = grupos[grupoNombre];
+        let n = parejasGrupo.length;
+
+        if (n === 3) {
+          let cruces = [
+            { sem: "Semana 1", loc: parejasGrupo[0], vis: parejasGrupo[1] },
+            { sem: "Semana 2", loc: parejasGrupo[1], vis: parejasGrupo[2] },
+            { sem: "Semana 3", loc: parejasGrupo[2], vis: parejasGrupo[0] },
+            { sem: "Semana 4", loc: parejasGrupo[1], vis: parejasGrupo[0] }
+          ];
+          cruces.forEach(c => {
+            generatedMatches.push({
+              week: c.sem,
+              info: `${cat} — ${lvlCode} (${grupoNombre}): ${c.loc.displayName} vs ${c.vis.displayName}`,
+              date: "", time: "", fronton: "", order: "1º Partido", score: ""
+            });
+          });
+        } else {
+          let tempPairs = [...parejasGrupo];
+          if (n % 2 !== 0) { tempPairs.push(null); n++; }
+          let numRondas = n - 1;
+
+          for (let ronda = 0; ronda < numRondas; ronda++) {
+            let semanaStr = `Semana ${ronda + 1}`;
+            for (let i = 0; i < n / 2; i++) {
+              let p1 = tempPairs[i];
+              let p2 = tempPairs[n - 1 - i];
+
+              if (p1 !== null && p2 !== null) {
+                let loc = (ronda % 2 === 0) ? p1 : p2;
+                let vis = (ronda % 2 === 0) ? p2 : p1;
+
+                generatedMatches.push({
+                  week: semanaStr,
+                  info: `${cat} — ${lvlCode} (${grupoNombre}): ${loc.displayName} vs ${vis.displayName}`,
+                  date: "", time: "", fronton: "", order: "1º Partido", score: ""
+                });
+              }
+            }
+            tempPairs.splice(1, 0, tempPairs.pop());
+          }
+        }
+      });
+
+      const allMatchesData = await getCloudMatches();
+      let currentMasterMatches = allMatchesData["abaxitabidea"] || [];
+
+      currentMasterMatches = currentMasterMatches.filter(m => !(m.info.includes(cat) && m.info.includes(lvlCode)));
+      allMatchesData["abaxitabidea"] = [...currentMasterMatches, ...generatedMatches];
+
+      await saveCloudMatches(allMatchesData);
+      if (typeof syncToCloud === 'function') {
+        await syncToCloud();
+      }
+
+      alert(`¡Calendario generado con éxito! Total de partidos creados: ${generatedMatches.length}`);
+      loadHomeMatches();
     }
 
     document.addEventListener('DOMContentLoaded', checkSession);
