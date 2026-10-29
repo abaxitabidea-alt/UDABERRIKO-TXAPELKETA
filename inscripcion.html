@@ -4,13 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>Udaberriko Txapelketak - Inscripción de Parejas</title>
 
-  <!-- SDK Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="firebase-db.js"></script>
 
   <style>
@@ -52,7 +47,6 @@
     th { background-color: #e9ecef; color: var(--primary); }
     
     .btn-delete { background-color: #e63946; color: white; border: none; padding: 0.35rem 0.7rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-delete:hover { background-color: #b71c1c; }
   </style>
 </head>
 <body>
@@ -78,10 +72,8 @@
     <div class="card">
       <div class="club-header">
         <h2 style="margin:0; color:var(--primary);">Inscripción de: <span id="club-display-name" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión y Sincronizar</button>
       </div>
-
-      <p style="color:#666; margin-bottom:1.5rem;">Inscribe tus parejas directamente en el servidor central.</p>
 
       <div class="form-group">
         <label for="insc-cat">1. Categoría / Kategoria:</label>
@@ -115,20 +107,20 @@
         <input type="text" id="insc-p2" placeholder="Nombre y Apellido del 2º Pelotari">
       </div>
 
-      <button class="btn-save" onclick="savePair()">💾 Guardar Pareja en la Nube</button>
+      <button class="btn-save" onclick="savePair()">💾 Guardar Pareja Localmente</button>
 
       <h3 style="margin-top:2.5rem; color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem;">
         Parejas Inscritas de <span id="club-table-title" style="text-transform:uppercase;"></span>
       </h3>
 
-      <div id="pairs-table-container">Cargando parejas desde la nube...</div>
+      <div id="pairs-table-container">Cargando parejas...</div>
     </div>
   </div>
 
   <script>
     let currentClub = "";
 
-    function checkSession() {
+    async function checkSession() {
       const sessionData = JSON.parse(sessionStorage.getItem('udaberri_session'));
       if (!sessionData || !sessionData.club) {
         window.location.href = "club-panel.html";
@@ -137,18 +129,26 @@
       currentClub = sessionData.club.toLowerCase();
       document.getElementById('club-display-name').textContent = currentClub;
       document.getElementById('club-table-title').textContent = currentClub;
+
+      // Descarga inicial rápida solo si es primera vez que entra
+      await syncFromCloud();
       renderClubPairs();
     }
 
-    function logout() {
+    async function logout() {
+      const btn = document.querySelector('.logout-btn');
+      btn.textContent = "⏳ Subiendo a la nube...";
+      btn.disabled = true;
+
+      // Subida de datos al salir del club
+      await syncToCloud();
+
       sessionStorage.removeItem('udaberri_session');
       window.location.href = "club-panel.html";
     }
 
     async function renderClubPairs() {
       const container = document.getElementById('pairs-table-container');
-      container.innerHTML = '<p style="text-align:center; padding:1rem;">⌛ Consultando la nube...</p>';
-
       const allPairsData = await getCloudPairs();
       const clubPairs = allPairsData[currentClub] || [];
 
@@ -212,15 +212,15 @@
         player2: p2
       });
 
-      const success = await saveCloudPairs(allPairsData);
-      if (success) {
-        alert("¡Pareja guardada con éxito en la Nube!");
-        document.getElementById('insc-p1').value = '';
-        document.getElementById('insc-p2').value = '';
-        await renderClubPairs();
-      } else {
-        alert("Hubo un error al conectar con la base de datos de la nube.");
-      }
+      await saveCloudPairs(allPairsData);
+      
+      // Sincronizar inmediatamente a la nube al guardar
+      syncToCloud();
+
+      alert("¡Pareja guardada y sincronizada correctamente!");
+      document.getElementById('insc-p1').value = '';
+      document.getElementById('insc-p2').value = '';
+      renderClubPairs();
     }
 
     async function deletePair(index) {
@@ -229,7 +229,8 @@
         if (allPairsData[currentClub]) {
           allPairsData[currentClub].splice(index, 1);
           await saveCloudPairs(allPairsData);
-          await renderClubPairs();
+          syncToCloud();
+          renderClubPairs();
         }
       }
     }
