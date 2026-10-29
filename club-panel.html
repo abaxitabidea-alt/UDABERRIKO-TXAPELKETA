@@ -4,13 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>Udaberriko Txapelketak - Klub Atala & Antolatzailea</title>
+  <title>Udaberriko Txapelketak - Klub Atala / Panel Maestro</title>
 
-  <!-- SDK Firebase Carga Única -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="firebase-db.js"></script>
 
   <style>
@@ -36,53 +31,26 @@
 
     .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
     .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
-    .hidden { display: none !important; }
 
-    .login-form { max-width: 400px; margin: 0 auto; }
+    /* Login Form */
+    .login-box { max-width: 400px; margin: 0 auto; }
     .form-group { margin-bottom: 1.2rem; }
-    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
+    input[type="text"], input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.85rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; }
     button.btn-primary:hover { background-color: var(--primary); }
 
-    .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    /* Admin Panel Toolbar */
+    .admin-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: #e9ecef; padding: 15px; border-radius: 6px; }
+    .btn-sync-down { background-color: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .btn-sync-up { background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+    .btn-logout { background-color: #d90429; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-left: auto; }
 
-    .admin-nav-shortcuts { display: flex; gap: 0.8rem; margin-bottom: 1.5rem; background: #e8f5e9; padding: 1rem; border-radius: 8px; border: 1px solid #c8e6c9; justify-content: space-around; flex-wrap: wrap; }
-    .btn-shortcut { background-color: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; }
-    .btn-shortcut:hover { background-color: var(--accent); }
-
-    .btn-refresh { background-color: #ff9f1c; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
-    .btn-refresh:hover { background-color: #e08700; }
-
-    .btn-reset-matches { background-color: #e63946; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
-    .btn-reset-matches:hover { background-color: #b71c1c; }
-
-    .cat-tabs { display: flex; gap: 0.5rem; border-bottom: 3px solid var(--primary); margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .tab-btn { background-color: #e9ecef; border: none; padding: 0.8rem 1.5rem; font-weight: bold; font-size: 1rem; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--primary); }
-    .tab-btn.active { background-color: var(--primary); color: white; }
-
-    .level-block { background: #f8f9fa; border: 1px solid #ced4da; border-radius: 6px; padding: 1.2rem; margin-bottom: 1.5rem; }
-    .level-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .level-title { font-size: 1.2rem; font-weight: bold; color: var(--primary); margin: 0; }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; background: white; }
-    th, td { padding: 0.6rem 0.8rem; border: 1px solid #e0e0e0; text-align: left; }
-    th { background-color: #e9ecef; }
-
-    .btn-gen-level { background-color: #028090; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .btn-gen-level:hover { background-color: #005f73; }
-
-    .btn-gen-level.generated { background-color: #2b9348; color: white; }
-    .btn-gen-level.generated:hover { background-color: #1b4332; }
-
-    .btn-save-inline { background-color: #2a9d8f; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-delete { background-color: #e63946; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; }
-
-    .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
-    .action-card { background: #f8f9fa; border: 2px solid #e9ecef; border-radius: 8px; padding: 1.5rem; text-align: center; text-decoration: none; color: var(--text); display: flex; flex-direction: column; justify-content: space-between; }
-    .action-card:hover { border-color: var(--accent); }
-    .btn-card { background-color: var(--accent); color: white; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; margin-top: 1rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
+    th { background-color: #e9ecef; color: var(--primary); }
+    
+    .club-badge { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -91,427 +59,195 @@
     <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-title">
       <h1>Udaberriko Txapelketak</h1>
-      <p>Klub Kudeaketa / Panel de Control</p>
+      <p>Klub Kudaketa / Panel de Control</p>
     </div>
     <div class="header-spacer"></div>
   </header>
 
   <nav>
-    <a href="index.html" onclick="logout()">← Hasiera / Inicio</a>
+    <a href="index.html">← Hasiera / Inicio</a>
     <a href="club-panel.html" class="active">Klub Atala</a>
+    <a href="inscripcion.html">Inscripción</a>
+    <a href="partidos-semanales.html">Asteko Partidak</a>
+    <a href="gestion-resultados.html">Emaitzak</a>
   </nav>
 
   <div class="container">
-    <div id="login-section" class="card">
-      <h2 style="text-align:center; color:var(--primary);">Acceso al Panel</h2>
-      <p style="text-align:center; color:#666; margin-bottom:1.5rem;">Introduce tu usuario de club o las credenciales de organizador maestro.</p>
-      
-      <div class="login-form">
-        <div class="form-group">
-          <label for="username">Usuario:</label>
-          <input type="text" id="username" placeholder="Ej: txaruta o abaxi">
-        </div>
-        <div class="form-group">
-          <label for="password">Contraseña:</label>
-          <input type="password" id="password" placeholder="Contraseña...">
-        </div>
-        <button class="btn-primary" onclick="login()">Entrar al Panel</button>
-        <p id="login-error" style="color:red; text-align:center; display:none; margin-top:1rem;">Usuario o contraseña incorrectos.</p>
+    
+    <!-- SECCIÓN 1: FORMULARIO DE INICIO DE SESIÓN -->
+    <div id="login-section" class="card login-box">
+      <h2 style="text-align: center; color: var(--primary); margin-top:0;">Acceso al Panel</h2>
+      <p style="text-align: center; color: #666; font-size:0.9rem; margin-bottom:1.5rem;">
+        Introduce tu usuario de club o las credenciales de organizador maestro.
+      </p>
+
+      <div class="form-group">
+        <label for="username">Usuario:</label>
+        <input type="text" id="username" placeholder="Ej: txaruta o abaxi">
       </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" id="password" placeholder="Contraseña...">
+      </div>
+
+      <button class="btn-primary" onclick="login()">Entrar al Panel</button>
     </div>
 
-    <div id="club-dashboard" class="card hidden">
-      <div class="club-header">
-        <h2 style="margin:0;">Klub Panel: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+    <!-- SECCIÓN 2: PANEL MAESTRO DE ADMINISTRACIÓN (Solo visible para abaxi) -->
+    <div id="admin-section" class="card" style="display: none;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2 style="margin:0; color:var(--primary);">Panel Maestro de Organización</h2>
+        <span style="font-weight:bold; color:var(--accent);">Sesión: ABAXI (Admin)</span>
       </div>
 
-      <div class="action-grid">
-        <a href="inscripcion.html" class="action-card">
-          <div>
-            <div style="font-size:2.5rem;">📝</div>
-            <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">Inscripción / Matrícula</div>
-            <p style="color:#666; font-size:0.9rem;">Inscribe a las parejas de tu club.</p>
-          </div>
-          <div class="btn-card">Acceder →</div>
-        </a>
-
-        <a href="partidos-semanales.html" class="action-card">
-          <div>
-            <div style="font-size:2.5rem;">📅</div>
-            <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">Asteko Partidak</div>
-            <p style="color:#666; font-size:0.9rem;">Señala partidos en tu casa (día, hora, frontón).</p>
-          </div>
-          <div class="btn-card">Acceder →</div>
-        </a>
-
-        <a href="gestion-resultados.html" class="action-card">
-          <div>
-            <div style="font-size:2.5rem;">🏆</div>
-            <div style="font-size:1.2rem; font-weight:bold; color:var(--primary);">Emaitzak</div>
-            <p style="color:#666; font-size:0.9rem;">Anota marcadores de partidos disputados.</p>
-          </div>
-          <div class="btn-card">Acceder →</div>
-        </a>
+      <!-- Barra de herramientas de sincronización bajo demanda -->
+      <div class="admin-toolbar">
+        <button class="btn-sync-down" onclick="bajarDeNube()">🔄 Bajar datos desde la Nube</button>
+        <button class="btn-sync-up" onclick="subirANube()">☁️ Subir datos a la Nube</button>
+        <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
       </div>
+
+      <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2rem;">
+        Resumen Global de Parejas Inscritas por los Clubes
+      </h3>
+
+      <div id="global-pairs-container">Cargando datos locales...</div>
     </div>
 
-    <div id="organizer-dashboard" class="card hidden">
-      <div class="club-header">
-        <div>
-          <h2 style="margin:0; color:#1b4332;">👑 Antolatzaile Nagusia / Panel Maestro Abaxi</h2>
-          <p style="margin:0; color:#666;">Gestión global, edición de parejas por categorías y generación individual de cuadros en la nube.</p>
-        </div>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-      </div>
-
-      <div class="admin-nav-shortcuts">
-        <a href="pelotari.html" class="btn-shortcut">⚾ Consultar Partidak eta Sailkapenak</a>
-        <a href="gestion-resultados.html" class="btn-shortcut">🏆 Modificar Emaitzak</a>
-        <a href="partidos-semanales.html" class="btn-shortcut">📅 Asteko Partidak</a>
-        <a href="inscripcion.html" class="btn-shortcut">📝 Inscripciones</a>
-      </div>
-
-      <div style="display:flex; justify-content:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
-        <button class="btn-refresh" onclick="forceReloadCloudData()">🔄 Actualizar parejas desde la Nube</button>
-        <button class="btn-reset-matches" onclick="resetCategoryMatches()">🗑️ Borrar Partidos de esta Categoría</button>
-      </div>
-
-      <div class="cat-tabs">
-        <button class="tab-btn active" onclick="switchCategory('Benjamín', this)">Benjamín</button>
-        <button class="tab-btn" onclick="switchCategory('Alevín', this)">Alevín</button>
-        <button class="tab-btn" onclick="switchCategory('Infantil', this)">Infantil</button>
-        <button class="tab-btn" onclick="switchCategory('Cadete', this)">Cadete</button>
-        <button class="tab-btn" onclick="switchCategory('Juvenil', this)">Juvenil</button>
-      </div>
-
-      <div id="category-levels-container">Cargando datos de la nube...</div>
-    </div>
   </div>
 
   <script>
-    const VALID_CLUBS = ["txaruta", "erreka", "sanmiguel", "oberena", "abaxitabidea", "bortziriak", "zugarralde", "sansebastian", "berriozar", "ameskoa", "agoitz", "araxes", "ardoi", "kantolagua", "irurtzun", "lagunak", "mutilendako", "pilotajauku", "buruzgain", "umoreona", "lodosa", "leitza", "aldabide"];
-    let currentCategory = 'Benjamín';
+    // Listado de credenciales válidas
+    const USERS = {
+      "abaxi": "abaxi2026",
+      "txaruta": "txaruta2026",
+      "erreka": "erreka2026",
+      "oberena": "oberena2026",
+      "zugarralde": "zugarralde2026"
+    };
 
-    function checkAuth(userInput, passInput) {
-      if (!userInput || !passInput) return { valid: false, isAdmin: false };
-      const u = userInput.trim().toLowerCase();
-      const p = passInput.trim().toLowerCase();
-      const cleanP = p.replace(/\s+/g, '');
-
-      if ((u === 'abaxi' || u === 'avanti') && (cleanP === 'abaxi' || cleanP === 'avanti')) {
-        return { valid: true, isAdmin: true };
+    function checkActiveSession() {
+      const sessionData = JSON.parse(sessionStorage.getItem('udaberri_session'));
+      if (sessionData && sessionData.club) {
+        if (sessionData.club === 'abaxi') {
+          showAdminPanel();
+        } else {
+          window.location.href = "inscripcion.html";
+        }
       }
-      if (VALID_CLUBS.includes(u) && p === u) {
-        return { valid: true, isAdmin: false };
-      }
-      return { valid: false, isAdmin: false };
     }
 
-    function login() {
-      const uVal = document.getElementById('username').value;
-      const pVal = document.getElementById('password').value;
-      const errorMsg = document.getElementById('login-error');
+    async function login() {
+      const user = document.getElementById('username').value.trim().toLowerCase();
+      const pass = document.getElementById('password').value.trim();
 
-      const authRes = checkAuth(uVal, pVal);
-
-      if (authRes.valid) {
-        const sessionData = { club: uVal.trim().toLowerCase(), isAdmin: authRes.isAdmin };
-        sessionStorage.setItem('udaberri_session', JSON.stringify(sessionData));
-        errorMsg.style.display = 'none';
-        renderDashboard(sessionData);
-      } else {
-        errorMsg.style.display = 'block';
+      if (!user || !pass) {
+        alert("Por favor, introduce usuario y contraseña.");
+        return;
       }
+
+      if (USERS[user] && USERS[user] === pass) {
+        sessionStorage.setItem('udaberri_session', JSON.stringify({ club: user, loggedAt: new Date().getTime() }));
+        
+        if (user === 'abaxi') {
+          showAdminPanel();
+        } else {
+          window.location.href = "inscripcion.html";
+        }
+      } else {
+        alert("Usuario o contraseña incorrectos.");
+      }
+    }
+
+    function showAdminPanel() {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('admin-section').style.display = 'block';
+      renderGlobalPairs();
+    }
+
+    async function renderGlobalPairs() {
+      const container = document.getElementById('global-pairs-container');
+      const allPairsData = await getCloudPairs();
+
+      const clubs = Object.keys(allPairsData);
+      let totalPairs = 0;
+
+      if (clubs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#777; padding:2rem;">No hay parejas inscritas en la base de datos local.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Club</th>
+              <th>Categoría</th>
+              <th>Nivel</th>
+              <th>Pelotari 1</th>
+              <th>Pelotari 2</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      clubs.forEach(club => {
+        const pairsList = allPairsData[club] || [];
+        pairsList.forEach(p => {
+          totalPairs++;
+          html += `
+            <tr>
+              <td><span class="club-badge">${club.toUpperCase()}</span></td>
+              <td><strong>${p.category}</strong></td>
+              <td>${p.level}</td>
+              <td>${p.player1}</td>
+              <td>${p.player2}</td>
+            </tr>
+          `;
+        });
+      });
+
+      html += '</tbody></table>';
+      html = `<p><strong>Total de parejas registradas:</strong> ${totalPairs}</p>` + html;
+      container.innerHTML = html;
+    }
+
+    // Funciones de sincronización manual
+    async function bajarDeNube() {
+      const btn = document.querySelector('.btn-sync-down');
+      btn.textContent = "⏳ Descargando...";
+      btn.disabled = true;
+
+      const res = await syncFromCloud();
+      alert(res.message);
+
+      btn.textContent = "🔄 Bajar datos desde la Nube";
+      btn.disabled = false;
+      renderGlobalPairs();
+    }
+
+    async function subirANube() {
+      const btn = document.querySelector('.btn-sync-up');
+      btn.textContent = "⏳ Subiendo...";
+      btn.disabled = true;
+
+      const res = await syncToCloud();
+      alert(res.message);
+
+      btn.textContent = "☁️ Subir datos a la Nube";
+      btn.disabled = false;
     }
 
     function logout() {
       sessionStorage.removeItem('udaberri_session');
+      document.getElementById('admin-section').style.display = 'none';
+      document.getElementById('login-section').style.display = 'block';
       document.getElementById('username').value = '';
       document.getElementById('password').value = '';
-      document.getElementById('club-dashboard').classList.add('hidden');
-      document.getElementById('organizer-dashboard').classList.add('hidden');
-      document.getElementById('login-section').classList.remove('hidden');
     }
 
-    function renderDashboard(session) {
-      document.getElementById('login-section').classList.add('hidden');
-      if (session.isAdmin) {
-        document.getElementById('organizer-dashboard').classList.remove('hidden');
-        document.getElementById('club-dashboard').classList.add('hidden');
-        loadCategoryLevels(currentCategory);
-      } else {
-        document.getElementById('club-dashboard').classList.remove('hidden');
-        document.getElementById('organizer-dashboard').classList.add('hidden');
-        document.getElementById('club-title').textContent = session.club;
-      }
-    }
-
-    async function forceReloadCloudData() {
-      await loadCategoryLevels(currentCategory);
-    }
-
-    async function resetCategoryMatches() {
-      if (confirm(`¿Seguro que deseas borrar todos los partidos generados de la categoría ${currentCategory}?`)) {
-        const allMatchesData = await getCloudMatches();
-        let masterMatches = allMatchesData["abaxitabidea"] || [];
-        
-        masterMatches = masterMatches.filter(m => !m.info.includes(currentCategory));
-        allMatchesData["abaxitabidea"] = masterMatches;
-
-        await saveCloudMatches(allMatchesData);
-        alert(`Partidos de la categoría ${currentCategory} eliminados.`);
-        loadCategoryLevels(currentCategory);
-      }
-    }
-
-    async function switchCategory(catName, btn) {
-      currentCategory = catName;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      await loadCategoryLevels(catName);
-    }
-
-    async function loadCategoryLevels(catName) {
-      const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p style="text-align:center; padding:1.5rem; font-weight:bold;">⌛ Descargando datos en tiempo real desde la nube...</p>';
-
-      const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
-      
-      const allPairsData = await getCloudPairs();
-      const allMatchesData = await getCloudMatches();
-      const masterMatches = allMatchesData["abaxitabidea"] || [];
-
-      container.innerHTML = '';
-
-      levels.forEach(lvl => {
-        const matchedPairs = [];
-        for (let clubKey in allPairsData) {
-          if (Array.isArray(allPairsData[clubKey])) {
-            allPairsData[clubKey].forEach((p, idx) => {
-              if (p.category === catName && p.level === lvl) {
-                matchedPairs.push({ ...p, clubKey, origIdx: idx });
-              }
-            });
-          }
-        }
-
-        const lvlCode = lvl.split(' ')[0];
-        const hasGeneratedMatches = masterMatches.some(m => m.info.includes(catName) && m.info.includes(lvlCode));
-
-        const btnClass = hasGeneratedMatches ? "btn-gen-level generated" : "btn-gen-level";
-        const btnText = hasGeneratedMatches 
-          ? `✓ Partidos Generados (${catName} - ${lvl})` 
-          : `⚙️ Generar Partidos (${catName} - ${lvl})`;
-
-        let lvlHtml = `
-          <div class="level-block">
-            <div class="level-header">
-              <h3 class="level-title">📂 ${catName} — ${lvl} (${matchedPairs.length} parejas inscritas)</h3>
-              <button class="${btnClass}" onclick="generateLevelMatches('${catName}', '${lvl}')">${btnText}</button>
-            </div>
-        `;
-
-        if (matchedPairs.length === 0) {
-          lvlHtml += `<p style="color:#777; font-size:0.95rem;">No hay parejas inscritas en esta categoría y nivel.</p>`;
-        } else {
-          lvlHtml += `
-            <table>
-              <thead>
-                <tr>
-                  <th>Club</th>
-                  <th>Pelotari 1</th>
-                  <th>Pelotari 2</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-          `;
-
-          matchedPairs.forEach(mp => {
-            lvlHtml += `
-              <tr>
-                <td><strong style="text-transform:uppercase;">${mp.clubKey}</strong></td>
-                <td><input type="text" id="p1-${mp.clubKey}-${mp.origIdx}" value="${mp.player1}" style="padding:0.3rem;"></td>
-                <td><input type="text" id="p2-${mp.clubKey}-${mp.origIdx}" value="${mp.player2}" style="padding:0.3rem;"></td>
-                <td>
-                  <button class="btn-save-inline" onclick="saveAdminPair('${mp.clubKey}', ${mp.origIdx})">Guardar Nombre</button>
-                  <button class="btn-delete" onclick="deleteAdminPair('${mp.clubKey}', ${mp.origIdx})">Eliminar</button>
-                </td>
-              </tr>
-            `;
-          });
-
-          lvlHtml += `</tbody></table>`;
-        }
-
-        lvlHtml += `</div>`;
-        container.innerHTML += lvlHtml;
-      });
-    }
-
-    async function saveAdminPair(clubKey, idx) {
-      const allPairsData = await getCloudPairs();
-
-      if (allPairsData[clubKey] && allPairsData[clubKey][idx]) {
-        allPairsData[clubKey][idx].player1 = document.getElementById(`p1-${clubKey}-${idx}`).value.trim();
-        allPairsData[clubKey][idx].player2 = document.getElementById(`p2-${clubKey}-${idx}`).value.trim();
-        
-        await saveCloudPairs(allPairsData);
-        alert(`¡Nombre corregido para el club ${clubKey.toUpperCase()}!`);
-        loadCategoryLevels(currentCategory);
-      }
-    }
-
-    async function deleteAdminPair(clubKey, idx) {
-      if (confirm(`¿Eliminar pareja del club ${clubKey.toUpperCase()}?`)) {
-        const allPairsData = await getCloudPairs();
-
-        if (allPairsData[clubKey]) {
-          allPairsData[clubKey].splice(idx, 1);
-          await saveCloudPairs(allPairsData);
-          loadCategoryLevels(currentCategory);
-        }
-      }
-    }
-
-    async function generateLevelMatches(catName, lvlName) {
-      const allPairsData = await getCloudPairs();
-
-      const categoryPairs = [];
-      for (let club in allPairsData) {
-        if (Array.isArray(allPairsData[club])) {
-          allPairsData[club].forEach(p => {
-            if (p.category === catName && p.level === lvlName) {
-              categoryPairs.push({
-                club: club,
-                label: `${club.toUpperCase()} (${p.player1}/${p.player2})`
-              });
-            }
-          });
-        }
-      }
-
-      const count = categoryPairs.length;
-      if (count < 2) {
-        alert(`Se necesitan al menos 2 parejas inscritas en ${catName} — ${lvlName} para generar partidos. Encontradas: ${count}`);
-        await loadCategoryLevels(currentCategory);
-        return;
-      }
-
-      let teams = categoryPairs.sort(() => Math.random() - 0.5);
-      const groupKeyBase = `${catName} — ${lvlName}`;
-      const newMatches = [];
-
-      if (count === 3) {
-        const p = teams; const gKey = `${groupKeyBase}`;
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[0].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL): 2º Clasificado vs 3º Clasificado` });
-        newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): 1º Clasificado vs Ganador Semifinal` });
-      } else if (count === 4) {
-        const p = teams; const gKey = `${groupKeyBase}`;
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 1): 1º Clasificado vs 4º Clasificado` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 2): 2º Clasificado vs 3º Clasificado` });
-        newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      } else if (count === 5) {
-        const p = teams; const gKey = `${groupKeyBase}`;
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 1): 1º Clasificado vs 4º Clasificado` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey} (SEMIFINAL 2): 2º Clasificado vs 3º Clasificado` });
-        newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      } else if (count === 6) {
-        const p = teams; const gKey = `${groupKeyBase}`;
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[1].label}` });
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 1", group: gKey, info: `${gKey}: ${p[4].label} vs ${p[5].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 2", group: gKey, info: `${gKey}: ${p[3].label} vs ${p[5].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[5].label}` });
-        newMatches.push({ week: "Semana 3", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[3].label}` });
-        newMatches.push({ week: "Semana 4", group: gKey, info: `${gKey}: ${p[2].label} vs ${p[5].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[0].label} vs ${p[5].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[1].label} vs ${p[2].label}` });
-        newMatches.push({ week: "Semana 5", group: gKey, info: `${gKey}: ${p[3].label} vs ${p[4].label}` });
-        newMatches.push({ week: "Semana 6", group: gKey, info: `${gKey} (FINAL): 1º Clasificado vs 2º Clasificado` });
-      } else if (count === 7) {
-        const gA = teams.slice(0, 4); const gB = teams.slice(4, 7);
-        const keyA = `${groupKeyBase} (Grupo A)`; const keyB = `${groupKeyBase} (Grupo B)`;
-        
-        newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[1].label}` });
-        newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[2].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[2].label}` });
-        newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[2].label}` });
-
-        newMatches.push({ week: "Semana 1", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[1].label}` });
-        newMatches.push({ week: "Semana 2", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[2].label}` });
-        newMatches.push({ week: "Semana 3", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[2].label}` });
-        newMatches.push({ week: "Semana 4", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[0].label}` });
-
-        newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
-        newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-        newMatches.push({ week: "Semana 6", group: groupKeyBase, info: `${groupKeyBase} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      } else if (count >= 8) {
-        const gA = teams.slice(0, 4); const gB = teams.slice(4, 8);
-        const keyA = `${groupKeyBase} (Grupo A)`; const keyB = `${groupKeyBase} (Grupo B)`;
-        newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[1].label}` });
-        newMatches.push({ week: "Semana 1", group: keyA, info: `${keyA}: ${gA[2].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[2].label}` });
-        newMatches.push({ week: "Semana 2", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[0].label} vs ${gA[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyA, info: `${keyA}: ${gA[1].label} vs ${gA[2].label}` });
-
-        newMatches.push({ week: "Semana 1", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[1].label}` });
-        newMatches.push({ week: "Semana 1", group: keyB, info: `${keyB}: ${gB[2].label} vs ${gB[3].label}` });
-        newMatches.push({ week: "Semana 2", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[2].label}` });
-        newMatches.push({ week: "Semana 2", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyB, info: `${keyB}: ${gB[0].label} vs ${gB[3].label}` });
-        newMatches.push({ week: "Semana 3", group: keyB, info: `${keyB}: ${gB[1].label} vs ${gB[2].label}` });
-
-        newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 1): 1º Grupo A vs 2º Grupo B` });
-        newMatches.push({ week: "Semana 5", group: groupKeyBase, info: `${groupKeyBase} (SEMIFINAL 2): 1º Grupo B vs 2º Grupo A` });
-        newMatches.push({ week: "Semana 6", group: groupKeyBase, info: `${groupKeyBase} (FINAL): Ganador Semifinal 1 vs Ganador Semifinal 2` });
-      }
-
-      const allMatchesData = await getCloudMatches();
-      let masterMatches = allMatchesData["abaxitabidea"] || [];
-      
-      const lvlCode = lvlName.split(' ')[0];
-      masterMatches = masterMatches.filter(m => !m.info.includes(catName) || !m.info.includes(lvlCode));
-      masterMatches.push(...newMatches);
-
-      allMatchesData["abaxitabidea"] = masterMatches;
-      await saveCloudMatches(allMatchesData);
-
-      alert(`¡Calendario generado y guardado en la NUBE con EXITO! (${count} parejas inscritas incluidas)`);
-      await loadCategoryLevels(currentCategory);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const activeSession = JSON.parse(sessionStorage.getItem('udaberri_session'));
-      if (activeSession && activeSession.club) renderDashboard(activeSession);
-    });
+    document.addEventListener('DOMContentLoaded', checkActiveSession);
   </script>
 </body>
 </html>
