@@ -8,7 +8,7 @@ const firebaseConfig = {
   appId: "1:1234567890:web:abcdef123456"
 };
 
-// Garantizar inicialización única sin errores de referencia
+// Garantizar inicialización única sin errores
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
