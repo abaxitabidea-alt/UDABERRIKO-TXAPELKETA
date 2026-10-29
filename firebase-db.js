@@ -1,28 +1,21 @@
 // Configuración e Inicialización Centralizada de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDummyKeyForFirestoreDB",
+  apiKey: "AIzaSyDbdhnPDtATGlXh7emwUBXs8FqlfvKiT7o",
   authDomain: "udaberri-txapelketak.firebaseapp.com",
   projectId: "udaberri-txapelketak",
-  storageBucket: "udaberri-txapelketak.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  storageBucket: "udaberri-txapelketak.firebasestorage.app",
+  messagingSenderId: "47658305625",
+  appId: "1:47658305625:web:9c55567ae2fd35874a4940"
 };
 
-// Garantizar inicialización única
+// Inicialización única de la aplicación
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
 const db = firebase.firestore();
 
-// Configurar transporte directo y limpiar caché previa
-db.settings({
-  host: "firestore.googleapis.com",
-  ssl: true,
-  experimentalForceLongPolling: true
-});
-
-// 1. Obtener parejas inscritas de la nube directamente
+// 1. Obtener todas las parejas inscritas directamente de la nube
 async function getCloudPairs() {
   try {
     const doc = await db.collection("txapelketa").doc("udaberri_pairs").get();
@@ -47,7 +40,7 @@ async function saveCloudPairs(pairsData) {
   }
 }
 
-// 3. Obtener partidos de la nube
+// 3. Obtener todos los partidos de la nube
 async function getCloudMatches() {
   try {
     const doc = await db.collection("txapelketa").doc("udaberri_matches").get();
