@@ -36,7 +36,7 @@
     .login-box { max-width: 400px; margin: 0 auto; }
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
-    input[type="text"], input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
+    input[type="text"], input[type="password"], select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 1rem; }
     button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.85rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; }
     button.btn-primary:hover { background-color: var(--primary); }
 
@@ -45,6 +45,10 @@
     .btn-sync-down { background-color: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     .btn-sync-up { background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     .btn-logout { background-color: #d90429; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; margin-left: auto; }
+
+    .btn-action { background-color: var(--accent); color: white; border: none; padding: 0.75rem 1.2rem; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 1rem; }
+    .btn-action:hover { background-color: var(--primary); }
+    .btn-danger { background-color: #e63946; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
     th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
@@ -94,31 +98,65 @@
       <button class="btn-primary" onclick="login()">Entrar al Panel</button>
     </div>
 
-    <!-- SECCIÓN 2: PANEL MAESTRO DE ADMINISTRACIÓN (Solo visible para abaxi) -->
+    <!-- SECCIÓN 2: PANEL MAESTRO DE ADMINISTRACIÓN -->
     <div id="admin-section" class="card" style="display: none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
         <h2 style="margin:0; color:var(--primary);">Panel Maestro de Organización</h2>
         <span style="font-weight:bold; color:var(--accent);">Sesión: ABAXI (Admin)</span>
       </div>
 
-      <!-- Barra de herramientas de sincronización bajo demanda -->
+      <!-- Barra de sincronización -->
       <div class="admin-toolbar">
         <button class="btn-sync-down" onclick="bajarDeNube()">🔄 Bajar datos desde la Nube</button>
         <button class="btn-sync-up" onclick="subirANube()">☁️ Subir datos a la Nube</button>
         <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
       </div>
 
+      <!-- GENERADOR DE PARTIDOS RESTAURADO -->
       <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2rem;">
-        Resumen Global de Parejas Inscritas por los Clubes
+        ⚙️ Generador Automático de Partidos
       </h3>
 
-      <div id="global-pairs-container">Cargando datos locales...</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div class="form-group">
+          <label for="gen-cat">Seleccionar Categoría:</label>
+          <select id="gen-cat">
+            <option value="Benjamín">Benjamín</option>
+            <option value="Alevín">Alevín</option>
+            <option value="Infantil">Infantil</option>
+            <option value="Cadete">Cadete</option>
+            <option value="Juvenil">Juvenil</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="gen-lvl">Seleccionar Nivel:</label>
+          <select id="gen-lvl">
+            <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+            <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
+            <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn-action" onclick="generateMatchesForCategory()">⚡ Generar Calendario de Partidos</button>
+        <button class="btn-danger" style="margin-top:1rem;" onclick="clearMatchesForCategory()">🗑️ Borrar Partidos de esta Categoría</button>
+      </div>
+
+      <div id="generated-matches-preview" style="margin-top:1.5rem;"></div>
+
+      <!-- RESUMEN GLOBAL -->
+      <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2.5rem;">
+        📋 Resumen Global de Parejas Inscritas
+      </h3>
+
+      <div id="global-pairs-container">Cargando datos...</div>
     </div>
 
   </div>
 
   <script>
-    // Listado de credenciales válidas
     const USERS = {
       "abaxi": "abaxi2026",
       "txaruta": "txaruta2026",
@@ -149,7 +187,6 @@
 
       if (USERS[user] && USERS[user] === pass) {
         sessionStorage.setItem('udaberri_session', JSON.stringify({ club: user, loggedAt: new Date().getTime() }));
-        
         if (user === 'abaxi') {
           showAdminPanel();
         } else {
@@ -174,7 +211,7 @@
       let totalPairs = 0;
 
       if (clubs.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:#777; padding:2rem;">No hay parejas inscritas en la base de datos local.</p>';
+        container.innerHTML = '<p style="text-align:center; color:#777; padding:2rem;">No hay parejas inscritas registradas.</p>';
         return;
       }
 
@@ -213,7 +250,88 @@
       container.innerHTML = html;
     }
 
-    // Funciones de sincronización manual
+    // --- LÓGICA DE GENERACIÓN DE PARTIDOS ---
+    async function generateMatchesForCategory() {
+      const cat = document.getElementById('gen-cat').value;
+      const lvl = document.getElementById('gen-lvl').value;
+      const allPairs = await getCloudPairs();
+
+      // Filtrar parejas correspondientes a la categoría y nivel seleccionados
+      let categoryPairs = [];
+      Object.keys(allPairs).forEach(club => {
+        (allPairs[club] || []).forEach(p => {
+          if (p.category === cat && p.level === lvl) {
+            categoryPairs.push({
+              club: club.toUpperCase(),
+              p1: p.player1,
+              p2: p.player2,
+              name: `${club.toUpperCase()} (${p.player1} - ${p.player2})`
+            });
+          }
+        });
+      });
+
+      if (categoryPairs.length < 2) {
+        alert(`Se necesitan al menos 2 parejas en ${cat} - ${lvl} para generar enfrentamientos.`);
+        return;
+      }
+
+      // Generar todos contra todos (Round-Robin)
+      let generated = [];
+      for (let i = 0; i < categoryPairs.length; i++) {
+        for (let j = i + 1; j < categoryPairs.length; j++) {
+          generated.push({
+            id: Date.now() + Math.random(),
+            category: cat,
+            level: lvl,
+            local: categoryPairs[i].name,
+            visitante: categoryPairs[j].name,
+            fecha: "",
+            trinquet: "",
+            resultado: ""
+          });
+        }
+      }
+
+      // Guardar en la estructura global de partidos
+      const allMatches = await getCloudMatches();
+      const groupKey = `${cat}_${lvl}`;
+      allMatches[groupKey] = generated;
+      
+      await saveCloudMatches(allMatches);
+      await syncToCloud(); // Sincroniza a la nube tras generar
+
+      alert(`¡Se han generado ${generated.length} partidos para ${cat} - ${lvl}!`);
+      renderGeneratedMatchesPreview(generated, cat, lvl);
+    }
+
+    async function clearMatchesForCategory() {
+      const cat = document.getElementById('gen-cat').value;
+      const lvl = document.getElementById('gen-lvl').value;
+      const groupKey = `${cat}_${lvl}`;
+
+      if (confirm(`¿Estás seguro de que deseas borrar todos los partidos generados de ${cat} - ${lvl}?`)) {
+        const allMatches = await getCloudMatches();
+        delete allMatches[groupKey];
+        await saveCloudMatches(allMatches);
+        await syncToCloud();
+        
+        document.getElementById('generated-matches-preview').innerHTML = '';
+        alert("Partidos de la categoría eliminados.");
+      }
+    }
+
+    function renderGeneratedMatchesPreview(matches, cat, lvl) {
+      const container = document.getElementById('generated-matches-preview');
+      let html = `<h4>Partidos Generados para ${cat} - ${lvl} (${matches.length})</h4><table><thead><tr><th>Local</th><th>Visitante</th></tr></thead><tbody>`;
+      matches.forEach(m => {
+        html += `<tr><td>${m.local}</td><td>${m.visitante}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    // Funciones de Sincronización
     async function bajarDeNube() {
       const btn = document.querySelector('.btn-sync-down');
       btn.textContent = "⏳ Descargando...";
