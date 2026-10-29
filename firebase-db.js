@@ -1,66 +1,78 @@
-// Configuración e Inicialización Centralizada de Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDbdhnPDtATGlXh7emwUBXs8FqlfvKiT7o",
-  authDomain: "udaberri-txapelketak.firebaseapp.com",
-  projectId: "udaberri-txapelketak",
-  storageBucket: "udaberri-txapelketak.firebasestorage.app",
-  messagingSenderId: "47658305625",
-  appId: "1:47658305625:web:9c55567ae2fd35874a4940"
-};
+// Enlace a la API de Google Sheets en Drive
+const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbw7myV2ohCRTZAoAHwQvcSXGTvlYSaK8ZiYpYrBff5SX-DLc-Esm00eS-O3jDAQHtS64A/exec";
 
-// Inicialización única de la aplicación
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-const db = firebase.firestore();
-
-// 1. Obtener todas las parejas inscritas directamente de la nube
+// 1. Obtener todas las parejas inscritas desde Google Sheets
 async function getCloudPairs() {
   try {
-    const doc = await db.collection("txapelketa").doc("udaberri_pairs").get();
-    if (doc.exists) {
-      return doc.data() || {};
-    }
-    return {};
+    const response = await fetch(DRIVE_API_URL);
+    const data = await response.json();
+    return data.pairs || {};
   } catch (error) {
-    console.error("Error leyendo parejas de la nube:", error);
+    console.error("Error leyendo parejas de Drive:", error);
     return {};
   }
 }
 
-// 2. Guardar parejas inscritas en la nube
+// 2. Guardar parejas inscritas en Google Sheets
 async function saveCloudPairs(pairsData) {
   try {
-    await db.collection("txapelketa").doc("udaberri_pairs").set(pairsData);
+    const currentData = await fetchDriveData();
+    currentData.pairs = pairsData;
+    
+    await fetch(DRIVE_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(currentData)
+    });
     return true;
   } catch (error) {
-    console.error("Error guardando parejas en la nube:", error);
+    console.error("Error guardando parejas en Drive:", error);
     return false;
   }
 }
 
-// 3. Obtener todos los partidos de la nube
+// 3. Obtener partidos desde Google Sheets
 async function getCloudMatches() {
   try {
-    const doc = await db.collection("txapelketa").doc("udaberri_matches").get();
-    if (doc.exists) {
-      return doc.data() || {};
-    }
-    return {};
+    const response = await fetch(DRIVE_API_URL);
+    const data = await response.json();
+    return data.matches || {};
   } catch (error) {
-    console.error("Error leyendo partidos de la nube:", error);
+    console.error("Error leyendo partidos de Drive:", error);
     return {};
   }
 }
 
-// 4. Guardar partidos en la nube
+// 4. Guardar partidos en Google Sheets
 async function saveCloudMatches(matchesData) {
   try {
-    await db.collection("txapelketa").doc("udaberri_matches").set(matchesData);
+    const currentData = await fetchDriveData();
+    currentData.matches = matchesData;
+    
+    await fetch(DRIVE_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(currentData)
+    });
     return true;
   } catch (error) {
-    console.error("Error guardando partidos en la nube:", error);
+    console.error("Error guardando partidos en Drive:", error);
     return false;
+  }
+}
+
+// Función auxiliar para leer la estructura JSON completa de la hoja
+async function fetchDriveData() {
+  try {
+    const response = await fetch(DRIVE_API_URL);
+    return await response.json();
+  } catch (e) {
+    return { pairs: {}, matches: {} };
   }
 }
