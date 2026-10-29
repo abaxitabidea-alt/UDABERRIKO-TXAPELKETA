@@ -64,7 +64,7 @@ async function syncToCloud() {
     await fetch(DRIVE_API_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(localData)
     });
     return { success: true, message: "Datos subidos con éxito a la nube." };
