@@ -78,7 +78,7 @@
 
   <div class="container">
     
-    <!-- SECCIÓN 1: LOGIN -->
+    <!-- LOGIN -->
     <div id="login-section" class="card login-box">
       <h2 style="text-align: center; color: var(--primary); margin-top:0;">Acceso al Panel</h2>
       <p style="text-align: center; color: #666; font-size:0.9rem; margin-bottom:1.5rem;">
@@ -98,23 +98,23 @@
       <button class="btn-primary" onclick="login()">Entrar al Panel</button>
     </div>
 
-    <!-- SECCIÓN 2: PANEL MAESTRO DE ADMINISTRACIÓN -->
+    <!-- PANEL MAESTRO -->
     <div id="admin-section" class="card" style="display: none;">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
         <h2 style="margin:0; color:var(--primary);">Panel Maestro de Organización</h2>
         <span style="font-weight:bold; color:var(--accent);">Sesión: ABAXI (Admin)</span>
       </div>
 
-      <!-- Barra de herramientas -->
+      <!-- Barra de sincronización -->
       <div class="admin-toolbar">
         <button class="btn-sync-down" onclick="bajarDeNube()">🔄 Bajar datos desde la Nube</button>
         <button class="btn-sync-up" onclick="subirANube()">☁️ Subir datos a la Nube</button>
         <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- GENERADOR DE PARTIDOS CON FORMATO DE REGLAS -->
+      <!-- GENERADOR DE PARTIDOS -->
       <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2rem;">
-        ⚙️ Generador Oficial de Partidos y Fases
+        ⚙️ Generador Oficial de Partidos Equilibrados
       </h3>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
@@ -250,7 +250,7 @@
       container.innerHTML = html;
     }
 
-    // --- ALGORITMO OFICIAL DE LIGA Y FASES FINALES ---
+    // --- GENERADOR CON REPARTO EQUILIBRADO Y JORNADAS COMPLETAS ---
     async function generateMatchesForCategory() {
       const cat = document.getElementById('gen-cat').value;
       const lvl = document.getElementById('gen-lvl').value;
@@ -278,7 +278,7 @@
       let generated = [];
       let grupos = {};
 
-      // Separación en grupos si son más de 5 parejas
+      // Dividir en grupos si son más de 5 parejas
       if (categoryPairs.length > 5) {
         const mitad = Math.ceil(categoryPairs.length / 2);
         grupos["Grupo A"] = categoryPairs.slice(0, mitad);
@@ -288,14 +288,15 @@
       }
 
       const tieneVariosGrupos = Object.keys(grupos).length > 1;
+      let maxSemanaRegular = 0;
 
-      // 1. GENERAR LIGA REGULAR (SEMANAS 1 A 4/5)
+      // 1. GENERAR LIGA REGULAR CON REPARTO CASA/FUERA EQUILIBRADO
       Object.keys(grupos).forEach(grupoNombre => {
         let parejas = grupos[grupoNombre];
         let numParejas = parejas.length;
 
         if (numParejas === 3) {
-          // Caso especial 3 parejas: 2 rondas (ida y vuelta = 4 jornadas)
+          // Caso especial 3 parejas (4 jornadas, ida y vuelta)
           let enfrentamientos = [
             { sem: 1, loc: parejas[0], vis: parejas[1] },
             { sem: 2, loc: parejas[1], vis: parejas[2] },
@@ -305,15 +306,17 @@
           enfrentamientos.forEach(e => {
             generated.push(createMatchObj(cat, lvl, grupoNombre, e.sem, e.loc.name, e.vis.name));
           });
+          maxSemanaRegular = Math.max(maxSemanaRegular, 4);
         } else {
-          // Casos de 4, 5 y 6 parejas (Round-Robin oficial)
+          // Casos de 4, 5 y 6 parejas (Round-Robin con alternancia de localía)
           let tempPairs = [...parejas];
           let n = tempPairs.length;
           if (n % 2 !== 0) {
-            tempPairs.push(null);
+            tempPairs.push(null); // Descanso rotativo
             n++;
           }
           let numRondas = n - 1;
+          maxSemanaRegular = Math.max(maxSemanaRegular, numRondas);
 
           for (let ronda = 0; ronda < numRondas; ronda++) {
             let semanaNum = ronda + 1;
@@ -322,7 +325,10 @@
               let p2 = tempPairs[n - 1 - i];
 
               if (p1 !== null && p2 !== null) {
-                generated.push(createMatchObj(cat, lvl, grupoNombre, semanaNum, p1.name, p2.name));
+                // Alternar casa/fuera según ronda para equilibrio perfecto
+                let loc = (ronda % 2 === 0) ? p1 : p2;
+                let vis = (ronda % 2 === 0) ? p2 : p1;
+                generated.push(createMatchObj(cat, lvl, grupoNombre, semanaNum, loc.name, vis.name));
               }
             }
             tempPairs.splice(1, 0, tempPairs.pop());
@@ -330,22 +336,24 @@
         }
       });
 
-      // 2. FASES FINALES (SEMIFINALES Y FINALES)
+      // 2. GENERAR FASES FINALES
       if (tieneVariosGrupos) {
-        // Semana 5: Semifinales cruzadas
-        generated.push(createMatchObj(cat, lvl, "Fase Final", 5, "1º Grupo A", "2º Grupo B"));
-        generated.push(createMatchObj(cat, lvl, "Fase Final", 5, "1º Grupo B", "2º Grupo A"));
+        // Semifinales cruzadas en la semana posterior a la liga regular
+        const semSemifinal = maxSemanaRegular + 1;
+        const semFinal = semSemifinal + 1;
 
-        // Semana 6: Final
-        generated.push(createMatchObj(cat, lvl, "Fase Final", 6, "Ganador Semifinal 1", "Ganador Semifinal 2"));
+        generated.push(createMatchObj(cat, lvl, "Fase Final", semSemifinal, "1º Grupo A", "2º Grupo B"));
+        generated.push(createMatchObj(cat, lvl, "Fase Final", semSemifinal, "1º Grupo B", "2º Grupo A"));
+
+        // Final
+        generated.push(createMatchObj(cat, lvl, "Fase Final", semFinal, "Ganador Semifinal 1", "Ganador Semifinal 2"));
       } else {
-        // Un solo grupo: Final directa entre el 1º y el 2º en la última semana
-        const totalSemRegular = (categoryPairs.length === 3) ? 4 : (categoryPairs.length - 1);
-        const semFinal = totalSemRegular + 1;
+        // Final directa para torneo de grupo único
+        const semFinal = maxSemanaRegular + 1;
         generated.push(createMatchObj(cat, lvl, "Fase Final", semFinal, "1º Clasificado", "2º Clasificado"));
       }
 
-      // Guardar y sincronizar
+      // Guardar y Sincronizar
       const allMatches = await getCloudMatches();
       const groupKey = `${cat}_${lvl}`;
       allMatches[groupKey] = generated;
@@ -353,7 +361,7 @@
       await saveCloudMatches(allMatches);
       await syncToCloud();
 
-      alert(`¡Se han generado ${generated.length} partidos con su fase final para ${cat} - ${lvl}!`);
+      alert(`¡Se han generado ${generated.length} partidos equilibrados con sus fases finales para ${cat} - ${lvl}!`);
       renderGeneratedMatchesPreview(generated, cat, lvl);
     }
 
@@ -397,8 +405,8 @@
                       <tr>
                         <th>Semana</th>
                         <th>Grupo</th>
-                        <th>Local</th>
-                        <th>Visitante</th>
+                        <th>Local (Casa)</th>
+                        <th>Visitante (Fuera)</th>
                       </tr>
                     </thead>
                     <tbody>`;
