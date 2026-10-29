@@ -1,4 +1,4 @@
-// URL de tu API de Google Sheets en Drive
+// URL de la API de Google Sheets en Drive
 const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbw7myV2ohCRTZAoAHwQvcSXGTvlYSaK8ZiYpYrBff5SX-DLc-Esm00eS-O3jDAQHtS64A/exec";
 
 // --- GESTIÓN DE ALMACENAMIENTO LOCAL Y CACHÉ ---
@@ -11,7 +11,7 @@ function saveLocalDB(db) {
   localStorage.setItem('udaberri_local_db', JSON.stringify(db));
 }
 
-// --- FUNCIONES RÁPIDAS (TRABAJAN EN MEMORIA LOCAL) ---
+// --- FUNCIONES LECTURA/ESCRITURA RÁPIDAS (MEMORIA LOCAL) ---
 async function getCloudPairs() {
   const db = getLocalDB();
   return db.pairs || {};
@@ -38,7 +38,7 @@ async function saveCloudMatches(matchesData) {
 
 // --- FUNCIONES DE SINCRONIZACIÓN BAJO DEMANDA ---
 
-// Bajar/Descargar todos los datos desde la nube (Google Drive) a Local
+// Bajar/Descargar todos los datos desde Google Drive hacia Local
 async function syncFromCloud() {
   try {
     const response = await fetch(DRIVE_API_URL);
@@ -57,7 +57,7 @@ async function syncFromCloud() {
   }
 }
 
-// Subir/Cargar todos los datos desde Local a la nube (Google Drive)
+// Subir/Cargar todos los datos desde Local hacia Google Drive
 async function syncToCloud() {
   try {
     const localData = getLocalDB();
