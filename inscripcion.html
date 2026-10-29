@@ -42,6 +42,7 @@
     
     button.btn-save { background-color: var(--accent); color: white; border: none; padding: 0.85rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; margin-top: 1rem; }
     button.btn-save:hover { background-color: var(--primary); }
+    button.btn-save:disabled { background-color: #a0aec0; cursor: not-allowed; }
 
     table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
     th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
@@ -108,7 +109,7 @@
         <input type="text" id="insc-p2" placeholder="Nombre y Apellido del 2º Pelotari">
       </div>
 
-      <button class="btn-save" onclick="savePair()">💾 Guardar Pareja Localmente</button>
+      <button id="save-btn" class="btn-save" onclick="savePair()">💾 Guardar Pareja Localmente</button>
 
       <h3 style="margin-top:2.5rem; color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem;">
         Parejas Inscritas de <span id="club-table-title" style="text-transform:uppercase;"></span>
@@ -131,7 +132,6 @@
       document.getElementById('club-display-name').textContent = currentClub;
       document.getElementById('club-table-title').textContent = currentClub;
 
-      // Descarga inicial rápida desde Drive al entrar
       await syncFromCloud();
       renderClubPairs();
     }
@@ -141,7 +141,6 @@
       btn.textContent = "⏳ Subiendo a la nube...";
       btn.disabled = true;
 
-      // Subida de datos al salir del club
       await syncToCloud();
 
       sessionStorage.removeItem('udaberri_session');
@@ -191,6 +190,7 @@
     }
 
     async function savePair() {
+      const btn = document.getElementById('save-btn');
       const cat = document.getElementById('insc-cat').value;
       const lvl = document.getElementById('insc-level').value;
       const p1 = document.getElementById('insc-p1').value.trim();
@@ -201,9 +201,28 @@
         return;
       }
 
+      // Bloquear botón para evitar doble clic
+      btn.disabled = true;
+      btn.textContent = "⏳ Guardando...";
+
       const allPairsData = await getCloudPairs();
       if (!allPairsData[currentClub]) {
         allPairsData[currentClub] = [];
+      }
+
+      // Validación anti-duplicados (Comprobar si exactamente la misma pareja ya existe)
+      const isDuplicate = allPairsData[currentClub].some(p => 
+        p.category === cat && 
+        p.level === lvl && 
+        p.player1.toLowerCase() === p1.toLowerCase() && 
+        p.player2.toLowerCase() === p2.toLowerCase()
+      );
+
+      if (isDuplicate) {
+        alert("Esta pareja ya está inscrita en esta categoría y nivel.");
+        btn.disabled = false;
+        btn.textContent = "💾 Guardar Pareja Localmente";
+        return;
       }
 
       allPairsData[currentClub].push({
@@ -214,13 +233,16 @@
       });
 
       await saveCloudPairs(allPairsData);
-      
-      // Sincroniza inmediatamente en segundo plano al guardar
       syncToCloud();
 
       alert("¡Pareja guardada correctamente!");
+      
+      // Limpiar campos y desbloquear botón
       document.getElementById('insc-p1').value = '';
       document.getElementById('insc-p2').value = '';
+      btn.disabled = false;
+      btn.textContent = "💾 Guardar Pareja Localmente";
+      
       renderClubPairs();
     }
 
