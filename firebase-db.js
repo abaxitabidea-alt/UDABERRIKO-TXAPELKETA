@@ -1,78 +1,75 @@
-// Enlace a la API de Google Sheets en Drive
+// URL de tu API de Google Sheets en Drive
 const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbw7myV2ohCRTZAoAHwQvcSXGTvlYSaK8ZiYpYrBff5SX-DLc-Esm00eS-O3jDAQHtS64A/exec";
 
-// 1. Obtener todas las parejas inscritas desde Google Sheets
+// --- GESTIÓN DE ALMACENAMIENTO LOCAL Y CACHÉ ---
+function getLocalDB() {
+  const data = localStorage.getItem('udaberri_local_db');
+  return data ? JSON.parse(data) : { pairs: {}, matches: {} };
+}
+
+function saveLocalDB(db) {
+  localStorage.setItem('udaberri_local_db', JSON.stringify(db));
+}
+
+// --- FUNCIONES RÁPIDAS (TRABAJAN EN MEMORIA LOCAL) ---
 async function getCloudPairs() {
-  try {
-    const response = await fetch(DRIVE_API_URL);
-    const data = await response.json();
-    return data.pairs || {};
-  } catch (error) {
-    console.error("Error leyendo parejas de Drive:", error);
-    return {};
-  }
+  const db = getLocalDB();
+  return db.pairs || {};
 }
 
-// 2. Guardar parejas inscritas en Google Sheets
 async function saveCloudPairs(pairsData) {
-  try {
-    const currentData = await fetchDriveData();
-    currentData.pairs = pairsData;
-    
-    await fetch(DRIVE_API_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(currentData)
-    });
-    return true;
-  } catch (error) {
-    console.error("Error guardando parejas en Drive:", error);
-    return false;
-  }
+  const db = getLocalDB();
+  db.pairs = pairsData;
+  saveLocalDB(db);
+  return true;
 }
 
-// 3. Obtener partidos desde Google Sheets
 async function getCloudMatches() {
+  const db = getLocalDB();
+  return db.matches || {};
+}
+
+async function saveCloudMatches(matchesData) {
+  const db = getLocalDB();
+  db.matches = matchesData;
+  saveLocalDB(db);
+  return true;
+}
+
+// --- FUNCIONES DE SINCRONIZACIÓN BAJO DEMANDA ---
+
+// Bajar/Descargar todos los datos desde la nube (Google Drive) a Local
+async function syncFromCloud() {
   try {
     const response = await fetch(DRIVE_API_URL);
-    const data = await response.json();
-    return data.matches || {};
+    const cloudData = await response.json();
+    if (cloudData && typeof cloudData === 'object') {
+      saveLocalDB({
+        pairs: cloudData.pairs || {},
+        matches: cloudData.matches || {}
+      });
+      return { success: true, message: "Datos descargados correctamente desde la nube." };
+    }
+    return { success: false, message: "Respuesta de la nube no válida." };
   } catch (error) {
-    console.error("Error leyendo partidos de Drive:", error);
-    return {};
+    console.error("Error al descargar de Drive:", error);
+    return { success: false, message: "Error al conectar con la nube." };
   }
 }
 
-// 4. Guardar partidos en Google Sheets
-async function saveCloudMatches(matchesData) {
+// Subir/Cargar todos los datos desde Local a la nube (Google Drive)
+async function syncToCloud() {
   try {
-    const currentData = await fetchDriveData();
-    currentData.matches = matchesData;
-    
+    const localData = getLocalDB();
     await fetch(DRIVE_API_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(currentData)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(localData)
     });
-    return true;
+    return { success: true, message: "Datos subidos con éxito a la nube." };
   } catch (error) {
-    console.error("Error guardando partidos en Drive:", error);
-    return false;
-  }
-}
-
-// Función auxiliar para leer la estructura JSON completa de la hoja
-async function fetchDriveData() {
-  try {
-    const response = await fetch(DRIVE_API_URL);
-    return await response.json();
-  } catch (e) {
-    return { pairs: {}, matches: {} };
+    console.error("Error al subir a Drive:", error);
+    return { success: false, message: "Error al subir datos a la nube." };
   }
 }
