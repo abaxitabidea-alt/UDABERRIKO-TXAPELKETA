@@ -1,109 +1,67 @@
-// ==========================================
-// CONFIGURACIÓN CENTRAL DE FIREBASE (NUBE)
-// Udaberriko Txapelketak
-// ==========================================
-
-// Importación de SDKs de Firebase desde CDN (Compatibilidad)
-(function loadFirebaseSDKs() {
-  if (typeof firebase === 'undefined') {
-    const appScript = document.createElement('script');
-    appScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js";
-    document.head.appendChild(appScript);
-
-    appScript.onload = () => {
-      const dbScript = document.createElement('script');
-      dbScript.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js";
-      document.head.appendChild(dbScript);
-      dbScript.onload = initFirebase;
+// Configuración centralizada e inicialización única de Firebase Firestore
+(function initFirebaseApp() {
+  if (!firebase.apps.length) {
+    const firebaseConfig = {
+      apiKey: "AIzaSyDummyKeyForFirestoreDB",
+      authDomain: "udaberri-txapelketak.firebaseapp.com",
+      projectId: "udaberri-txapelketak",
+      storageBucket: "udaberri-txapelketak.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
     };
-  } else {
-    initFirebase();
+    firebase.initializeApp(firebaseConfig);
   }
 })();
 
-let db = null;
+const db = firebase.firestore();
 
-function initFirebase() {
-  const firebaseConfig = {
-    apiKey: "AIzaSyDhdhnPDtATGjXh7euwUBXs8Fq1fxKit7o",
-    authDomain: "udaberri-txapelketa.firebaseapp.com",
-    projectId: "udaberri-txapelketa",
-    storageBucket: "udaberri-txapelketa.appspot.com",
-    messagingSenderId: "47658305626",
-    appId: "1:47658305625:web:9c55567ae2fd35874a4948"
-  };
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  db = firebase.firestore();
-  console.log("🔥 Conexión con Firebase Firestore establecida con éxito.");
-}
-
-// ==========================================
-// FUNCIONES DE LECTURA Y ESCRITURA GLOBAL
-// ==========================================
-
-// 1. Obtener todas las parejas inscritas desde la nube
+// 1. Obtener todas las parejas inscritas directamente del servidor (sin caché)
 async function getCloudPairs() {
   try {
-    if (!db) await waitForFirebase();
-    const doc = await db.collection('torneo').doc('udaberri_pairs').get();
-    return doc.exists ? doc.data() : {};
+    const doc = await db.collection("txapelketa").doc("udaberri_pairs").get({ source: 'server' });
+    if (doc.exists) {
+      return doc.data() || {};
+    }
+    return {};
   } catch (error) {
-    console.error("Error leyendo parejas de la nube:", error);
-    return JSON.parse(localStorage.getItem('udaberri_pairs')) || {};
+    // Si falla la consulta a servidor, consulta la persistencia por defecto
+    const fallbackDoc = await db.collection("txapelketa").doc("udaberri_pairs").get();
+    return fallbackDoc.exists ? fallbackDoc.data() : {};
   }
 }
 
 // 2. Guardar parejas inscritas en la nube
-async function saveCloudPairs(allPairsData) {
+async function saveCloudPairs(pairsData) {
   try {
-    if (!db) await waitForFirebase();
-    await db.collection('torneo').doc('udaberri_pairs').set(allPairsData);
-    // Guardar respaldo local por seguridad
-    localStorage.setItem('udaberri_pairs', JSON.stringify(allPairsData));
+    await db.collection("txapelketa").doc("udaberri_pairs").set(pairsData);
     return true;
   } catch (error) {
-    console.error("Error guardando parejas en la nube:", error);
+    console.error("Error al guardar parejas en la nube:", error);
     return false;
   }
 }
 
-// 3. Obtener el calendario de partidos y marcadores desde la nube
+// 3. Obtener todos los partidos de la nube (sin caché)
 async function getCloudMatches() {
   try {
-    if (!db) await waitForFirebase();
-    const doc = await db.collection('torneo').doc('udaberri_matches').get();
-    return doc.exists ? doc.data() : {};
+    const doc = await db.collection("txapelketa").doc("udaberri_matches").get({ source: 'server' });
+    if (doc.exists) {
+      return doc.data() || {};
+    }
+    return {};
   } catch (error) {
-    console.error("Error leyendo partidos de la nube:", error);
-    return JSON.parse(localStorage.getItem('udaberri_matches')) || {};
+    const fallbackDoc = await db.collection("txapelketa").doc("udaberri_matches").get();
+    return fallbackDoc.exists ? fallbackDoc.data() : {};
   }
 }
 
-// 4. Guardar el calendario de partidos y marcadores en la nube
-async function saveCloudMatches(allMatchesData) {
+// 4. Guardar partidos en la nube
+async function saveCloudMatches(matchesData) {
   try {
-    if (!db) await waitForFirebase();
-    await db.collection('torneo').doc('udaberri_matches').set(allMatchesData);
-    // Guardar respaldo local por seguridad
-    localStorage.setItem('udaberri_matches', JSON.stringify(allMatchesData));
+    await db.collection("txapelketa").doc("udaberri_matches").set(matchesData);
     return true;
   } catch (error) {
-    console.error("Error guardando partidos en la nube:", error);
+    console.error("Error al guardar partidos en la nube:", error);
     return false;
   }
-}
-
-// Auxiliar para esperar la carga del SDK de Firebase
-function waitForFirebase() {
-  return new Promise((resolve) => {
-    const check = setInterval(() => {
-      if (db) {
-        clearInterval(check);
-        resolve();
-      }
-    }, 100);
-  });
 }
