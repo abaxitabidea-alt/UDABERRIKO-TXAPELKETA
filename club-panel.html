@@ -32,7 +32,7 @@
     .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
     .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
 
-    /* Login Form */
+    /* Formulario de Login */
     .login-box { max-width: 400px; margin: 0 auto; }
     .form-group { margin-bottom: 1.2rem; }
     label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
@@ -40,7 +40,7 @@
     button.btn-primary { background-color: var(--accent); color: white; border: none; padding: 0.85rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; font-weight: bold; width: 100%; }
     button.btn-primary:hover { background-color: var(--primary); }
 
-    /* Admin Panel Toolbar */
+    /* Barra de Administración */
     .admin-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; background: #e9ecef; padding: 15px; border-radius: 6px; }
     .btn-sync-down { background-color: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
     .btn-sync-up { background-color: #16a34a; color: white; border: none; padding: 10px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
@@ -105,16 +105,16 @@
         <span style="font-weight:bold; color:var(--accent);">Sesión: ABAXI (Admin)</span>
       </div>
 
-      <!-- Barra de sincronización -->
+      <!-- Barra de herramientas de sincronización -->
       <div class="admin-toolbar">
         <button class="btn-sync-down" onclick="bajarDeNube()">🔄 Bajar datos desde la Nube</button>
         <button class="btn-sync-up" onclick="subirANube()">☁️ Subir datos a la Nube</button>
         <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- GENERADOR DE PARTIDOS RESTAURADO -->
+      <!-- GENERADOR DE PARTIDOS -->
       <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2rem;">
-        ⚙️ Generador Automático de Partidos
+        ⚙️ Generador Automático de Partidos por Semanas
       </h3>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
@@ -146,7 +146,7 @@
 
       <div id="generated-matches-preview" style="margin-top:1.5rem;"></div>
 
-      <!-- RESUMEN GLOBAL -->
+      <!-- RESUMEN GLOBAL DE PAREJAS -->
       <h3 style="color:var(--primary); border-bottom:2px solid var(--accent); padding-bottom:0.4rem; margin-top:2.5rem;">
         📋 Resumen Global de Parejas Inscritas
       </h3>
@@ -250,13 +250,12 @@
       container.innerHTML = html;
     }
 
-    // --- LÓGICA DE GENERACIÓN DE PARTIDOS ---
+    // --- GENERADOR AUTOMÁTICO DE PARTIDOS CON SEMANAS Y GRUPOS ---
     async function generateMatchesForCategory() {
       const cat = document.getElementById('gen-cat').value;
       const lvl = document.getElementById('gen-lvl').value;
       const allPairs = await getCloudPairs();
 
-      // Filtrar parejas correspondientes a la categoría y nivel seleccionados
       let categoryPairs = [];
       Object.keys(allPairs).forEach(club => {
         (allPairs[club] || []).forEach(p => {
@@ -265,7 +264,7 @@
               club: club.toUpperCase(),
               p1: p.player1,
               p2: p.player2,
-              name: `${club.toUpperCase()} (${p.player1} - ${p.player2})`
+              name: `${club.toUpperCase()} (${p.player1}/${p.player2})`
             });
           }
         });
@@ -276,32 +275,66 @@
         return;
       }
 
-      // Generar todos contra todos (Round-Robin)
-      let generated = [];
-      for (let i = 0; i < categoryPairs.length; i++) {
-        for (let j = i + 1; j < categoryPairs.length; j++) {
-          generated.push({
-            id: Date.now() + Math.random(),
-            category: cat,
-            level: lvl,
-            local: categoryPairs[i].name,
-            visitante: categoryPairs[j].name,
-            fecha: "",
-            trinquet: "",
-            resultado: ""
-          });
-        }
+      // 1. Dividir parejas en Grupo A y Grupo B si son más de 5
+      let grupos = { "Grupo A": [], "Grupo B": [] };
+      if (categoryPairs.length > 5) {
+        const mitad = Math.ceil(categoryPairs.length / 2);
+        grupos["Grupo A"] = categoryPairs.slice(0, mitad);
+        grupos["Grupo B"] = categoryPairs.slice(mitad);
+      } else {
+        grupos["Grupo A"] = categoryPairs;
       }
 
-      // Guardar en la estructura global de partidos
+      let generated = [];
+
+      // 2. Generar liga todos contra todos distribuida por semanas
+      Object.keys(grupos).forEach(grupoNombre => {
+        let parejasGrupo = grupos[grupoNombre];
+        if (parejasGrupo.length < 2) return;
+
+        let n = parejasGrupo.length;
+        let tempPairs = [...parejasGrupo];
+        if (n % 2 !== 0) {
+          tempPairs.push(null); // Descanso si es número impar
+          n++;
+        }
+
+        let numRondas = n - 1;
+        for (let ronda = 0; ronda < numRondas; ronda++) {
+          let semanaNum = ronda + 1;
+          for (let i = 0; i < n / 2; i++) {
+            let p1 = tempPairs[i];
+            let p2 = tempPairs[n - 1 - i];
+
+            if (p1 !== null && p2 !== null) {
+              generated.push({
+                id: Date.now() + Math.random(),
+                category: cat,
+                level: lvl,
+                grupo: grupoNombre,
+                semana: `Semana ${semanaNum}`,
+                local: p1.name,
+                visitante: p2.name,
+                fecha: "",
+                trinquet: "",
+                resultado: ""
+              });
+            }
+          }
+          // Rotación del algoritmo Round-Robin
+          tempPairs.splice(1, 0, tempPairs.pop());
+        }
+      });
+
+      // 3. Guardar partidos y sincronizar a Drive
       const allMatches = await getCloudMatches();
       const groupKey = `${cat}_${lvl}`;
       allMatches[groupKey] = generated;
       
       await saveCloudMatches(allMatches);
-      await syncToCloud(); // Sincroniza a la nube tras generar
+      await syncToCloud();
 
-      alert(`¡Se han generado ${generated.length} partidos para ${cat} - ${lvl}!`);
+      alert(`¡Se han generado ${generated.length} partidos distribuidos por semanas para ${cat} - ${lvl}!`);
       renderGeneratedMatchesPreview(generated, cat, lvl);
     }
 
@@ -323,15 +356,30 @@
 
     function renderGeneratedMatchesPreview(matches, cat, lvl) {
       const container = document.getElementById('generated-matches-preview');
-      let html = `<h4>Partidos Generados para ${cat} - ${lvl} (${matches.length})</h4><table><thead><tr><th>Local</th><th>Visitante</th></tr></thead><tbody>`;
+      let html = `<h4>Partidos Generados para ${cat} - ${lvl} (${matches.length})</h4>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Semana</th>
+                        <th>Grupo</th>
+                        <th>Local</th>
+                        <th>Visitante</th>
+                      </tr>
+                    </thead>
+                    <tbody>`;
       matches.forEach(m => {
-        html += `<tr><td>${m.local}</td><td>${m.visitante}</td></tr>`;
+        html += `<tr>
+                  <td><strong>${m.semana || 'Semana 1'}</strong></td>
+                  <td>${m.grupo || 'Grupo A'}</td>
+                  <td>${m.local}</td>
+                  <td>${m.visitante}</td>
+                </tr>`;
       });
       html += '</tbody></table>';
       container.innerHTML = html;
     }
 
-    // Funciones de Sincronización
+    // Funciones de Sincronización Manual
     async function bajarDeNube() {
       const btn = document.querySelector('.btn-sync-down');
       btn.textContent = "⏳ Descargando...";
