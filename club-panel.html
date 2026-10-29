@@ -75,7 +75,7 @@
 
   <div class="container">
     
-    <!-- INICIO DE SESIÓN -->
+    <!-- LOGIN -->
     <div id="login-section" class="card login-box">
       <h2 style="text-align: center; color: var(--primary); margin-top:0;">Acceso al Panel</h2>
       <p style="text-align: center; color: #666; font-size:0.9rem; margin-bottom:1.5rem;">
@@ -135,7 +135,7 @@
       </div>
 
       <div style="display:flex; gap:10px;">
-        <button class="btn-action" onclick="generateMatchesForCategory()">⚡ Generar Calendario Completo</button>
+        <button id="btn-gen" class="btn-action" onclick="generateMatchesForCategory()">⚡ Generar Calendario Completo</button>
         <button class="btn-danger" style="margin-top:1rem;" onclick="clearMatchesForCategory()">🗑️ Borrar Partidos de esta Categoría</button>
       </div>
 
@@ -244,17 +244,26 @@
       container.innerHTML = html;
     }
 
-    // ALGORITMO INTEGRADO Y COMPATIBLE
+    // ALGORITMO ROUND-ROBIN CON IDENTIFICADORES ÚNICOS SIN DUPLICADOS
     async function generateMatchesForCategory() {
+      const btn = document.getElementById('btn-gen');
       const cat = document.getElementById('gen-cat').value;
       const lvl = document.getElementById('gen-lvl').value;
+
+      btn.disabled = true;
+      btn.textContent = "⏳ Generando partidos...";
+
       const allPairs = await getCloudPairs();
 
+      // Recopilar parejas garantizando un ID único para cada una
       let categoryPairs = [];
+      let pairIndex = 1;
+
       Object.keys(allPairs).forEach(club => {
         (allPairs[club] || []).forEach(p => {
           if (p.category === cat && p.level === lvl) {
             categoryPairs.push({
+              uid: `pair_${pairIndex++}`,
               club: club.toUpperCase(),
               p1: p.player1,
               p2: p.player2,
@@ -266,6 +275,8 @@
 
       if (categoryPairs.length < 2) {
         alert(`Se necesitan al menos 2 parejas en ${cat} - ${lvl} para generar enfrentamientos.`);
+        btn.disabled = false;
+        btn.textContent = "⚡ Generar Calendario Completo";
         return;
       }
 
@@ -320,6 +331,7 @@
                 generated.push(createMatchObj(cat, lvl, grupoNombre, semanaNum, loc.name, vis.name));
               }
             }
+            // Rotación fija Round-Robin
             tempPairs.splice(1, 0, tempPairs.pop());
           }
         }
@@ -338,7 +350,7 @@
         generated.push(createMatchObj(cat, lvl, "Fase Final", semFinal, "1º Clasificado", "2º Clasificado"));
       }
 
-      // Reemplazo limpio en la base de datos local
+      // Guardado limpio en la base de datos local
       const allMatches = await getCloudMatches();
       const groupKey = `${cat}_${lvl}`;
       allMatches[groupKey] = generated;
@@ -346,7 +358,10 @@
       await saveCloudMatches(allMatches);
       await syncToCloud();
 
-      alert(`¡Se han generado ${generated.length} partidos correctamente para ${cat} - ${lvl}!`);
+      btn.disabled = false;
+      btn.textContent = "⚡ Generar Calendario Completo";
+
+      alert(`¡Se han generado ${generated.length} partidos para ${cat} - ${lvl}!`);
       renderGeneratedMatchesPreview(generated, cat, lvl);
     }
 
@@ -359,6 +374,7 @@
         semanaNum: numSemana,
         week: numSemana,
         semanaIndex: numSemana - 1,
+        semana: `Semana ${numSemana}`,
         local: local,
         visitante: visitante,
         fecha: "",
@@ -398,7 +414,7 @@
                     <tbody>`;
       matches.forEach(m => {
         html += `<tr>
-                  <td><strong>Jornada ${m.semanaNum}</strong></td>
+                  <td><strong>Semana ${m.semanaNum}</strong></td>
                   <td>${m.grupo}</td>
                   <td>${m.local}</td>
                   <td>${m.visitante}</td>
