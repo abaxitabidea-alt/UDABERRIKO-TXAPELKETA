@@ -7,7 +7,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Udaberriko Txapelketak - Klub Atala & Antolatzailea</title>
+
+  <!-- SDK Firebase Carga Única -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="firebase-db.js"></script>
+
   <style>
     :root {
       --primary: #1b4332;
@@ -47,8 +52,11 @@
     .btn-shortcut { background-color: var(--primary); color: white; text-decoration: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.4rem; }
     .btn-shortcut:hover { background-color: var(--accent); }
 
-    .btn-refresh { background-color: #ff9f1c; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; display: block; margin: 0 auto 1.5rem auto; font-size: 0.95rem; }
+    .btn-refresh { background-color: #ff9f1c; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
     .btn-refresh:hover { background-color: #e08700; }
+
+    .btn-reset-matches { background-color: #e63946; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.95rem; }
+    .btn-reset-matches:hover { background-color: #b71c1c; }
 
     .cat-tabs { display: flex; gap: 0.5rem; border-bottom: 3px solid var(--primary); margin-bottom: 1.5rem; flex-wrap: wrap; }
     .tab-btn { background-color: #e9ecef; border: none; padding: 0.8rem 1.5rem; font-weight: bold; font-size: 1rem; cursor: pointer; border-radius: 6px 6px 0 0; color: var(--primary); }
@@ -76,10 +84,6 @@
     .action-card:hover { border-color: var(--accent); }
     .btn-card { background-color: var(--accent); color: white; padding: 0.6rem 1rem; border-radius: 4px; font-weight: bold; margin-top: 1rem; }
   </style>
-
-  <!-- SDK Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -168,7 +172,10 @@
         <a href="inscripcion.html" class="btn-shortcut">📝 Inscripciones</a>
       </div>
 
-      <button class="btn-refresh" onclick="forceReloadCloudData()">🔄 Actualizar parejas desde la Nube (Recargar Nube)</button>
+      <div style="display:flex; justify-content:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <button class="btn-refresh" onclick="forceReloadCloudData()">🔄 Actualizar parejas desde la Nube</button>
+        <button class="btn-reset-matches" onclick="resetCategoryMatches()">🗑️ Borrar Partidos de esta Categoría</button>
+      </div>
 
       <div class="cat-tabs">
         <button class="tab-btn active" onclick="switchCategory('Benjamín', this)">Benjamín</button>
@@ -192,7 +199,7 @@
       const p = passInput.trim().toLowerCase();
       const cleanP = p.replace(/\s+/g, '');
 
-      if (u === 'abaxi' && cleanP === 'abaxi') {
+      if ((u === 'abaxi' || u === 'avanti') && (cleanP === 'abaxi' || cleanP === 'avanti')) {
         return { valid: true, isAdmin: true };
       }
       if (VALID_CLUBS.includes(u) && p === u) {
@@ -241,8 +248,21 @@
     }
 
     async function forceReloadCloudData() {
-      alert("Consultando la base de datos central de Firebase...");
       await loadCategoryLevels(currentCategory);
+    }
+
+    async function resetCategoryMatches() {
+      if (confirm(`¿Seguro que deseas borrar todos los partidos generados de la categoría ${currentCategory}?`)) {
+        const allMatchesData = await getCloudMatches();
+        let masterMatches = allMatchesData["abaxitabidea"] || [];
+        
+        masterMatches = masterMatches.filter(m => !m.info.includes(currentCategory));
+        allMatchesData["abaxitabidea"] = masterMatches;
+
+        await saveCloudMatches(allMatchesData);
+        alert(`Partidos de la categoría ${currentCategory} eliminados.`);
+        loadCategoryLevels(currentCategory);
+      }
     }
 
     async function switchCategory(catName, btn) {
@@ -254,11 +274,10 @@
 
     async function loadCategoryLevels(catName) {
       const container = document.getElementById('category-levels-container');
-      container.innerHTML = '<p style="text-align:center; padding:1.5rem; font-weight:bold;">⌛ Descargando parejas e inscripciones actualizadas desde la nube...</p>';
+      container.innerHTML = '<p style="text-align:center; padding:1.5rem; font-weight:bold;">⌛ Descargando datos en tiempo real desde la nube...</p>';
 
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
       
-      // Consultar documento udaberri_pairs directo en Firebase
       const allPairsData = await getCloudPairs();
       const allMatchesData = await getCloudMatches();
       const masterMatches = allMatchesData["abaxitabidea"] || [];
@@ -339,7 +358,7 @@
         allPairsData[clubKey][idx].player2 = document.getElementById(`p2-${clubKey}-${idx}`).value.trim();
         
         await saveCloudPairs(allPairsData);
-        alert(`¡Nombre corregido para el club ${clubKey.toUpperCase()} en la nube!`);
+        alert(`¡Nombre corregido para el club ${clubKey.toUpperCase()}!`);
         loadCategoryLevels(currentCategory);
       }
     }
@@ -357,10 +376,6 @@
     }
 
     async function generateLevelMatches(catName, lvlName) {
-      // 1. FORZAR BÚSQUEDA FRESCA Y SIN CÁCHÉ EN FIRESTORE
-      const container = document.getElementById('category-levels-container');
-      container.innerHTML = `<p style="text-align:center; padding:1.5rem; font-weight:bold; color:var(--primary);">⌛ Obteniendo todas las inscripciones reales de la Nube para ${catName} — ${lvlName}...</p>`;
-
       const allPairsData = await getCloudPairs();
 
       const categoryPairs = [];
