@@ -26,28 +26,25 @@
     nav a:hover { background-color: rgba(255, 255, 255, 0.1); }
     nav a.active { border-bottom-color: #52b788; background-color: rgba(255, 255, 255, 0.15); }
 
-    .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem; }
+    .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
     .card { background: var(--card); border-radius: 8px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; }
     .hidden { display: none !important; }
 
     .form-group { margin-bottom: 1.2rem; }
-    label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
-    input[type="text"], select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+    label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--primary); }
+    select { width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
 
-    .club-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--bg); padding-bottom: 1rem; margin-bottom: 1.5rem; }
-    .logout-btn { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
+    th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: center; vertical-align: middle; }
     th { background-color: #e9ecef; }
-    
-    .btn-save { background-color: var(--accent); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-save:hover { background-color: var(--primary); }
-  </style>
 
-  <!-- SDK Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    .score-input { width: 50px; text-align: center; font-size: 1.1rem; font-weight: bold; padding: 0.4rem; border: 2px solid var(--accent); border-radius: 4px; }
+    .np-box { font-size: 0.8rem; font-weight: bold; color: #d90429; display: flex; align-items: center; justify-content: center; gap: 3px; }
+
+    .btn-save { background-color: var(--accent); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-save:hover { background-color: var(--primary); }
+    .btn-danger { background-color: #d90429; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: bold; }
+  </style>
 </head>
 <body>
 
@@ -55,13 +52,13 @@
     <img src="logo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-title">
       <h1>Udaberriko Txapelketak</h1>
-      <p>Emaitzen Kudeaketa / Resultados de Partidos</p>
+      <p>Emaitzak / Gestión de Resultados</p>
     </div>
     <div class="header-spacer"></div>
   </header>
 
   <nav>
-    <a href="index.html" onclick="logout()">← Hasiera / Inicio</a>
+    <a href="index.html">← Hasiera / Inicio</a>
     <a href="club-panel.html">Klub Atala</a>
     <a href="inscripcion.html">Inscripción</a>
     <a href="partidos-semanales.html">Asteko Partidak</a>
@@ -70,23 +67,23 @@
 
   <div class="container">
     <div id="no-session-card" class="card" style="text-align:center;">
-      <h2 style="color:#d90429;">Acceso no autorizado / Saioa hasi gabe</h2>
+      <h2 style="color:#d90429;">Acceso no autorizado</h2>
       <p>Debes iniciar sesión primero desde el panel principal del club.</p>
-      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club / Klub Atalera joan</a>
+      <a href="club-panel.html" style="display:inline-block; margin-top:1rem; padding:0.75rem 1.5rem; background:var(--accent); color:white; text-decoration:none; border-radius:4px; font-weight:bold;">Ir al Panel de Club</a>
     </div>
 
     <div id="club-section" class="card hidden">
-      <div class="club-header">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid var(--bg); padding-bottom:1rem; margin-bottom:1.5rem;">
         <div>
-          <h2 style="margin:0;">Marcadores de: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
-          <p style="margin:0.2rem 0 0 0; color:#666;">Anota los resultados finales de los partidos (ej: 22-18 o NP-22).</p>
+          <h2 style="margin:0;">Gestión de Marcadores: <span id="club-title" style="color:var(--accent); text-transform: capitalize;"></span></h2>
+          <p style="margin:0.2rem 0 0 0; color:#666;">Introduce el tanteo o marca No Presentado (NP) para calcular la clasificación automáticamente.</p>
         </div>
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <button class="btn-danger" onclick="logout()">Cerrar Sesión</button>
       </div>
 
       <div class="form-group" style="background:#e8f5e9; padding:1rem; border-radius:8px; border:1px solid #c8e6c9;">
-        <label for="week-select" style="color:var(--primary); font-size:1.1rem;">📅 Selecciona la Semana o Jornada:</label>
-        <select id="week-select" onchange="loadResults()" style="font-weight:bold; font-size:1rem; color:var(--primary);">
+        <label for="week-select" style="font-size:1.1rem;">📅 Selecciona la Semana o Jornada:</label>
+        <select id="week-select" onchange="loadMatchesForResults()" style="font-weight:bold; font-size:1rem; color:var(--primary);">
           <option value="Semana 1">Semana 1 (14/05/2027 - 16/05/2027)</option>
           <option value="Semana 2">Semana 2 (21/05/2027 - 23/05/2027)</option>
           <option value="Semana 3">Semana 3 (28/05/2027 - 30/05/2027)</option>
@@ -96,13 +93,13 @@
         </select>
       </div>
 
-      <h3 style="color:var(--primary); margin-top:1.5rem;" id="results-section-title">Resultados de Partidos</h3>
+      <h3 style="color:var(--primary); margin-top:1.5rem;" id="results-section-title">Partidos de la Jornada</h3>
 
       <table>
         <thead>
           <tr>
-            <th>Topaketa / Encuentro</th>
-            <th>Emaitza / Resultado (Ej: 22-15)</th>
+            <th>Enfrentamiento / Partido</th>
+            <th style="width:280px;">Marcador y No Presentado (NP)</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -130,7 +127,7 @@
       document.getElementById('club-section').classList.remove('hidden');
       document.getElementById('club-title').textContent = currentClub;
 
-      loadResults();
+      loadMatchesForResults();
     }
 
     function logout() {
@@ -138,67 +135,138 @@
       window.location.href = 'club-panel.html';
     }
 
-    function isClubParticipant(infoText, clubName) {
+    function isClubInMatch(infoText, clubName) {
       if (!infoText) return false;
       return infoText.toLowerCase().includes(clubName.toLowerCase());
     }
 
-    async function loadResults() {
+    async function loadMatchesForResults() {
       const selectedWeek = document.getElementById('week-select').value;
       const tbody = document.getElementById('results-tbody');
-      tbody.innerHTML = '<tr><td colspan="3">Cargando partidos de la nube...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3">Cargando partidos...</td></tr>';
+
+      document.getElementById('results-section-title').textContent = `Partidos (${selectedWeek})`;
 
       const allMatchesData = await getCloudMatches();
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      const relevantMatches = officialMatches.filter(m => {
-        return m.week === selectedWeek && (isSuperAdmin || isClubParticipant(m.info, currentClub));
+      const filteredMatches = officialMatches.filter(m => {
+        return m.week === selectedWeek && (isSuperAdmin || isClubInMatch(m.info, currentClub));
       });
 
       tbody.innerHTML = '';
 
-      if (relevantMatches.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#777; padding:1.5rem;">No hay partidos disputados por tu club en la ${selectedWeek}.</td></tr>`;
+      if (filteredMatches.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#777; padding:1.5rem;">No hay partidos programados para la ${selectedWeek}.</td></tr>`;
         return;
       }
 
-      relevantMatches.forEach((m, idx) => {
-        const scoreVal = m.score || '';
+      filteredMatches.forEach((m, idx) => {
+        let s1 = '', s2 = '';
+        let np1Checked = false, np2Checked = false;
+
+        if (m.score && m.score.includes('-')) {
+          const parts = m.score.split('-');
+          const raw1 = parts[0].trim();
+          const raw2 = parts[1].trim();
+
+          if (raw1 === 'NP') { np1Checked = true; s1 = '0'; s2 = '22'; }
+          else if (raw2 === 'NP') { np2Checked = true; s1 = '22'; s2 = '0'; }
+          else { s1 = raw1; s2 = raw2; }
+        }
 
         tbody.innerHTML += `
           <tr>
-            <td><strong>${m.info}</strong></td>
-            <td>
-              <input type="text" id="score-${idx}" placeholder="22-18 / NP-22" value="${scoreVal}" style="width:150px; text-align:center; font-weight:bold;">
+            <td style="text-align:left;">
+              <strong>${m.info}</strong>
             </td>
             <td>
-              <button class="btn-save" onclick="saveScore(${idx})">Gorde / Guardar</button>
+              <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                <label class="np-box">
+                  <input type="checkbox" id="np1-${idx}" ${np1Checked ? 'checked' : ''} onchange="toggleNP(${idx}, 1)">
+                  NP
+                </label>
+                <input type="number" id="s1-${idx}" class="score-input" min="0" max="22" value="${s1}" ${np1Checked || np2Checked ? 'disabled' : ''}>
+                <strong>-</strong>
+                <input type="number" id="s2-${idx}" class="score-input" min="0" max="22" value="${s2}" ${np1Checked || np2Checked ? 'disabled' : ''}>
+                <label class="np-box">
+                  <input type="checkbox" id="np2-${idx}" ${np2Checked ? 'checked' : ''} onchange="toggleNP(${idx}, 2)">
+                  NP
+                </label>
+              </div>
+            </td>
+            <td>
+              <button class="btn-save" onclick="saveResult(${idx})">💾 Guardar Resultado</button>
             </td>
           </tr>
         `;
       });
     }
 
-    async function saveScore(idx) {
+    function toggleNP(idx, side) {
+      const np1 = document.getElementById(`np1-${idx}`);
+      const np2 = document.getElementById(`np2-${idx}`);
+      const s1 = document.getElementById(`s1-${idx}`);
+      const s2 = document.getElementById(`s2-${idx}`);
+
+      if (side === 1 && np1.checked) {
+        np2.checked = false;
+        s1.value = "0";
+        s2.value = "22";
+        s1.disabled = true;
+        s2.disabled = true;
+      } else if (side === 2 && np2.checked) {
+        np1.checked = false;
+        s1.value = "22";
+        s2.value = "0";
+        s1.disabled = true;
+        s2.disabled = true;
+      } else if (!np1.checked && !np2.checked) {
+        s1.disabled = false;
+        s2.disabled = false;
+      }
+    }
+
+    async function saveResult(idx) {
       const selectedWeek = document.getElementById('week-select').value;
-      const scoreVal = document.getElementById(`score-${idx}`).value.trim();
+      const np1 = document.getElementById(`np1-${idx}`).checked;
+      const np2 = document.getElementById(`np2-${idx}`).checked;
+      const val1 = document.getElementById(`s1-${idx}`).value.trim();
+      const val2 = document.getElementById(`s2-${idx}`).value.trim();
+
+      let finalScore = "";
+
+      if (np1) {
+        finalScore = "NP - 22";
+      } else if (np2) {
+        finalScore = "22 - NP";
+      } else {
+        if (val1 === "" || val2 === "") {
+          alert("Por favor, introduce el tanteo de ambos equipos o marca No Presentado (NP).");
+          return;
+        }
+        finalScore = `${val1} - ${val2}`;
+      }
 
       const allMatchesData = await getCloudMatches();
       let masterMatches = allMatchesData["abaxitabidea"] || [];
 
-      const relevantMatches = masterMatches.filter(m => {
-        return m.week === selectedWeek && (isSuperAdmin || isClubParticipant(m.info, currentClub));
+      const filteredMatches = masterMatches.filter(m => {
+        return m.week === selectedWeek && (isSuperAdmin || isClubInMatch(m.info, currentClub));
       });
 
-      const targetMatch = relevantMatches[idx];
+      const targetMatch = filteredMatches[idx];
       if (targetMatch) {
         const realIdx = masterMatches.findIndex(m => m.info === targetMatch.info && m.week === targetMatch.week);
         if (realIdx >= 0) {
-          masterMatches[realIdx].score = scoreVal;
-
+          masterMatches[realIdx].score = finalScore;
           allMatchesData["abaxitabidea"] = masterMatches;
+
           await saveCloudMatches(allMatchesData);
-          alert("¡Resultado guardado en la NUBE! La clasificación del portal se ha actualizado.");
+          if (typeof syncToCloud === 'function') await syncToCloud();
+
+          alert(`¡Resultado (${finalScore}) guardado y clasificación actualizada!`);
+          loadMatchesForResults();
         }
       }
     }
