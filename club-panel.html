@@ -120,6 +120,7 @@
     .admin-toolbar {
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
       margin-bottom: 1.5rem;
       background: #e9ecef;
       padding: 12px;
@@ -127,6 +128,7 @@
     }
     .btn-sync-down { background-color: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-sync-up { background-color: #16a34a; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-reset-all { background-color: #d90429; color: white; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; }
 
     .action-grid {
       display: grid;
@@ -204,7 +206,7 @@
 
   <div class="container">
     
-    <!-- PANTALLA DE ACCESO ÚNICO -->
+    <!-- ACCESO -->
     <div id="login-section" class="card">
       <h2 style="text-align:center; color:var(--primary);">Acceso para Clubes</h2>
       <p style="text-align:center; color:#666; margin-bottom:1.5rem;">Introduce tu club y contraseña una sola vez para acceder a todas las secciones.</p>
@@ -223,7 +225,7 @@
       </div>
     </div>
 
-    <!-- PANEL DE CONTROL CON SESIÓN INICIADA -->
+    <!-- PANEL DE CONTROL -->
     <div id="club-section" class="card hidden">
       <div class="club-header">
         <div>
@@ -233,15 +235,14 @@
         <button class="logout-btn" onclick="logout()">Cerrar Sesión / Irteera</button>
       </div>
 
-      <!-- Barra de sincronización opcional para el administrador -->
+      <!-- Herramientas de Administrador -->
       <div id="admin-sync-tools" class="admin-toolbar hidden">
         <button class="btn-sync-down" onclick="bajarDeNube()">🔄 Bajar datos desde Google Drive</button>
         <button class="btn-sync-up" onclick="subirANube()">☁️ Subir datos a Google Drive</button>
+        <button class="btn-reset-all" onclick="resetAllMatches()">🗑️ Borrar Todos los Partidos Generados</button>
       </div>
 
       <div class="action-grid">
-        
-        <!-- OPCIÓN 1: INSCRIPCIÓN -->
         <a href="inscripcion.html" class="action-card">
           <div>
             <div class="action-icon">📝</div>
@@ -251,7 +252,6 @@
           <div class="btn-card">Sartu / Acceder →</div>
         </a>
 
-        <!-- OPCIÓN 2: SEÑALAMIENTOS -->
         <a href="partidos-semanales.html" class="action-card">
           <div>
             <div class="action-icon">📅</div>
@@ -261,7 +261,6 @@
           <div class="btn-card">Sartu / Acceder →</div>
         </a>
 
-        <!-- OPCIÓN 3: RESULTADOS -->
         <a href="gestion-resultados.html" class="action-card">
           <div>
             <div class="action-icon">🏆</div>
@@ -270,7 +269,6 @@
           </div>
           <div class="btn-card">Sartu / Acceder →</div>
         </a>
-
       </div>
     </div>
 
@@ -346,6 +344,15 @@
       if (typeof syncToCloud === 'function') {
         const res = await syncToCloud();
         alert(res.message);
+      }
+    }
+
+    async function resetAllMatches() {
+      if (confirm("¿Estás seguro de BORRAR TODOS los partidos generados de la aplicación? Esto dejará el calendario totalmente vacio para regenerarlo.")) {
+        const allMatchesData = await getCloudMatches();
+        allMatchesData["abaxitabidea"] = [];
+        await saveCloudMatches(allMatchesData);
+        alert("¡Todos los partidos han sido eliminados!");
       }
     }
 
