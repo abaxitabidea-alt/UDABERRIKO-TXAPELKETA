@@ -263,9 +263,7 @@
           allMatchesData["abaxitabidea"] = masterMatches;
 
           await saveCloudMatches(allMatchesData);
-          if (typeof syncToCloud === 'function') await syncToCloud();
-
-          alert(`¡Resultado (${finalScore}) guardado y clasificación actualizada!`);
+          alert(`¡Resultado (${finalScore}) guardado!`);
           loadMatchesForResults();
         }
       }
