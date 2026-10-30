@@ -80,7 +80,6 @@
         <button class="btn-danger" onclick="logout()">Cerrar Sesión</button>
       </div>
 
-      <!-- FORMULARIO DE INSCRIPCIÓN -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
           <label for="reg-cat">Categoría:</label>
@@ -118,7 +117,6 @@
         <button class="btn-save" onclick="savePair()">💾 Guardar Pareja de mi Club</button>
       </div>
 
-      <!-- SECCIÓN MAESTRA DE EDICIÓN Y CORRECCIÓN PARA ABAXI -->
       <div id="admin-editor-section" class="admin-edit-box hidden">
         <h3 style="margin-top:0; color:#0369a1;">👑 Corrección Global de Inscritos (Modo Maestro)</h3>
         <p style="font-size:0.9rem; color:#333;">Modifica los nombres directamente o elimina inscripciones de cualquier club en esta categoría/nivel.</p>
@@ -185,7 +183,6 @@
 
       allPairs[currentClub] = clubPairs;
       await saveCloudPairs(allPairs);
-      if (typeof syncToCloud === 'function') await syncToCloud();
 
       alert("¡Pareja guardada con éxito!");
       document.getElementById('p1-name').value = '';
@@ -263,8 +260,6 @@
         allPairs[club][pairIndex].player2 = newP2;
 
         await saveCloudPairs(allPairs);
-        if (typeof syncToCloud === 'function') await syncToCloud();
-
         alert(`¡Pareja de ${club.toUpperCase()} actualizada correctamente!`);
         loadCategoryPairsForAdmin();
       }
@@ -276,9 +271,6 @@
         if (allPairs[club]) {
           allPairs[club].splice(pairIndex, 1);
           await saveCloudPairs(allPairs);
-          if (typeof syncToCloud === 'function') await syncToCloud();
-
-          alert("Pareja eliminada.");
           loadCategoryPairsForAdmin();
         }
       }
