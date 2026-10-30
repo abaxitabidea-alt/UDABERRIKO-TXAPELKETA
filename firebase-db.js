@@ -1,6 +1,6 @@
 const DRIVE_API_URL = "https://script.google.com/macros/s/AKfycbw7myV2ohCRTZAoAHwQvcSXGTvlYSaK8ZiYpYrBff5SX-DLc-Esm00eS-O3jDAQHtS64A/exec";
 
-// Funciones de lectura y escritura inmediata en memoria local (Sin esperas de red)
+// Memoria local inmediata (localStorage)
 function getLocalDB() {
   const data = localStorage.getItem('udaberri_local_db');
   return data ? JSON.parse(data) : { pairs: {}, matches: {} };
@@ -34,7 +34,7 @@ async function saveCloudMatches(matchesData) {
   return true;
 }
 
-// Sincronización manual explícita (Solo se activa al pulsar los botones)
+// Sincronización manual explícita (Solo se ejecuta al pulsar los botones)
 async function syncFromCloud() {
   try {
     const response = await fetch(DRIVE_API_URL);
