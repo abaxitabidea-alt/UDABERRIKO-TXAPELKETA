@@ -42,7 +42,7 @@
     th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: left; }
     th { background-color: #e9ecef; }
     .club-tag { background: #e2e8f0; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
-    .admin-edit-box { background: #e3f2fd; border: 2px solid #90caf9; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; }
+    .pairs-list-box { background: #f8f9fa; border: 2px solid #e9ecef; padding: 1.2rem; border-radius: 8px; margin-top: 1.5rem; }
   </style>
 </head>
 <body>
@@ -83,7 +83,7 @@
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
         <div class="form-group">
           <label for="reg-cat">Categoría:</label>
-          <select id="reg-cat" onchange="loadCategoryPairsForAdmin()">
+          <select id="reg-cat" onchange="loadCategoryPairs()">
             <option value="Benjamín">Benjamín</option>
             <option value="Alevín">Alevín</option>
             <option value="Infantil">Infantil</option>
@@ -94,7 +94,7 @@
 
         <div class="form-group">
           <label for="reg-lvl">Nivel:</label>
-          <select id="reg-lvl" onchange="loadCategoryPairsForAdmin()">
+          <select id="reg-lvl" onchange="loadCategoryPairs()">
             <option value="1. Maila (Primera)">1. Maila (Primera)</option>
             <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
             <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
@@ -117,11 +117,11 @@
         <button class="btn-save" onclick="savePair()">💾 Guardar Pareja de mi Club</button>
       </div>
 
-      <div id="admin-editor-section" class="admin-edit-box hidden">
-        <h3 style="margin-top:0; color:#0369a1;">👑 Corrección Global de Inscritos (Modo Maestro)</h3>
-        <p style="font-size:0.9rem; color:#333;">Modifica los nombres directamente o elimina inscripciones de cualquier club en esta categoría/nivel.</p>
+      <!-- LISTADO DE PAREJAS INSCRITAS (VISIBLE PARA TODOS LOS CLUBES Y MODIFICABLE POR ABAXI) -->
+      <div id="pairs-list-section" class="pairs-list-box">
+        <h3 style="margin-top:0; color:var(--primary);" id="pairs-list-title">📋 Parejas Inscritas</h3>
         
-        <div id="admin-pairs-table-container">Cargando parejas inscritas...</div>
+        <div id="pairs-table-container">Cargando parejas inscritas...</div>
       </div>
 
     </div>
@@ -147,11 +147,10 @@
       document.getElementById('club-title').textContent = currentClub;
 
       if (isSuperAdmin) {
-        document.getElementById('admin-editor-section').classList.remove('hidden');
         document.getElementById('sub-title-desc').textContent = "Modo Administrador Maestro: Supervisión y edición de todos los clubes.";
       }
 
-      loadCategoryPairsForAdmin();
+      loadCategoryPairs();
     }
 
     function logout() {
@@ -188,29 +187,35 @@
       document.getElementById('p1-name').value = '';
       document.getElementById('p2-name').value = '';
 
-      loadCategoryPairsForAdmin();
+      loadCategoryPairs();
     }
 
-    async function loadCategoryPairsForAdmin() {
-      if (!isSuperAdmin) return;
-
+    async function loadCategoryPairs() {
       const cat = document.getElementById('reg-cat').value;
       const lvl = document.getElementById('reg-lvl').value;
-      const container = document.getElementById('admin-pairs-table-container');
+      const container = document.getElementById('pairs-table-container');
+      const title = document.getElementById('pairs-list-title');
 
       const allPairs = await getCloudPairs();
       let matchedPairs = [];
 
       Object.keys(allPairs).forEach(club => {
-        (allPairs[club] || []).forEach((p, idx) => {
-          if (p.category === cat && p.level === lvl) {
-            matchedPairs.push({ club: club, pairIndex: idx, pair: p });
-          }
-        });
+        // Si es admin muestra todas las del nivel; si es club sólo muestra las de su propio club
+        if (isSuperAdmin || club.toLowerCase() === currentClub.toLowerCase()) {
+          (allPairs[club] || []).forEach((p, idx) => {
+            if (p.category === cat && p.level === lvl) {
+              matchedPairs.push({ club: club, pairIndex: idx, pair: p });
+            }
+          });
+        }
       });
 
+      title.textContent = isSuperAdmin ? 
+        `📋 Parejas Inscritas en ${cat} - ${lvl} (Todos los Clubes)` : 
+        `📋 Mis Parejas Inscritas en ${cat} - ${lvl}`;
+
       if (matchedPairs.length === 0) {
-        container.innerHTML = `<p style="color:#666; text-align:center; padding:1rem;">No hay parejas inscritas en ${cat} - ${lvl}.</p>`;
+        container.innerHTML = `<p style="color:#666; text-align:center; padding:1rem;">No hay parejas inscritas registradas en esta categoría y nivel.</p>`;
         return;
       }
 
@@ -234,8 +239,8 @@
             <td><input type="text" id="edit-p1-${index}" value="${item.pair.player1}"></td>
             <td><input type="text" id="edit-p2-${index}" value="${item.pair.player2}"></td>
             <td style="display:flex; gap:5px;">
-              <button class="btn-save" style="margin:0; padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="updatePairByAdmin('${item.club}', ${item.pairIndex}, ${index})">💾 Guardar</button>
-              <button class="btn-danger" style="padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="deletePairByAdmin('${item.club}', ${item.pairIndex})">🗑️ Borrar</button>
+              <button class="btn-save" style="margin:0; padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="updatePair('${item.club}', ${item.pairIndex}, ${index})">💾 Guardar</button>
+              <button class="btn-danger" style="padding:0.4rem 0.6rem; font-size:0.85rem;" onclick="deletePair('${item.club}', ${item.pairIndex}, '${item.pair.player1}', '${item.pair.player2}')">🗑️ Borrar</button>
             </td>
           </tr>
         `;
@@ -245,7 +250,7 @@
       container.innerHTML = html;
     }
 
-    async function updatePairByAdmin(club, pairIndex, inputIdx) {
+    async function updatePair(club, pairIndex, inputIdx) {
       const newP1 = document.getElementById(`edit-p1-${inputIdx}`).value.trim();
       const newP2 = document.getElementById(`edit-p2-${inputIdx}`).value.trim();
 
@@ -261,19 +266,36 @@
 
         await saveCloudPairs(allPairs);
         alert(`¡Pareja de ${club.toUpperCase()} actualizada correctamente!`);
-        loadCategoryPairsForAdmin();
+        loadCategoryPairs();
       }
     }
 
-    async function deletePairByAdmin(club, pairIndex) {
-      if (confirm(`¿Estás seguro de eliminar esta pareja de ${club.toUpperCase()}?`)) {
+    async function deletePair(club, pairIndex, p1Name, p2Name) {
+      if (confirm(`¿Estás seguro de eliminar la pareja (${p1Name} / ${p2Name})? Se eliminarán también sus partidos asociados.`)) {
         const allPairs = await getCloudPairs();
         if (allPairs[club]) {
           allPairs[club].splice(pairIndex, 1);
           await saveCloudPairs(allPairs);
-          loadCategoryPairsForAdmin();
+
+          // LIMPIEZA AUTOMÁTICA EN PARTIDOS
+          await removeMatchesForPair(`${club.toUpperCase()} (${p1Name}/${p2Name})`);
+
+          alert("Pareja eliminada y partidos desvinculados.");
+          loadCategoryPairs();
         }
       }
+    }
+
+    // FUNCIÓN DE LIMPIEZA AUTOMÁTICA DE PARTIDOS
+    async function removeMatchesForPair(pairDisplayName) {
+      const allMatchesData = await getCloudMatches();
+      let masterMatches = allMatchesData["abaxitabidea"] || [];
+
+      // Filtra y remueve los partidos donde aparezca el nombre de la pareja borrada
+      const cleanedMatches = masterMatches.filter(m => !m.info.includes(pairDisplayName));
+      allMatchesData["abaxitabidea"] = cleanedMatches;
+
+      await saveCloudMatches(allMatchesData);
     }
 
     document.addEventListener('DOMContentLoaded', checkSession);
