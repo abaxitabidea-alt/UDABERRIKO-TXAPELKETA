@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Udaberriko Txapelketak - Pelotari Portal</title>
   <script src="firebase-db.js"></script>
-  <!-- Librería SheetJS para generar archivos Excel (.xlsx) con múltiples pestañas -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -39,16 +38,16 @@
     .btn-excel { background-color: #1d6f42; color: white; border: none; padding: 0.65rem 1rem; border-radius: 4px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; height: 41px; }
     .btn-excel:hover { background-color: #144d2e; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: white; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; margin-bottom: 1.5rem; background: white; }
     th, td { padding: 0.75rem; border: 1px solid #e0e0e0; text-align: center; }
     th { background-color: #e9ecef; }
 
     .tag-scheduled { background-color: #d8f3dc; color: #1b4332; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
     .tag-pending { background-color: #fff3cd; color: #856404; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.85rem; }
     .section-title { color: var(--primary); border-bottom: 2px solid var(--accent); padding-bottom: 0.4rem; margin-top: 2rem; }
+    .group-header { background: var(--primary); color: white; padding: 0.6rem 1rem; border-radius: 6px; font-size: 1.1rem; font-weight: bold; margin-top: 2rem; }
   </style>
 
-  <!-- SDK Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -79,9 +78,9 @@
           <div>
             <label for="filter-cat">1. Aukeratu Kategoria:</label>
             <select id="filter-cat" onchange="renderPublicPortal()">
-              <option value="Benjamín">Benjamín</option>
+              <option value="Benjamín" selected>Benjamín</option>
               <option value="Alevín">Alevín</option>
-              <option value="Infantil" selected>Infantil</option>
+              <option value="Infantil">Infantil</option>
               <option value="Cadete">Cadete</option>
               <option value="Juvenil">Juvenil</option>
             </select>
@@ -89,7 +88,7 @@
           <div>
             <label for="filter-level">2. Aukeratu Maila:</label>
             <select id="filter-level" onchange="renderPublicPortal()">
-              <option value="1. Maila (Primera)">1. Maila (Primera)</option>
+              <option value="1. Maila (Primera)" selected>1. Maila (Primera)</option>
               <option value="2. Maila (Segunda)">2. Maila (Segunda)</option>
               <option value="3. Maila (Tercera)">3. Maila (Tercera)</option>
             </select>
@@ -111,8 +110,7 @@
         </div>
       </div>
 
-      <div id="matches-container"></div>
-      <div id="standings-container"></div>
+      <div id="portal-content-container"></div>
     </div>
   </div>
 
@@ -121,107 +119,52 @@
       const selectedCat = document.getElementById('filter-cat').value;
       const selectedLevel = document.getElementById('filter-level').value;
       const selectedWeek = document.getElementById('filter-week').value;
+      const container = document.getElementById('portal-content-container');
 
-      const groupKey = `${selectedCat} — ${selectedLevel}`;
-
-      const allMatchesData = await getCloudMatches();
-      const officialMatches = allMatchesData["abaxitabidea"] || [];
-
-      const matchesOfWeek = officialMatches.filter(m => {
-        const isCatLvl = m.info.includes(selectedCat) && m.info.includes(selectedLevel.split(' ')[0]);
-        return m.week === selectedWeek && isCatLvl;
-      });
-
-      const matchesContainer = document.getElementById('matches-container');
-      let matchesHtml = `<h3 class="section-title">📅 ${groupKey} (${selectedWeek})</h3>`;
-
-      if (matchesOfWeek.length === 0) {
-        matchesHtml += `<p style="text-align:center; color:#777; padding:1.5rem;">Ez dago partidarik aste honetan aukeratutako mailan.</p>`;
-      } else {
-        matchesHtml += `
-          <table>
-            <thead>
-              <tr>
-                <th>Eguna / Fecha</th>
-                <th>Ordua / Hora</th>
-                <th>Frontoia / Frontón</th>
-                <th>Ordena</th>
-                <th>Topaketa / Encuentro</th>
-                <th>Emaitza / Resultado</th>
-              </tr>
-            </thead>
-            <tbody>
-        `;
-
-        matchesOfWeek.forEach(m => {
-          let dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
-          let timeDisp = m.time || '--:--';
-          let frontonDisp = m.fronton || `<span class="tag-pending">Por determinar</span>`;
-          let orderDisp = m.order || '-';
-          let scoreDisp = m.score || '-';
-
-          matchesHtml += `
-            <tr>
-              <td>${dateDisp}</td>
-              <td><strong>${timeDisp}</strong></td>
-              <td>${frontonDisp}</td>
-              <td>${orderDisp}</td>
-              <td style="text-align:left;"><strong>${m.info}</strong></td>
-              <td><strong>${scoreDisp}</strong></td>
-            </tr>
-          `;
-        });
-
-        matchesHtml += `</tbody></table>`;
-      }
-
-      matchesContainer.innerHTML = matchesHtml;
-      await renderStandings(selectedCat, selectedLevel);
-    }
-
-    async function renderStandings(catName, lvlName) {
-      const container = document.getElementById('standings-container');
-      
       const allPairsData = await getCloudPairs();
       const allMatchesData = await getCloudMatches();
-
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      const pairsGroupA = [];
-      const pairsGroupB = [];
+      // 1. Obtener todas las parejas de esta categoría y nivel
       const pairsGeneral = [];
-
       for (let club in allPairsData) {
         if (Array.isArray(allPairsData[club])) {
           allPairsData[club].forEach(p => {
-            if (p.category === catName && p.level === lvlName) {
-              const teamObject = {
+            if (p.category === selectedCat && p.level === selectedLevel) {
+              pairsGeneral.push({
                 name: `${club.toUpperCase()} (${p.player1}/${p.player2})`,
                 club: club.toUpperCase(),
+                p1: p.player1,
+                p2: p.player2,
                 pj: 0, pg: 0, pp: 0, np: 0, tf: 0, tc: 0, diff: 0, pts: 0
-              };
-              pairsGeneral.push(teamObject);
+              });
             }
           });
         }
       }
 
       if (pairsGeneral.length === 0) {
-        container.innerHTML = `<h3 class="section-title">📊 Sailkapena / Clasificación</h3><p style="color:#777;">No hay parejas inscritas para calcular la clasificación.</p>`;
+        container.innerHTML = `<p style="text-align:center; color:#777; padding:2rem;">Ez dago bikoterik kategoria honetan.</p>`;
         return;
       }
 
-      let isGrouped = false;
-      if (pairsGeneral.length >= 7) {
-        isGrouped = true;
-        pairsGeneral.forEach((p, idx) => {
-          if (idx < 4) pairsGroupA.push(p);
-          else pairsGroupB.push(p);
-        });
+      // 2. Dividir en Grupo A y Grupo B si son más de 5 parejas
+      let isGrouped = pairsGeneral.length > 5;
+      let groupsMap = {};
+
+      if (isGrouped) {
+        const mitad = Math.ceil(pairsGeneral.length / 2);
+        groupsMap["Grupo A"] = pairsGeneral.slice(0, mitad);
+        groupsMap["Grupo B"] = pairsGeneral.slice(mitad);
+      } else {
+        groupsMap["Grupo A"] = pairsGeneral;
       }
 
+      // 3. Procesar resultados con coincidencia exacta de nombres
+      const lvlCode = selectedLevel.split(' ')[0]; // "1.", "2." o "3."
+
       officialMatches.forEach(m => {
-        if (m.info.includes(catName) && m.info.includes(lvlName.split(' ')[0]) && m.score && m.score.includes('-')) {
+        if (m.info.includes(selectedCat) && m.info.includes(lvlCode) && m.score && m.score.includes('-')) {
           const parts = m.info.split(':');
           if (parts.length > 1) {
             const teams = parts[1].split('vs');
@@ -233,12 +176,13 @@
               const s1Raw = scoreParts[0].trim().toUpperCase();
               const s2Raw = scoreParts[1].trim().toUpperCase();
 
-              const targetList = isGrouped ? [...pairsGroupA, ...pairsGroupB] : pairsGeneral;
-              const p1 = targetList.find(p => p.name === t1Name || t1Name.includes(p.club));
-              const p2 = targetList.find(p => p.name === t2Name || t2Name.includes(p.club));
+              // Búsqueda exacta de parejas
+              let p1 = pairsGeneral.find(p => p.name === t1Name);
+              let p2 = pairsGeneral.find(p => p.name === t2Name);
 
               if (p1 && p2) {
                 p1.pj++; p2.pj++;
+
                 if (s1Raw === 'NP') {
                   p1.np++; p2.pg++; p2.tf += 22; p2.pts += 2;
                 } else if (s2Raw === 'NP') {
@@ -246,9 +190,17 @@
                 } else {
                   const s1 = parseInt(s1Raw) || 0;
                   const s2 = parseInt(s2Raw) || 0;
-                  p1.tf += s1; p1.tc += s2; p2.tf += s2; p2.tc += s1;
-                  if (s1 > s2) { p1.pg++; p1.pts += 2; p2.pp++; p2.pts += 1; }
-                  else { p2.pg++; p2.pts += 2; p1.pp++; p1.pts += 1; }
+
+                  p1.tf += s1; p1.tc += s2;
+                  p2.tf += s2; p2.tc += s1;
+
+                  if (s1 > s2) {
+                    p1.pg++; p1.pts += 2;
+                    p2.pp++; p2.pts += 1;
+                  } else {
+                    p2.pg++; p2.pts += 2;
+                    p1.pp++; p1.pts += 1;
+                  }
                 }
               }
             }
@@ -256,19 +208,75 @@
         }
       });
 
-      if (isGrouped) {
-        container.innerHTML = generateTableHTML(pairsGroupA, `📊 Sailkapena — ${catName} (${lvlName}) - Grupo A`) +
-                             generateTableHTML(pairsGroupB, `📊 Sailkapena — ${catName} (${lvlName}) - Grupo B`);
-      } else {
-        container.innerHTML = generateTableHTML(pairsGeneral, `📊 Sailkapena — ${catName} (${lvlName})`);
-      }
+      // 4. Renderizar por cada grupo: Partidos de la semana + Tabla de Clasificación
+      let htmlOutput = `<h2 style="color:var(--primary); margin-top:1rem;">📅 ${selectedCat} — ${selectedLevel} (${selectedWeek})</h2>`;
+
+      Object.keys(groupsMap).forEach(grupoNombre => {
+        const groupPairs = groupsMap[grupoNombre];
+
+        // Filtrar solo los partidos pertenecientes a este grupo y semana
+        const groupMatches = officialMatches.filter(m => {
+          const isCatLvl = m.info.includes(selectedCat) && m.info.includes(lvlCode);
+          const isGrp = m.info.includes(`(${grupoNombre})`);
+          return m.week === selectedWeek && isCatLvl && isGrp;
+        });
+
+        htmlOutput += `<div class="group-header">🏆 ${grupoNombre}</div>`;
+
+        // Render de la tabla de partidos
+        htmlOutput += `<h4 style="margin-bottom:0.5rem; color:var(--primary);">Partidos de la Semana</h4>`;
+        if (groupMatches.length === 0) {
+          htmlOutput += `<p style="color:#777; font-style:italic;">Ez dago partidarik aste honetan grupo honetan.</p>`;
+        } else {
+          htmlOutput += `
+            <table>
+              <thead>
+                <tr>
+                  <th>Eguna / Fecha</th>
+                  <th>Ordua / Hora</th>
+                  <th>Frontoia / Frontón</th>
+                  <th>Ordena</th>
+                  <th>Topaketa / Encuentro</th>
+                  <th>Emaitza / Resultado</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          groupMatches.forEach(m => {
+            let dateDisp = m.date ? `<span class="tag-scheduled">${m.date}</span>` : `<span class="tag-pending">Por señalar</span>`;
+            let timeDisp = m.time || '--:--';
+            let frontonDisp = m.fronton || `<span class="tag-pending">Por determinar</span>`;
+            let orderDisp = m.order || '-';
+            let scoreDisp = m.score || '-';
+
+            htmlOutput += `
+              <tr>
+                <td>${dateDisp}</td>
+                <td><strong>${timeDisp}</strong></td>
+                <td>${frontonDisp}</td>
+                <td>${orderDisp}</td>
+                <td style="text-align:left;"><strong>${m.info}</strong></td>
+                <td><strong>${scoreDisp}</strong></td>
+              </tr>
+            `;
+          });
+
+          htmlOutput += `</tbody></table>`;
+        }
+
+        // Render de la tabla de clasificación
+        htmlOutput += generateTableHTML(groupPairs, `Sailkapena — ${grupoNombre}`);
+      });
+
+      container.innerHTML = htmlOutput;
     }
 
     function generateTableHTML(list, title) {
       list.forEach(p => p.diff = p.tf - p.tc);
-      list.sort((a, b) => b.pts - a.pts || b.diff - a.diff);
+      list.sort((a, b) => b.pts - a.pts || b.diff - a.diff || b.tf - a.tf);
 
-      let html = `<h3 class="section-title">${title}</h3>
+      let html = `<h4 style="margin-bottom:0.5rem; color:var(--primary);">${title}</h4>
         <table>
           <thead>
             <tr>
@@ -307,7 +315,6 @@
       return html;
     }
 
-    // FUNCIÓN DE EXPORTACIÓN CON PESTAÑAS INDEPENDIENTES EN EXCEL (.XLSX)
     async function exportToExcelMultiSheet() {
       const categories = ["Benjamín", "Alevín", "Infantil", "Cadete", "Juvenil"];
       const levels = ["1. Maila (Primera)", "2. Maila (Segunda)", "3. Maila (Tercera)"];
@@ -315,21 +322,18 @@
       const allMatchesData = await getCloudMatches();
       const officialMatches = allMatchesData["abaxitabidea"] || [];
 
-      // Crear el libro de trabajo de Excel
       const wb = XLSX.utils.book_new();
 
       for (let cat of categories) {
         for (let lvl of levels) {
-          const lvlCode = lvl.split(' ')[0]; // "1.", "2." o "3."
+          const lvlCode = lvl.split(' ')[0];
           const catLvlMatches = officialMatches.filter(m => m.info.includes(cat) && m.info.includes(lvlCode));
 
-          // Solo crear pestaña si hay datos o partidos generados para esta categoría y nivel
           if (catLvlMatches.length > 0) {
             const sheetData = [];
-
             sheetData.push([`UDABERRIKO TXAPELKETAK - ${cat.toUpperCase()} (${lvl.toUpperCase()})`]);
             sheetData.push([]);
-            sheetData.push(["JORNADA / WEEK", "FECHA", "HORA", "FRONTÓN", "ORDEN", "ENFORNTAMIENTO / PARTIDO", "RESULTADO"]);
+            sheetData.push(["JORNADA / WEEK", "FECHA", "HORA", "FRONTÓN", "ORDEN", "ENFRENTAMIENTO / PARTIDO", "RESULTADO"]);
 
             catLvlMatches.forEach(m => {
               sheetData.push([
@@ -343,10 +347,7 @@
               ]);
             });
 
-            // Convertir la matriz de datos en una hoja de trabajo
             const ws = XLSX.utils.aoa_to_sheet(sheetData);
-
-            // Ajustar el nombre de la pestaña (Ej: "Benjamín - 1. Maila")
             const sheetName = `${cat.substring(0, 3)} ${lvlCode}`.substring(0, 31);
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
           }
@@ -358,7 +359,6 @@
         return;
       }
 
-      // Descargar el libro completo en formato .xlsx
       XLSX.writeFile(wb, `Udaberriko_Txapelketak_Completo.xlsx`);
     }
 
